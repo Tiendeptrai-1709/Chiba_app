@@ -91,26 +91,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const users = getMockUsers();
       const foundUser = users[email.toLowerCase().trim()];
-  
+
       if (!foundUser || foundUser.password !== password) {
         set({ loading: false });
         throw new Error('Sai tài khoản hoặc mật khẩu');
       }
-  
+
       if (foundUser.isSuspended) {
         set({ loading: false });
         throw new Error('Tài khoản này đang tạm ngưng hoạt động');
       }
-  
+
       const { password: _, ...safeUser } = foundUser;
       const mockToken = `mock_jwt_token_${foundUser.id}_${Date.now()}`;
-  
+
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(safeUser));
       localStorage.setItem(TOKEN_KEY, mockToken);
       set({ user: safeUser as User, token: mockToken, isAuthenticated: true, loading: false });
     } catch (error) {
       console.log("error Login /lib/stores/useAuthStore", error)
-      set({ isAuthenticated:false, loading:false})
+      set({ isAuthenticated: false, loading: false })
     }
     // await new Promise((r) => setTimeout(r, 800));
 

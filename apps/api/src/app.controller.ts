@@ -10,7 +10,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get("health")
+  @Get("health1")
   getHealth() {
     return { status: "ok", timestamp: new Date().toISOString() };
   }
