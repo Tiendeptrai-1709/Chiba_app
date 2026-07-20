@@ -29,6 +29,7 @@ model User{
   zenPoints Int @default(0)
   role Role @default(CUSTOMER)
   isSuspended Boolean @default(false)
+  hashedRefreshToken String?
   createdAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 

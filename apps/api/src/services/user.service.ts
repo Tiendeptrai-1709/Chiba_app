@@ -1,5 +1,5 @@
 
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserDto } from "../dto/create-user.dto";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { hash } from "bcryptjs";
 import { PrismaService } from "src/prisma/prisma.service";
