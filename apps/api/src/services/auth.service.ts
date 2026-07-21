@@ -1,0 +1,69 @@
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+import { JwtService } from "@nestjs/jwt";
+import { compare, compareSync, hash } from "bcryptjs";
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  private async generateTokens(userId: string, email: string, role: string) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: userId, email, role },
+        {
+          secret: process.env.JWT_ACCESS_SECRET,
+          expiresIn: process.env.JWT_ACCESS_EXPIRES,
+        },
+      ),
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: process.env.JWT_REFRESH_EXPIRES,
+        },
+      ),
+    ]);
+    return { accessToken, refreshToken };
+  }
+
+  private async updateRefreshTokenHash(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await hash(refreshToken, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken },
+    });
+  }
+
+  async login(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) {
+      throw new UnauthorizedException("Email không đúng");
+    }
+
+    const passwordMatches = await compareSync(password, user.password);
+    if (!passwordMatches) {
+      throw new UnauthorizedException("Sai mật khẩu");
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    console.log("accessToken: ", tokens);
+    console.log(
+      "refreshToken: ",
+      await this.prisma.user.findMany({ where: { hashedRefreshToken } }),
+    );
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+  }
+
+  async logout(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken: null },
+    });
+  }
+}
