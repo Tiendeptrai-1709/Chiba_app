@@ -5,56 +5,53 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useLogin } from '@/hooks/useAuth';
+import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import Validation from '@/components/Validation';
 
 export default function LoginPage() {
-  const { login, isAuthenticated, loading, user } = useAuthStore();
+  const { data, mutate, isPending } = useLogin()
+  const {showError, showSuccess} = useNotificationStore()
   const router = useRouter();
-console.log("first", loading)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
-        router.push('/admin/dashboard');
-      } else {
-        router.push('/home');
-      }
-    }
-  }, [isAuthenticated, user, router]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
+  //       router.push('/admin/dashboard');
+  //     } else {
+  //       router.push('/home');
+  //     }
+  //   }
+  // }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    showError('');
 
     if (!email || !password) {
-      setError('Vui lòng nhập đầy đủ thông tin');
+      showError('Vui lòng nhập đầy đủ thông tin');
       return;
     }
-
-    try {
-      await login(email, password);
-    } catch (err: any) {
-      setError(err?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
-    }
+    mutate({email, password});
+    showSuccess('Đăng nhập thành công')
   };
 
   // Helper function to auto-fill credentials for testing
   const handleQuickLogin = (role: 'CUSTOMER' | 'STAFF' | 'ADMIN') => {
     if (role === 'CUSTOMER') {
-      setEmail('user@chiba.com');
-      setPassword('123456');
+      setEmail('abc@gmail.com');
+      setPassword('1');
     } else if (role === 'STAFF') {
       setEmail('staff@chiba.com');
-      setPassword('123456');
+      setPassword('1');
     } else {
       setEmail('admin@chiba.com');
-      setPassword('123456');
+      setPassword('1');
     }
   };
-
-  if (isAuthenticated) return null;
 
   return (
     <div className="flex flex-col justify-center min-h-screen bg-gradient-to-br from-orange-50 to-orange-100/60 px-6 py-12">
@@ -112,19 +109,15 @@ console.log("first", loading)
             </div>
 
             {/* Error Message */}
-            {error && (
-              <div className="p-3 bg-destructive/10 text-destructive text-xs font-semibold rounded-lg border border-destructive/20 transition-all duration-200">
-                ⚠️ {error}
-              </div>
-            )}
+            <Validation/>
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="primary-btn mt-6 flex items-center justify-center gap-2"
             >
-              {loading ? 'Đang xác thực...' : (
+              {isPending ? 'Đang xác thực...' : (
                 <>
                   Đăng Nhập <ArrowRight className="w-4 h-4" />
                 </>

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { compare, compareSync, hash } from "bcryptjs";
@@ -27,6 +27,7 @@ export class AuthService {
         },
       ),
     ]);
+    // console.log("generate: ", {accessToken, refreshToken})
     return { accessToken, refreshToken };
   }
 
@@ -46,18 +47,40 @@ export class AuthService {
       throw new UnauthorizedException("Email không đúng");
     }
 
-    const passwordMatches = await compareSync(password, user.password);
+    const passwordMatches = await compare(password, user.password);
     if (!passwordMatches) {
       throw new UnauthorizedException("Sai mật khẩu");
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     console.log("accessToken: ", tokens);
-    console.log(
-      "refreshToken: ",
-      await this.prisma.user.findMany({ where: { hashedRefreshToken } }),
-    );
+    // console.log(
+    //   "refreshToken: ",
+    //   await this.prisma.user.findMany({ where: { hashedRefreshToken } }),
+    // );
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens
+  }
+
+    // ← Method còn thiếu, cần bổ sung
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || !user.hashedRefreshToken) {
+      throw new ForbiddenException("Truy cập bị từ chối");
+    }
+
+    const refreshTokenMatches = await compare(
+      refreshToken,
+      user.hashedRefreshToken,
+    );
+    if (!refreshTokenMatches) {
+      throw new ForbiddenException("Truy cập bị từ chối");
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens;
   }
 
   async logout(userId: string) {

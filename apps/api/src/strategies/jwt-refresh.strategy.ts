@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
+import { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 //Cách xác thực JWT bằng Passport trong NestJS
@@ -15,7 +16,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 ) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: (req:Request) => req?.cookies?.refreshToken ?? null,
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_REFRESH_SECRET as string,
       passReqToCallback: true,
@@ -24,7 +25,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
   //validate refreshToken sẽ tiến hành lấy token ở Authorization: Bearer (refreshToken) để dùng nó để xác thực refreshToken phía database để xin accessToken mới
   async validate(req: Request, payload: { sub: string; email: string }) {
-    const refreshToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    const refreshToken = req.cookies?.refreshToken;
     return { userId: payload.sub, email: payload.email, refreshToken };
   }
 }
