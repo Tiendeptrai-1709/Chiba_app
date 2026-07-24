@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useCart } from '@/lib/context/CartContext';
+// import { useCart } from '@/lib/context/CartContext';
 import { Product, ProductCategory } from '@/types';
 import { Search, Plus, ShoppingCart, Sparkles, X } from 'lucide-react';
 
@@ -33,7 +33,7 @@ export const MOCK_PRODUCTS: Product[] = [
 ];
 
 export default function ProductList() {
-  const { addItem } = useCart();
+  // const { addItem } = useCart();
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('MON_NUOC');
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItemName, setAddedItemName] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function ProductList() {
       setSelectedToppings([]);
       setDrinkQuantity(1);
     } else {
-      addItem({ id: product.id, name: product.name, price: product.price });
+      // addItem({ id: product.id, name: product.name, price: product.price });
       triggerToast(product.name);
     }
   };
@@ -92,11 +92,11 @@ export default function ProductList() {
   const handleConfirmToppings = () => {
     if (!selectedProduct) return;
 
-    addItem(
-      { id: selectedProduct.id, name: selectedProduct.name, price: selectedProduct.price },
-      selectedToppings.map((t) => ({ id: t.id, name: t.name, price: t.price })),
-      drinkQuantity
-    );
+    // addItem(
+    //   { id: selectedProduct.id, name: selectedProduct.name, price: selectedProduct.price },
+    //   selectedToppings.map((t) => ({ id: t.id, name: t.name, price: t.price })),
+    //   drinkQuantity
+    // );
 
     const toppingNames = selectedToppings.map((t) => t.name).join(', ');
     const toastName = toppingNames ? `${selectedProduct.name} (+Topping)` : selectedProduct.name;

@@ -16,12 +16,12 @@ function SystemOverview({
     allCustomers,
     onSetNotification
 }: SystemOverviewProps) {
-    const {
-        invitedStaffEmails,
-        activeStaffList,
-        inviteStaff,
-        revokeInvitation
-    } = useAuthStore();
+    // const {
+    //     invitedStaffEmails,
+    //     activeStaffList,
+    //     inviteStaff,
+    //     revokeInvitation
+    // } = useAuthStore();
     const { showError, showSuccess} = useNotificationStore()
 
     const [emailInput, setEmailInput] = useState('');
@@ -36,7 +36,7 @@ function SystemOverview({
         showSuccess(''); // Clear thông báo cũ
 
         try {
-            await inviteStaff(email);
+            // await inviteStaff(email);
             showSuccess(`Đã gửi lời mời làm Staff tới email ${email}!`);
             setEmailInput(''); // Reset input thành công
         } catch (err: any) {
@@ -50,7 +50,7 @@ function SystemOverview({
     const handleRevokeInvite = async (email: string) => {
         showSuccess('');
         try {
-            await revokeInvitation(email);
+            // await revokeInvitation(email);
             showSuccess(`Đã thu hồi lời mời dành cho ${email}`);
         } catch (err: any) {
             showError('Không thể thu hồi lời mời này');
@@ -126,7 +126,7 @@ function SystemOverview({
                 </div>
 
                 {/* 3. Pending Invitations list */}
-                {invitedStaffEmails.length > 0 && (
+                {/* {invitedStaffEmails.length > 0 && (
                     <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-3">
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                             ✉️ Lời mời đang chờ ({invitedStaffEmails.length})
@@ -147,16 +147,16 @@ function SystemOverview({
                             ))}
                         </div>
                     </div>
-                )}
+                )} */}
 
                 {/* 4. Active Staff Team Members */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
-                    <div className="flex items-center gap-2 text-foreground font-bold">
+                    {/* <div className="flex items-center gap-2 text-foreground font-bold">
                         <Users className="w-5 h-5 text-primary" />
                         <h3 className="text-xs font-bold uppercase tracking-wider">Đội ngũ Nhân viên hoạt động ({activeStaffList.length})</h3>
-                    </div>
+                    </div> */}
 
-                    {activeStaffList.length > 0 ? (
+                    {/* {activeStaffList.length > 0 ? (
                         <div className="space-y-3">
                             {activeStaffList.map((staff) => (
                                 <div key={staff.id} className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-border/60">
@@ -179,7 +179,7 @@ function SystemOverview({
                         <p className="text-xs text-muted-foreground text-center py-4 bg-neutral-50 rounded-xl border border-dashed border-border">
                             Chưa có Staff nào đăng ký hoạt động. Hãy điền email để mời Staff lên hệ thống!
                         </p>
-                    )}
+                    )} */}
                 </div>
             </div>
         </>

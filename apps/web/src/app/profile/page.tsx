@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck, Check } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useProfile } from '@/hooks/useUser';
+import { useLogout } from '@/hooks/useAuth';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, logout, updateProfileName, loading, getPointHistory } = useAuthStore();
+  const {data:user, isLoading} = useProfile()
+  const {mutate, isPending} = useLogout()
   const router = useRouter();
 
   const [showModal, setShowModal] = useState(false);
@@ -17,30 +20,30 @@ export default function ProfilePage() {
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
-  useEffect(() => {
-    if (user && getPointHistory) {
-      setHistory(getPointHistory(user.id));
-    }
-  }, [user, getPointHistory]);
+  // useEffect(() => {
+  //   if (user && getPointHistory) {
+  //     setHistory(getPointHistory(user?.id));
+  //   }
+  // }, [user, getPointHistory]);
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated, loading, router]);
+  // useEffect(() => {
+  //   if (!isLoading || !user) {
+  //     router.push('/login');
+  //   }
+  // }, [ isLoading, router]);
 
-  // Show the welcome modal automatically if name is "Noname" (similar to image pop-up)
-  useEffect(() => {
-    if (user && user.fullName === 'Noname') {
-      const timer = setTimeout(() => {
-        setInputName('');
-        setShowModal(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [user]);
+  // // Show the welcome modal automatically if name is "Noname" (similar to image pop-up)
+  // useEffect(() => {
+  //   if (user && user?.fullName === 'Noname') {
+  //     const timer = setTimeout(() => {
+  //       setInputName('');
+  //       setShowModal(true);
+  //     }, 500);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [user]);
 
-  if (loading || !isAuthenticated || !user) {
+  if (isLoading || !user) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -49,34 +52,33 @@ export default function ProfilePage() {
   }
 
   const handleLogout = () => {
-    logout();
-    router.push('/');
+    mutate()
   };
 
-  const handleSaveName = async () => {
-    if (!inputName.trim()) return;
-    setUpdating(true);
-    try {
-      await updateProfileName(inputName.trim());
-      setShowModal(false);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setUpdating(false);
-    }
-  };
+  // const handleSaveName = async () => {
+  //   if (!inputName.trim()) return;
+  //   setUpdating(true);
+  //   try {
+  //     await updateProfileName(inputName.trim());
+  //     setShowModal(false);
+  //   } catch (e) {
+  //     console.error(e);
+  //   } finally {
+  //     setUpdating(false);
+  //   }
+  // };
 
-  const triggerUpdateModal = () => {
-    setInputName(user.fullName);
-    setShowModal(true);
-  };
+  // const triggerUpdateModal = () => {
+  //   setInputName(user?.fullName);
+  //   setShowModal(true);
+  // };
 
   return (
     <div className="min-h-screen bg-background pb-20 relative">
       {/* Stick Header standard layout */}
       <div className="sticky top-0 z-40 bg-card border-b border-border shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/home" className="p-2 hover:bg-neutral-100 border border-border text-foreground rounded-full active:scale-95 transition-all">
+          <Link href="/" className="p-2 hover:bg-neutral-100 border border-border text-foreground rounded-full active:scale-95 transition-all">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <h1 className="text-xl font-bold text-foreground">Thông tin cá nhân</h1>
@@ -90,9 +92,9 @@ export default function ProfilePage() {
           <div className="w-24 h-24 bg-neutral-200 border-4 border-white shadow-premium rounded-full flex items-center justify-center text-5xl text-neutral-500 overflow-hidden mb-4">
             👤
           </div>
-          <h2 className="text-2xl font-black text-foreground tracking-tight">{user.fullName}</h2>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">{user.email}</p>
-          {user.role === 'ADMIN' && (
+          <h2 className="text-2xl font-black text-foreground tracking-tight">{user?.fullName}</h2>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">{user?.email}</p>
+          {user?.role === 'ADMIN' && (
             <div className="mt-3 inline-flex items-center gap-1 bg-primary text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
               <ShieldCheck className="w-3 h-3" /> Quản trị viên
             </div>
@@ -105,7 +107,7 @@ export default function ProfilePage() {
           <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Họ và tên</p>
-              <p className="font-bold text-foreground text-sm">{user.fullName}</p>
+              <p className="font-bold text-foreground text-sm">{user?.fullName}</p>
             </div>
             <User className="w-5 h-5 text-muted-foreground/40" />
           </div>
@@ -114,7 +116,7 @@ export default function ProfilePage() {
           <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Số điện thoại</p>
-              <p className="font-bold text-foreground text-sm">{user.phone || 'Chưa cập nhật'}</p>
+              <p className="font-bold text-foreground text-sm">{user?.phone || 'Chưa cập nhật'}</p>
             </div>
             <Phone className="w-5 h-5 text-muted-foreground/40" />
           </div>
@@ -123,7 +125,7 @@ export default function ProfilePage() {
           <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Mã khách hàng</p>
-              <p className="font-bold text-primary text-sm tracking-widest">{user.customerCode}</p>
+              <p className="font-bold text-primary text-sm tracking-widest">{user?.customerCode}</p>
             </div>
             <BadgeCheck className="w-5 h-5 text-primary/50" />
           </div>
@@ -132,7 +134,7 @@ export default function ProfilePage() {
           <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Điểm Chiba</p>
-              <p className="font-bold text-accent text-sm">{user.zenPoints} điểm</p>
+              <p className="font-bold text-accent text-sm">{user?.zenPoints} điểm</p>
             </div>
             <Star className="w-5 h-5 text-accent/50" />
           </div>
@@ -181,13 +183,13 @@ export default function ProfilePage() {
         </div>
 
         {/* Admin Section if Admin role */}
-        {(user.role === "ADMIN" || user.role === "STAFF") && (
+        {(user?.role === "ADMIN" || user?.role === "STAFF") && (
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wider text-primary border-b border-border pb-2">
               ⚙️ Tính năng Quản trị
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {user.role === "ADMIN" ? (
+              {user?.role === "ADMIN" ? (
                 <>
                   <Link
                     href="/admin/dashboard"
@@ -230,7 +232,7 @@ export default function ProfilePage() {
 
           {/* Large Black Charcoal Button matches screenshot */}
           <button
-            onClick={triggerUpdateModal}
+            // onClick={triggerUpdateModal}
             className="w-full bg-[#1A1A1A] hover:bg-black text-white font-bold py-4 rounded-xl shadow-premium transition active:scale-[0.99] text-sm uppercase tracking-wider"
           >
             Cập nhật thông tin
@@ -274,7 +276,7 @@ export default function ProfilePage() {
               </button>
               <button
                 type="button"
-                onClick={handleSaveName}
+                // onClick={handleSaveName}
                 disabled={updating || !inputName.trim()}
                 className="flex-1 py-3 text-sm text-primary font-bold hover:bg-neutral-50 active:bg-neutral-100 transition-colors disabled:opacity-40"
               >

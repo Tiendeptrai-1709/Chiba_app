@@ -1,6 +1,10 @@
+"use client"
+import AuthGuard from '@/components/AuthGuard';
+import { axiosInstance } from '@/lib/axios';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
@@ -8,10 +12,27 @@ function Providers({ children }: { children: React.ReactNode }) {
             queries: { retry: 1, refetchOnWindowFocus: true }
         }
     }));
+    const { setAccessToken, setChecking } = useAuthStore();
+
+    useEffect(() => {
+        const refresh = async () => {
+            try {
+                const res = await axiosInstance.post("/auth/refresh");
+                setAccessToken(res.data.accessToken);
+            } catch (error) {
+                console.log("Chưa đăng nhập")
+            } finally {
+                setChecking(false)
+            }
+        }
+        refresh();
+    }, [])
 
     return (
         <QueryClientProvider client={queryClient}>
-            {children}
+            <AuthGuard>
+                {children}
+            </AuthGuard>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     )

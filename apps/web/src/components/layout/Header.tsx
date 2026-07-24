@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useCart } from '@/lib/context/CartContext';
+// import { useCart } from '@/lib/context/CartContext';
 import { User } from '@/types';
 import { MapPin, ShoppingCart, User as UserIcon } from 'lucide-react';
 
@@ -11,7 +11,8 @@ interface HeaderProps {
 }
 
 export default function Header({ user }: HeaderProps) {
-  const { totalItems } = useCart();
+  // const { totalItems } = useCart();
+  const totalItems =0;
   const [selectedStore, setSelectedStore] = useState('Chọn cửa hàng');
 
   useEffect(() => {

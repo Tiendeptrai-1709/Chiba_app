@@ -175,7 +175,7 @@ function BillingSummary({
             </button>
 
             <button
-                // onClick={() => router.push('/home')}
+                // onClick={() => router.push('/')}
                 className="w-full bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground font-semibold py-3 rounded-xl transition active:scale-98 text-sm"
             >
                 Quay lại mua thêm nước

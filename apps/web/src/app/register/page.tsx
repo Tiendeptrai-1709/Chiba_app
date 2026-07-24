@@ -2,44 +2,37 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/context/AuthContext';
+// import { useAuth } from '@/lib/context/AuthContext';
 import Link from 'next/link';
 import { User, Mail, Lock, ArrowLeft, UserPlus } from 'lucide-react';
+import { useRegister } from '@/hooks/useAuth';
+import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import Validation from '@/components/Validation';
 
 export default function RegisterPage() {
+  const { mutate, isPending } = useRegister()
+  const { showError, showSuccess } = useNotificationStore()
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { register } = useAuth();
+  // const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    showError('');
 
     if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
+      showError('Mật khẩu xác nhận không khớp');
       return;
     }
 
     if (password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự');
+      showError('Mật khẩu phải có ít nhất 6 ký tự');
       return;
     }
-
-    setLoading(true);
-
-    try {
-      await register(email, password, fullName);
-      router.push('/home');
-    } catch (err: any) {
-      setError(err?.message || 'Đăng ký thất bại. Email có thể đã tồn tại.');
-    } finally {
-      setLoading(false);
-    }
+    mutate({ email, password, fullName });
   };
 
   return (
@@ -136,19 +129,15 @@ export default function RegisterPage() {
             </div>
 
             {/* Error Message Display */}
-            {error && (
-              <div className="p-3 bg-destructive/10 text-destructive text-xs font-semibold rounded-lg border border-destructive/20 transition-all duration-200">
-                ⚠️ {error}
-              </div>
-            )}
+            <Validation />
 
             {/* Register Action Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="primary-btn mt-6 flex items-center justify-center gap-2"
             >
-              {loading ? 'Đang tạo tài khoản...' : (
+              {isPending ? 'Đang tạo tài khoản...' : (
                 <>
                   <UserPlus className="w-4 h-4" /> Đăng Ký Tài Khoản
                 </>

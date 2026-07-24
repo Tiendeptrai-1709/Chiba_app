@@ -1,13 +1,25 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { compare, compareSync, hash } from "bcryptjs";
+import { CreateUserDto } from "src/dto/create-user.dto";
+import { LoginDto } from "src/dto/login.dto";
+import { MailService } from "./mail.service";
+import { createHash, randomBytes } from "crypto";
+import { ForgotPasswordDto } from "src/dto/forgot-password.dto";
+import { ResetPasswordDto } from "src/dto/reset-password.dto";
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   private async generateTokens(userId: string, email: string, role: string) {
@@ -39,15 +51,15 @@ export class AuthService {
     });
   }
 
-  async login(email: string, password: string) {
+  async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: loginDto.email },
     });
-    if (!user) {
-      throw new UnauthorizedException("Email không đúng");
+    if (!user || user.isDeleted) {
+      throw new UnauthorizedException("Tài khoản không tồn tại");
     }
 
-    const passwordMatches = await compare(password, user.password);
+    const passwordMatches = await compare(loginDto.password, user.password);
     if (!passwordMatches) {
       throw new UnauthorizedException("Sai mật khẩu");
     }
@@ -59,10 +71,36 @@ export class AuthService {
     //   await this.prisma.user.findMany({ where: { hashedRefreshToken } }),
     // );
     await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
-    return tokens
+    return tokens;
   }
 
-    // ← Method còn thiếu, cần bổ sung
+  async register(createUserDto: CreateUserDto) {
+    const existedUser = await this.prisma.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+    if (existedUser) {
+      throw new BadRequestException("Email đã tồn tại");
+    }
+
+    const hashPassword = await hash(createUserDto.password, 10);
+    const generateCustomerCode = `CUS-${Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase()}`;
+    console.log("adas");
+    return this.prisma.user.create({
+      data: {
+        email: createUserDto.email,
+        password: hashPassword,
+        fullName: createUserDto.fullName,
+        customerCode: generateCustomerCode,
+        zenPoints: 0,
+        role: createUserDto.role ?? "CUSTOMER",
+        isSuspended: false,
+      },
+    });
+  }
+
   async refreshTokens(userId: string, refreshToken: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
@@ -88,5 +126,64 @@ export class AuthService {
       where: { id: userId },
       data: { hashedRefreshToken: null },
     });
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: forgotPasswordDto.email },
+    });
+
+    const failMessage = {
+      message: "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu.",
+    };
+    const successMessage = { message: "Đã gửi tới email thành công" };
+
+    if (!user) return failMessage;
+
+    const rawToken = randomBytes(32).toString("hex");
+    const hashedToken = createHash("sha256").update(rawToken).digest("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: expires,
+      },
+    });
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+    await this.mailService.sendResetPasswordEmamil(user.email, resetLink);
+    return successMessage.message;
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const hashedToken = createHash("sha256")
+      .update(resetPasswordDto.token)
+      .digest("hex");
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("Token không hợp lệ hoặc hết hạn");
+    }
+
+    const hashedPassword = await hash(resetPasswordDto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+        hashedRefreshToken: null,
+      },
+    });
+
+    return { message: "Đặt lại mật khẩu thành công" };
   }
 }

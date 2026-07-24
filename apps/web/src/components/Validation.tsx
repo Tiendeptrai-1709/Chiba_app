@@ -3,7 +3,6 @@
 import { useNotificationStore } from "@/lib/stores/useNotificationStore";
 import { useEffect } from "react";
 
-
 export default function Validation() {
     const { success, error, clearNotification } = useNotificationStore()
 

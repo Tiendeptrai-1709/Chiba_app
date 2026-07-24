@@ -132,6 +132,10 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   isSuspended: 'isSuspended',
   hashedRefreshToken: 'hashedRefreshToken',
+  resetPasswordToken: 'resetPasswordToken',
+  resetPasswordExpires: 'resetPasswordExpires',
+  isDeleted: 'isDeleted',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

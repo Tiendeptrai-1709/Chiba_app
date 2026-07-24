@@ -32,7 +32,10 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config; //nếu lỗi thì lưu lại lỗi
 
     //Nếu bị lỗi và request chưa được gọi lại
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthRoute =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/refresh");
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
       originalRequest._retry = true; // đánh dấu đã đc gọi 1 lần
 
       const { clearAccessToken, setAccessToken } = useAuthStore.getState();
@@ -64,7 +67,7 @@ axiosInstance.interceptors.response.use(
       } catch (error) {
         //Nếu refreshToken cũng hết hạn thì xóa luôn accessToken và đá về login lại
         clearAccessToken();
-        window.location.href="/"
+        window.location.href="/login"
         return Promise.reject(error) //Báo lỗi ._retry cho originRequest
       }
       finally{

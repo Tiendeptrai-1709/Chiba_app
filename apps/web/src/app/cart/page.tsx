@@ -64,7 +64,7 @@ export default function CartPage() {
       {/* Top Header sticky */}
       <div className="sticky top-0 z-40 bg-card border-b border-border shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/home" className="p-2 bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground rounded-full active:scale-95 transition-all">
+          <Link href="/" className="p-2 bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground rounded-full active:scale-95 transition-all">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <h1 className="text-xl font-bold text-foreground">Giỏ hàng của bạn</h1>
@@ -122,7 +122,7 @@ export default function CartPage() {
               Hãy chọn những món trà, cà phê hay sữa tươi thơm ngon nhất của chúng tôi nhé!
             </p>
             <Link
-              href="/home"
+              href="/"
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold px-6 py-3 rounded-xl mt-6 shadow-sm hover:shadow-premium transition active:scale-95 text-sm"
             >
               Chọn Món Ngon Ngay
@@ -157,7 +157,7 @@ export default function CartPage() {
             <button
               onClick={() => {
                 setShowSuccessModal(false);
-                router.push('/home');
+                router.push('/');
               }}
               className="primary-btn mt-4 shadow-premium"
             >

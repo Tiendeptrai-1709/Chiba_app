@@ -3,31 +3,31 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/context/AuthContext';
+// import { useAuth } from '@/lib/context/AuthContext';
 import { ArrowLeft, AlertTriangle, ShieldCheck, Check } from 'lucide-react';
+import { useDeleteProfile, useProfile } from '@/hooks/useUser';
 
-export default function DeleteAccountPage() {
-  const { deleteAccount, isAuthenticated } = useAuth();
+export default function HARDAccountPage() {
+  const { data: user } = useProfile();
+  const { mutate, isPending } = useDeleteProfile()
   const router = useRouter();
 
-  const [selectedOption, setSelectedOption] = useState<'SUSPEND' | 'DELETE'>('SUSPEND');
+  const [selectedOption, setSelectedOption] = useState<'HARD' | 'SOFT'>('SOFT');
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  if (!isAuthenticated) {
-    router.push('/');
-    return null;
-  }
+  // if (!isAuthenticated) {
+  //   router.push('/');
+  //   return null;
+  // }
 
-  const handleProcessAction = async () => {
-    setLoading(true);
-    try {
-      await deleteAccount(selectedOption);
-      router.push('/');
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
+  const handleHARD = async () => {
+    if (selectedOption === "HARD") {
+      mutate("HARD")
+    } else {
+      mutate("SOFT")
     }
+    router.replace("/login")
   };
 
   return (
@@ -50,26 +50,23 @@ export default function DeleteAccountPage() {
 
         {/* Radio Option 1: Tạm ngưng hoạt động tài khoản */}
         <div
-          onClick={() => setSelectedOption('SUSPEND')}
-          className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex gap-4 ${
-            selectedOption === 'SUSPEND'
-              ? 'bg-card border-accent shadow-sm'
-              : 'bg-card/50 border-border hover:border-accent/40'
-          }`}
+          onClick={() => setSelectedOption('SOFT')}
+          className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex gap-4 ${selectedOption === 'SOFT'
+            ? 'bg-card border-accent shadow-sm'
+            : 'bg-card/50 border-border hover:border-accent/40'
+            }`}
         >
           {/* Custom Radio Button */}
           <div className="mt-0.5 shrink-0">
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-              selectedOption === 'SUSPEND' ? 'border-accent bg-accent text-white' : 'border-neutral-300'
-            }`}>
-              {selectedOption === 'SUSPEND' && <div className="w-2 h-2 bg-white rounded-full" />}
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selectedOption === 'SOFT' ? 'border-accent bg-accent text-white' : 'border-neutral-300'
+              }`}>
+              {selectedOption === 'SOFT' && <div className="w-2 h-2 bg-white rounded-full" />}
             </div>
           </div>
 
           <div className="space-y-3">
-            <h3 className={`font-bold text-base transition-colors ${
-              selectedOption === 'SUSPEND' ? 'text-accent-foreground' : 'text-foreground'
-            }`}>
+            <h3 className={`font-bold text-base transition-colors ${selectedOption === 'SOFT' ? 'text-accent-foreground' : 'text-foreground'
+              }`}>
               Tạm ngưng hoạt động tài khoản
             </h3>
             <div className="text-xs text-[#C82333] space-y-2.5 font-medium leading-relaxed">
@@ -81,19 +78,17 @@ export default function DeleteAccountPage() {
 
         {/* Radio Option 2: Xóa tài khoản */}
         <div
-          onClick={() => setSelectedOption('DELETE')}
-          className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex gap-4 ${
-            selectedOption === 'DELETE'
-              ? 'bg-card border-[#C82333] shadow-sm'
-              : 'bg-card/50 border-border hover:border-accent/40'
-          }`}
+          onClick={() => setSelectedOption('HARD')}
+          className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex gap-4 ${selectedOption === 'HARD'
+            ? 'bg-card border-[#C82333] shadow-sm'
+            : 'bg-card/50 border-border hover:border-accent/40'
+            }`}
         >
           {/* Custom Radio Button */}
           <div className="mt-0.5 shrink-0">
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-              selectedOption === 'DELETE' ? 'border-[#C82333] bg-[#C82333] text-white' : 'border-neutral-300'
-            }`}>
-              {selectedOption === 'DELETE' && <div className="w-2 h-2 bg-white rounded-full" />}
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selectedOption === 'HARD' ? 'border-[#C82333] bg-[#C82333] text-white' : 'border-neutral-300'
+              }`}>
+              {selectedOption === 'HARD' && <div className="w-2 h-2 bg-white rounded-full" />}
             </div>
           </div>
 
@@ -152,7 +147,7 @@ export default function DeleteAccountPage() {
             <div className="space-y-2">
               <h3 className="text-lg font-bold text-foreground">Bạn có chắc chắn?</h3>
               <p className="text-xs text-muted-foreground leading-relaxed px-2">
-                {selectedOption === 'SUSPEND'
+                {selectedOption === 'SOFT'
                   ? 'Hành động này sẽ tạm dừng hoạt động tài khoản của bạn. Bạn có thể kích hoạt lại sau.'
                   : 'Cảnh báo! Hành động này sẽ vĩnh viễn xóa tài khoản và mọi điểm tích lũy của bạn không thể khôi phục lại.'}
               </p>
@@ -166,7 +161,7 @@ export default function DeleteAccountPage() {
                 Hủy bỏ
               </button>
               <button
-                onClick={handleProcessAction}
+                onClick={handleHARD}
                 disabled={loading}
                 className="flex-1 py-3 bg-[#C82333] hover:bg-[#b01e2c] text-white font-bold rounded-xl text-xs transition disabled:opacity-50"
               >

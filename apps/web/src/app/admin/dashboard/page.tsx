@@ -16,6 +16,7 @@ import PointActionModal from '@/components/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import Validation from '@/components/Validation';
+import { useProfile } from '@/hooks/useUser';
 
 export interface MockOrder {
   id: string;
@@ -28,12 +29,8 @@ export interface MockOrder {
 }
 
 export default function AdminDashboard() {
-  const {
-    user,
-    isAuthenticated,
-    loading,
-    getAllUsers,
-  } = useAuthStore();
+  const { data: user, isLoading } = useProfile()
+  // console.log("user: ",user)
   const router = useRouter();
 
   // Navigation tab state
@@ -78,18 +75,18 @@ export default function AdminDashboard() {
 
   // Guard routing for admin and staff
   useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'STAFF')) {
+    if (!isLoading) {
+      if (user?.role !== 'ADMIN' && user?.role !== 'STAFF') {
         router.push('/');
       }
     }
-  }, [isAuthenticated, user, loading, router]);
+  }, [user, isLoading, router]);
 
-  // Refresh customer list from simulated DB
+  // // Refresh customer list from simulated DB
   const refreshCustomers = () => {
-    if (getAllUsers) {
-      setAllCustomers(getAllUsers().filter(u => u.role === 'CUSTOMER'));
-    }
+    // if (getAllUsers) {
+    //   setAllCustomers(getAllUsers().filter(u => u.role === 'CUSTOMER'));
+    // }
   };
 
   // Load actual orders from localStorage (or seed mock ones if none exist)
@@ -134,11 +131,11 @@ export default function AdminDashboard() {
         localStorage.setItem('zen_fb_orders', JSON.stringify(defaultOrders));
         setMockOrders(defaultOrders);
       }
-      refreshCustomers();
+      // refreshCustomers();
     }
   }, []);
 
-  if (loading || !isAuthenticated || !user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
+  if (isLoading || !user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -170,16 +167,16 @@ export default function AdminDashboard() {
 
         {/* Navigation Tabs based on role */}
         {activeTab && (
-          <HeaderTabRole 
-            isAdmin={isAdmin} 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab} 
+          <HeaderTabRole
+            isAdmin={isAdmin}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             refreshCustomers={refreshCustomers}
-           />
+          />
         )}
 
         {/* Global Notifications */}
-        <Validation/>
+        <Validation />
 
         {/* ========================================================
             TAB: SYSTEM OVERVIEW (ADMIN ONLY)
