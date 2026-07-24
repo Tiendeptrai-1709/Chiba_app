@@ -1,0 +1,39 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, developer]
+    paths:
+      - "apps/web/**"
+  pull_request:
+    branches: [main, developer]
+    paths:
+      - "apps/web/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies (root)
+        run: npm install
+
+      - name: Prisma Generate
+        working-directory: apps/api
+        run: npx prisma generate
+
+      - name: Lint
+        working-directory: apps/api
+        run: npm run lint
+
+      - name: Build
+        working-directory: apps/api
+        run: npm run build
