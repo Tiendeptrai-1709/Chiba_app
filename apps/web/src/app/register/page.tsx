@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-// import { useAuth } from '@/lib/context/AuthContext';
 import Link from 'next/link';
 import { User, Mail, Lock, ArrowLeft, UserPlus } from 'lucide-react';
 import { useRegister } from '@/hooks/useAuth';
@@ -11,13 +9,11 @@ import Validation from '@/components/Validation';
 
 export default function RegisterPage() {
   const { mutate, isPending } = useRegister()
-  const { showError, showSuccess } = useNotificationStore()
+  const { showError } = useNotificationStore()
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const router = useRouter();
-  // const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

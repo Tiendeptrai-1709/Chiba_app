@@ -1,23 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+// import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck, Check } from 'lucide-react';
-import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck } from 'lucide-react';
+// import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useProfile } from '@/hooks/useUser';
 import { useLogout } from '@/hooks/useAuth';
 
 export default function ProfilePage() {
-  const {data:user, isLoading} = useProfile()
-  const {mutate, isPending} = useLogout()
-  const router = useRouter();
+  const { data: user, isLoading } = useProfile()
+  const { mutate, isPending } = useLogout()
+  // const router = useRouter();
 
   const [showModal, setShowModal] = useState(false);
   const [inputName, setInputName] = useState('');
-  const [updating, setUpdating] = useState(false);
+  const [updating] = useState(false);
 
-  const [history, setHistory] = useState<any[]>([]);
+  const [history] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
   // useEffect(() => {
@@ -242,7 +242,7 @@ export default function ProfilePage() {
             onClick={handleLogout}
             className="w-full bg-neutral-100 hover:bg-neutral-200 border border-border text-foreground font-semibold py-3 rounded-xl transition active:scale-[0.99] text-sm"
           >
-            🚪 Đăng xuất tài khoản
+            {isPending ? "Loading..." : "🚪 Đăng xuất tài khoản"}
           </button>
         </div>
       </div>

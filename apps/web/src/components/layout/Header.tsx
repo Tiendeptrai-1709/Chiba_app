@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 // import { useCart } from '@/lib/context/CartContext';
 import { User } from '@/types';
-import { MapPin, ShoppingCart, User as UserIcon } from 'lucide-react';
+import { MapPin, ShoppingCart } from 'lucide-react';
+import Image from 'next/image';
 
 interface HeaderProps {
   user: User | null;
@@ -31,7 +32,7 @@ export default function Header({ user }: HeaderProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-white flex items-center justify-center p-0.5 shadow-sm">
-              <img src="/logo.png" alt="Chiba Logo" className="w-full h-full rounded-full object-cover" />
+              <Image width={500} height={500} src="/logo.png" alt="Chiba Logo" className="w-full h-full rounded-full object-cover" />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight">Chiba</h1>

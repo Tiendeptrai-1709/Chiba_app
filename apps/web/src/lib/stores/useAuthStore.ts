@@ -18,7 +18,7 @@ interface AuthState {
   // getPointHistory: (userId?: string) => PointTransaction[];
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   isChecking:true,
 

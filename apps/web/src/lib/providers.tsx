@@ -3,7 +3,7 @@
 import React from 'react';
 // import { CartProvider } from './context/CartContext';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers() {
   return (
       <></>
   );

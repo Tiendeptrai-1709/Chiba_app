@@ -1,8 +1,8 @@
 
-import { useAuthStore } from '@/lib/stores/useAuthStore';
+// import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
 import { User } from '@/types';
-import { Mail, Trash2, UserPlus, Users } from 'lucide-react'
+import { Mail, UserPlus } from 'lucide-react'
 import React, { useState } from 'react'
 
 interface SystemOverviewProps {
@@ -14,7 +14,7 @@ interface SystemOverviewProps {
 function SystemOverview({
     mockOrders,
     allCustomers,
-    onSetNotification
+    // onSetNotification
 }: SystemOverviewProps) {
     // const {
     //     invitedStaffEmails,
@@ -47,15 +47,15 @@ function SystemOverview({
     };
 
     // 4. Đưa hàm handleRevokeInvite vào trong con
-    const handleRevokeInvite = async (email: string) => {
-        showSuccess('');
-        try {
-            // await revokeInvitation(email);
-            showSuccess(`Đã thu hồi lời mời dành cho ${email}`);
-        } catch (err: any) {
-            showError('Không thể thu hồi lời mời này');
-        }
-    };
+    // const handleRevokeInvite = async (email: string) => {
+    //     showSuccess('');
+    //     try {
+    //         // await revokeInvitation(email);
+    //         showSuccess(`Đã thu hồi lời mời dành cho ${email}`);
+    //     } catch (err: any) {
+    //         showError('Không thể thu hồi lời mời này');
+    //     }
+    // };
     return (
         <>
             {/* ========================================================

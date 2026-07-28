@@ -79,8 +79,6 @@ export function useLogout() {
 }
 
 export function useForgotPassword() {
-  const router = useRouter();
-
   return useMutation({
     mutationFn: async (email: string) => {
       const { data } = await axiosInstance.post("/auth/forgot-password", {

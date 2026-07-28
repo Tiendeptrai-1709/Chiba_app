@@ -41,8 +41,8 @@ function DeliveryAddress({ orderType, address, setAddress, saveAsDefault, setSav
                     } else {
                         showError('Không thể tìm thấy địa chỉ cho tọa độ này');
                     }
-                } catch (err) {
-                    showError('Không thể kết nối dịch vụ bản đồ. Vui lòng nhập tay địa chỉ.');
+                } catch (error) {
+                    showError(`Không thể kết nối dịch vụ bản đồ. Vui lòng nhập tay địa chỉ.${error}`);
                 } finally {
                     setLocating(false);
                 }

@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
-import { compare, compareSync, hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { CreateUserDto } from "src/dto/create-user.dto";
 import { LoginDto } from "src/dto/login.dto";
 import { MailService } from "./mail.service";

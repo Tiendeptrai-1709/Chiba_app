@@ -1,33 +1,18 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 import Validation from '@/components/Validation';
 import { useLogin } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useUser';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/stores/useAuthStore';
+import Image from 'next/image';
 
 function LoginPage() {
     const { mutate, isPending } = useLogin();
-    const { data: user } = useProfile()
     const { showError } = useNotificationStore()
-    const { accessToken, isChecking } = useAuthStore();
 
-    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    useEffect(() => {
-        if (user && !isChecking) {
-            if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
-                router.push('/admin/dashboard');
-            } else {
-                router.push('/');
-            }
-        }
-    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,9 +43,11 @@ function LoginPage() {
             {/* Chiba Brand Identity */}
             <div className="text-center">
                 <div className="flex justify-center mb-4">
-                    <img
+                    <Image
                         src="/logo.png"
                         alt="Chiba Logo"
+                        width={500}
+                        height={500}
                         className="w-24 h-24 rounded-full border border-primary/10 shadow-premium object-cover bg-white p-1 animate-fade-in"
                     />
                 </div>

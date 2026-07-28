@@ -4,16 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 // import { useAuth } from '@/lib/context/AuthContext';
-import { ArrowLeft, AlertTriangle, ShieldCheck, Check } from 'lucide-react';
-import { useDeleteProfile, useProfile } from '@/hooks/useUser';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { useDeleteProfile } from '@/hooks/useUser';
 
 export default function HARDAccountPage() {
-  const { data: user } = useProfile();
+  // const { data: user } = useProfile();
   const { mutate, isPending } = useDeleteProfile()
   const router = useRouter();
 
   const [selectedOption, setSelectedOption] = useState<'HARD' | 'SOFT'>('SOFT');
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   // if (!isAuthenticated) {
@@ -162,10 +162,10 @@ export default function HARDAccountPage() {
               </button>
               <button
                 onClick={handleHARD}
-                disabled={loading}
+                disabled={isPending}
                 className="flex-1 py-3 bg-[#C82333] hover:bg-[#b01e2c] text-white font-bold rounded-xl text-xs transition disabled:opacity-50"
               >
-                {loading ? 'Đang xử lý...' : 'Xác nhận'}
+                {isPending ? 'Đang xử lý...' : 'Xác nhận'}
               </button>
             </div>
           </div>

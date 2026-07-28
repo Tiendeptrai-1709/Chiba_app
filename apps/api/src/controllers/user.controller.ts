@@ -3,13 +3,11 @@ import {
   Controller,
   Delete,
   Get,
-  Post,
   Req,
   Res,
   UseGuards,
 } from "@nestjs/common";
 import { UserSevice } from "../services/user.service";
-import { CreateUserDto } from "../dto/create-user.dto";
 import { JwtAuthGuard } from "src/guards/jwt-auth.guard";
 import { Request, Response } from "express";
 import { DeleteProfileDto } from "src/dto/delete-profile.dto";

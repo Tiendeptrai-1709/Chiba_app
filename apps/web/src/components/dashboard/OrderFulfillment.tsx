@@ -1,7 +1,7 @@
 import { MockOrder } from '@/app/admin/dashboard/page';
-import { User } from '@/types';
+// import { User } from '@/types';
 import { CheckCircle2, Clock } from 'lucide-react';
-import React, { useState } from 'react'
+import React from 'react'
 
 interface OrderFulfillmentProps {
     mockOrders: any[];

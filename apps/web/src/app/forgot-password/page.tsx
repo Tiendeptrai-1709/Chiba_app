@@ -10,7 +10,7 @@ import Validation from "@/components/Validation";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const { mutate, isPending, isSuccess } = useForgotPassword();
-  const { showError, showSuccess } = useNotificationStore();
+  const { showError } = useNotificationStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

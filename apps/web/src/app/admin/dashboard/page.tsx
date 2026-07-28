@@ -4,9 +4,8 @@ import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Users, Sparkles, Coins, UserCheck, History } from 'lucide-react';
-import { User, PointTransaction } from '@/types';
-import { MOCK_PRODUCTS } from '@/components/products/ProductList';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import { User } from '@/types';
 import StockController from '@/components/dashboard/StockController';
 import OrderFulfillment from '@/components/dashboard/OrderFulfillment';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
@@ -14,9 +13,9 @@ import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
 import PointActionModal from '@/components/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
-import { useAuthStore } from '@/lib/stores/useAuthStore';
 import Validation from '@/components/Validation';
 import { useProfile } from '@/hooks/useUser';
+import { useNotificationStore } from '@/lib/stores/useNotificationStore';
 
 export interface MockOrder {
   id: string;
@@ -30,7 +29,7 @@ export interface MockOrder {
 
 export default function AdminDashboard() {
   const { data: user, isLoading } = useProfile()
-  // console.log("user: ",user)
+  const {showSuccess,showError} = useNotificationStore()
   const router = useRouter();
 
   // Navigation tab state
@@ -44,15 +43,11 @@ export default function AdminDashboard() {
     }
   }, [user]);
 
-  // Local Form state for inviting staff
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-
   // Simulated Order list
   const [mockOrders, setMockOrders] = useState<MockOrder[]>([]);
 
   // Loyalty Points Admin States
-  const [allCustomers, setAllCustomers] = useState<User[]>([]);
+  const [allCustomers] = useState<User[]>([]);
 
   const [pointAction, setPointAction] = useState<{
     customer: User;
@@ -61,11 +56,11 @@ export default function AdminDashboard() {
 
   const handleNotification = (type: 'success' | 'error', msg: string) => {
     if (type === 'success') {
-      setSuccessMsg(msg);
-      setErrorMsg('');
+      showSuccess(msg);
+      showError('');
     } else {
-      setErrorMsg(msg);
-      setSuccessMsg('');
+      showError(msg);
+      showSuccess('');
     }
   };
 

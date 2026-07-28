@@ -24,7 +24,7 @@ export default function PointActionModal({
   const { customer, type } = action;
 
   // TOÀN BỘ STATE PHỤC VỤ NHẬP LIỆU ĐƯỢC CO-LOCATE (ĐÓNG GÓI) TẠI ĐÂY!
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedProductId] = useState<string>('');
   const [pointsAmount, setPointsAmount] = useState<number>(0);
   const [reasonInput, setReasonInput] = useState('');
   const [giftInput, setGiftInput] = useState('');

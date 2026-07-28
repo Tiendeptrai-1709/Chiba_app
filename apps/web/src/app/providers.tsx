@@ -20,13 +20,13 @@ function Providers({ children }: { children: React.ReactNode }) {
                 const res = await axiosInstance.post("/auth/refresh");
                 setAccessToken(res.data.accessToken);
             } catch (error) {
-                console.log("Chưa đăng nhập")
+                console.log("Chưa đăng nhập",error)
             } finally {
                 setChecking(false)
             }
         }
         refresh();
-    }, [])
+    }, [setAccessToken, setChecking])
 
     return (
         <QueryClientProvider client={queryClient}>
