@@ -4,19 +4,19 @@ import { History, Search } from 'lucide-react';
 import React, { useState } from 'react'
 
 function TransactionHistory() {
-    const { getPointHistory } = useAuthStore();
+    // const { getPointHistory } = useAuthStore();
     const [historySearchQuery, setHistorySearchQuery] = useState('');
 
-    const allHistory = getPointHistory ? getPointHistory() : [];
-    const filteredHistory = allHistory.filter(tx => {
-        const query = historySearchQuery.toLowerCase().trim();
-        if (!query) return true;
-        return (
-            tx.userName.toLowerCase().includes(query) ||
-            tx.userEmail.toLowerCase().includes(query) ||
-            tx.description.toLowerCase().includes(query)
-        );
-    });
+    // const allHistory = getPointHistory ? getPointHistory() : [];
+    // const filteredHistory = allHistory.filter(tx => {
+    //     const query = historySearchQuery.toLowerCase().trim();
+    //     if (!query) return true;
+    //     return (
+    //         tx.userName.toLowerCase().includes(query) ||
+    //         tx.userEmail.toLowerCase().includes(query) ||
+    //         tx.description.toLowerCase().includes(query)
+    //     );
+    // });
     return (
         <>
             {/* ========================================================
@@ -45,7 +45,7 @@ function TransactionHistory() {
                 </div>
 
                 {/* Point History Log */}
-                <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border/60 shadow-sm">
+                {/* <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border/60 shadow-sm">
                     {filteredHistory.map(tx => {
                         const isPositive = tx.points >= 0;
                         return (
@@ -88,7 +88,7 @@ function TransactionHistory() {
                             <p className="text-[10px] text-muted-foreground/60 mt-0.5">Hệ thống chưa ghi nhận giao dịch điểm tương ứng</p>
                         </div>
                     )}
-                </div>
+                </div> */}
             </div>
         </>
     )
