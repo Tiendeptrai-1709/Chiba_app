@@ -19,13 +19,6 @@ function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // const pathname = usePathname();
-    // useEffect(() => {
-    //     if (!accessToken && pathname !== "/login") {
-    //         router.replace("/login")
-    //     }
-    // }, [accessToken, pathname])
-
     useEffect(() => {
         if (user && !isChecking) {
             if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
@@ -129,6 +122,11 @@ function LoginPage() {
                             </>
                         )}
                     </button>
+                    <div className='flex justify-end'>
+                        <Link href="/forgot-password" className="text-primary underline text-sm font-bold hover:text-muted-foreground transition-all">
+                            Quên tài khoản
+                        </Link>
+                    </div>
                 </form>
 
                 {/* Quick Access Account Options for Testing */}

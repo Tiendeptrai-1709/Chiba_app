@@ -48,7 +48,7 @@ export function useRegister() {
     },
     onSuccess: () => {
       showSuccess("Tạo tài khoản thành công");
-      router.replace("/login")
+      router.replace("/login");
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
@@ -79,6 +79,8 @@ export function useLogout() {
 }
 
 export function useForgotPassword() {
+  const router = useRouter();
+
   return useMutation({
     mutationFn: async (email: string) => {
       const { data } = await axiosInstance.post("/auth/forgot-password", {
@@ -90,6 +92,8 @@ export function useForgotPassword() {
 }
 
 export function useResetPassword() {
+  const router = useRouter();
+
   return useMutation({
     mutationFn: async (payload: { token: string; newPassword: string }) => {
       const { data } = await axiosInstance.post(
@@ -97,6 +101,9 @@ export function useResetPassword() {
         payload,
       );
       return data;
+    },
+    onSuccess: () => {
+      router.replace("/login"); // Hoặc trang bạn muốn sau khi logout
     },
   });
 }

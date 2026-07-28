@@ -63,13 +63,14 @@ export class AuthController {
     return { message: "Đăng xuất thành công" };
   }
 
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) //rate limiting
   @Post("forgot-password")
   async forgotPassword(@Body() dto:ForgotPasswordDto) {
     console.log("contorl")
     return this.authService.forgotPassword(dto);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) //rate limiting
   @Post("reset-password")
   async resetPassword(@Body() dto:ResetPasswordDto) {
     return this.authService.resetPassword(dto);

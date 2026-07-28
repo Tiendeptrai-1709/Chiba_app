@@ -134,7 +134,7 @@ export class AuthService {
     });
 
     const failMessage = {
-      message: "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu.",
+      message: "Chúng tôi không tìm thấy email của bạn",
     };
     const successMessage = { message: "Đã gửi tới email thành công" };
 
@@ -142,7 +142,7 @@ export class AuthService {
 
     const rawToken = randomBytes(32).toString("hex");
     const hashedToken = createHash("sha256").update(rawToken).digest("hex");
-    const expires = new Date(Date.now() + 15 * 60 * 1000);
+    const expires = new Date(Date.now() + 15 * 60 * 1000); //hạn 15p
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -154,7 +154,7 @@ export class AuthService {
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
     await this.mailService.sendResetPasswordEmamil(user.email, resetLink);
-    return successMessage.message;
+    return successMessage;
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
