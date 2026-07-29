@@ -1,9 +1,9 @@
 
-import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { History, Search } from 'lucide-react';
 import React, { useState } from 'react'
 
-function TransactionHistory() {
+const TransactionHistory = () => {
     // const { getPointHistory } = useAuthStore();
     const [historySearchQuery, setHistorySearchQuery] = useState('');
 

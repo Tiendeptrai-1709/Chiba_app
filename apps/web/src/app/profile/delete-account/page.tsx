@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useDeleteProfile } from '@/hooks/useUser';
 
-export default function HARDAccountPage() {
+const DeleteAccountPage = ()=> {
   // const { data: user } = useProfile();
   const { mutate, isPending } = useDeleteProfile()
   const router = useRouter();
@@ -174,3 +174,4 @@ export default function HARDAccountPage() {
     </div>
   );
 }
+export default DeleteAccountPage;

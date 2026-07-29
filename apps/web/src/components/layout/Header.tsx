@@ -11,7 +11,7 @@ interface HeaderProps {
   user: User | null;
 }
 
-export default function Header({ user }: HeaderProps) {
+export const Header = ({ user }: HeaderProps) => {
   // const { totalItems } = useCart();
   const totalItems =0;
   const [selectedStore, setSelectedStore] = useState('Chọn cửa hàng');

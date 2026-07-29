@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { User, Mail, Lock, ArrowLeft, UserPlus } from 'lucide-react';
 import { useRegister } from '@/hooks/useAuth';
-import { useNotificationStore } from '@/lib/stores/useNotificationStore';
-import Validation from '@/components/Validation';
+import { useNotificationStore } from '@/stores/useNotificationStore';
+import { Notification } from '@/components/ui/Notication';
 
-export default function RegisterPage() {
+
+const RegisterPage = () => {
   const { mutate, isPending } = useRegister()
   const { showError } = useNotificationStore()
   const [fullName, setFullName] = useState('');
@@ -24,10 +25,12 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      showError('Mật khẩu phải có ít nhất 6 ký tự');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError("Email không đúng định dạng");
       return;
     }
+
     mutate({ email, password, fullName });
   };
 
@@ -125,7 +128,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Error Message Display */}
-            <Validation />
+            <Notification />
 
             {/* Register Action Button */}
             <button
@@ -155,3 +158,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+export default RegisterPage;

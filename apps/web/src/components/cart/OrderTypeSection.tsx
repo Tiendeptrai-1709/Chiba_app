@@ -5,7 +5,7 @@ interface OrderTypeSectionProps{
     setOrderType: React.Dispatch<React.SetStateAction<"DELIVERY" | "STORE">>;
 }
 
-function OrderTypeSection({orderType, setOrderType}: OrderTypeSectionProps) {
+export const OrderTypeSection =({orderType, setOrderType}: OrderTypeSectionProps) => {
     return (
         <div className="bg-card border border-border p-5 rounded-2xl space-y-4 shadow-sm">
             <h3 className="text-xs font-black text-primary uppercase tracking-widest border-b border-border/40 pb-2">
@@ -40,5 +40,3 @@ function OrderTypeSection({orderType, setOrderType}: OrderTypeSectionProps) {
         </div>
     )
 }
-
-export default OrderTypeSection

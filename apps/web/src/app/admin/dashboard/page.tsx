@@ -11,11 +11,11 @@ import OrderFulfillment from '@/components/dashboard/OrderFulfillment';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
-import PointActionModal from '@/components/PointActionModal';
+import {PointActionModal} from '@/components/ui/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
-import Validation from '@/components/Validation';
+import { Notification } from '@/components/ui/Notication';
 import { useProfile } from '@/hooks/useUser';
-import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 
 export interface MockOrder {
   id: string;
@@ -27,7 +27,7 @@ export interface MockOrder {
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 }
 
-export default function AdminDashboard() {
+const AdminDashboard = ()=> {
   const { data: user, isLoading } = useProfile()
   const {showSuccess,showError} = useNotificationStore()
   const router = useRouter();
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Global Notifications */}
-        <Validation />
+        <Notification />
 
         {/* ========================================================
             TAB: SYSTEM OVERVIEW (ADMIN ONLY)
@@ -240,3 +240,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+export default AdminDashboard;

@@ -11,7 +11,7 @@ interface LoyaltyPointsProps {
     maxPointsAllowed: number;
 }
 
-function LoyaltyPoints({
+export const LoyaltyPoints = ({
     userPoints,
     usePoints,
     setUsePoints,
@@ -19,7 +19,7 @@ function LoyaltyPoints({
     setPointsToUse,
     maxPointsPossible,
     maxPointsAllowed,
-}: LoyaltyPointsProps) {
+}: LoyaltyPointsProps) => {
     const handleTogglePoints = (checked: boolean) => {
         setUsePoints(checked);
         if (checked) {
@@ -143,5 +143,3 @@ function LoyaltyPoints({
         </div>
     )
 }
-
-export default LoyaltyPoints

@@ -8,7 +8,7 @@ interface CustomerManagerProps {
     isAdmin: boolean;
     onTriggerAction: (customer: User, type: 'REDEEM' | 'ADJUST') => void;
 }
-function CustomerManager({ mockOrders, allCustomers, isAdmin, onTriggerAction }: CustomerManagerProps) {
+const CustomerManager = ({ mockOrders, allCustomers, isAdmin, onTriggerAction }: CustomerManagerProps) => {
     const [customerSearchQuery, setCustomerSearchQuery] = useState('');
 
     const filteredCustomers = allCustomers.filter(c => {

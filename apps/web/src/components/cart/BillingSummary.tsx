@@ -14,7 +14,7 @@ interface BillingSummaryProps {
     setShowSuccessModal: (show: boolean) => void;
 }
 
-function BillingSummary({
+export const BillingSummary =({
     // orderType,
     // address,
     // usePoints,
@@ -22,7 +22,7 @@ function BillingSummary({
     // saveAsDefault,
     // setEarnedPoints,
     // setShowSuccessModal,
-}: BillingSummaryProps) {
+}: BillingSummaryProps)=> {
     // const { items, totalPrice, totalItems, clearCart } = useCart();
     // const { user, updateProfileAddress, updateUserPoints } = useAuthStore()
     // const { showError } = useNotificationStore()
@@ -183,5 +183,3 @@ function BillingSummary({
         </div>
     )
 }
-
-export default BillingSummary

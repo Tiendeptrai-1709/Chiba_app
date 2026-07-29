@@ -7,7 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcryptjs";
-import { CreateUserDto } from "src/dto/create-user.dto";
+import { CreateUserDto } from "src/dto/register.dto";
 import { LoginDto } from "src/dto/login.dto";
 import { MailService } from "./mail.service";
 import { createHash, randomBytes } from "crypto";

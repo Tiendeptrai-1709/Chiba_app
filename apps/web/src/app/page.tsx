@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import Header from '@/components/layout/Header';
-import ProductList from '@/components/products/ProductList';
+import {Header} from '@/components/layout/Header';
+import {ProductList} from '@/components/products/ProductList';
 import Link from 'next/link';
 import { Home, MapPin, User } from 'lucide-react';
 import { useProfile } from '@/hooks/useUser';

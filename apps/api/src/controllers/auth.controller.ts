@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
-import { CreateUserDto } from "src/dto/create-user.dto";
+import { CreateUserDto } from "src/dto/register.dto";
 import { ForgotPasswordDto } from "src/dto/forgot-password.dto";
 import { LoginDto } from "src/dto/login.dto";
 import { ResetPasswordDto } from "src/dto/reset-password.dto";

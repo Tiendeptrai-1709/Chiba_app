@@ -1,13 +1,14 @@
 import { axiosInstance } from "@/lib/axios";
-import { useAuthStore } from "@/lib/stores/useAuthStore";
-import { useNotificationStore } from "@/lib/stores/useNotificationStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-export function useLogin() {
+export const useLogin = () => {
   const { setAccessToken } = useAuthStore();
   const { showSuccess, showError } = useNotificationStore();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -18,6 +19,7 @@ export function useLogin() {
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
       showSuccess("Đăng nhập thành công");
+      router.replace("/")
 
       queryClient.invalidateQueries({
         queryKey: ["profile"],
@@ -33,7 +35,7 @@ export function useLogin() {
   });
 }
 
-export function useRegister() {
+export const useRegister = () => {
   const { showSuccess, showError } = useNotificationStore();
   const router = useRouter();
 
@@ -52,13 +54,15 @@ export function useRegister() {
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
-        showError(error.response?.data.message ?? "Đăng nhập thất bại");
+        showError(error.response?.data.message);
+      }else{
+        showError("Có lỗi xảy ra")
       }
     },
   });
 }
 
-export function useLogout() {
+export const useLogout = () => {
   const { clearAccessToken } = useAuthStore();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -78,7 +82,7 @@ export function useLogout() {
   });
 }
 
-export function useForgotPassword() {
+export const useForgotPassword = () => {
   return useMutation({
     mutationFn: async (email: string) => {
       const { data } = await axiosInstance.post("/auth/forgot-password", {
@@ -89,7 +93,7 @@ export function useForgotPassword() {
   });
 }
 
-export function useResetPassword() {
+export const useResetPassword = () => {
   const router = useRouter();
 
   return useMutation({

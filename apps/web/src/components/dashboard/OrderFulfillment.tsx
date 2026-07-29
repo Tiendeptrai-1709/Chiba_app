@@ -9,7 +9,7 @@ interface OrderFulfillmentProps {
     
 }
 
-function OrderFulfillment({ mockOrders, setMockOrders }: OrderFulfillmentProps) {
+const OrderFulfillment = ({ mockOrders, setMockOrders }: OrderFulfillmentProps) => {
 
     const handleUpdateOrderStatus = (orderId: string, nextStatus: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED') => {
         setMockOrders(prev => {

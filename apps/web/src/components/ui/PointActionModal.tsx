@@ -15,12 +15,12 @@ interface PointActionModalProps {
   onSuccess?: () => void;
 }
 
-export default function PointActionModal({
+export const PointActionModal = ({
   action,
   onClose,
   onSetNotification,
   onSuccess,
-}: PointActionModalProps) {
+}: PointActionModalProps) => {
   const { customer, type } = action;
 
   // TOÀN BỘ STATE PHỤC VỤ NHẬP LIỆU ĐƯỢC CO-LOCATE (ĐÓNG GÓI) TẠI ĐÂY!

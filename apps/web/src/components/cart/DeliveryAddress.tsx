@@ -1,4 +1,4 @@
-import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import React, { useState } from 'react'
 
 interface DeliveryAddressProps {
@@ -9,8 +9,8 @@ interface DeliveryAddressProps {
     setSaveAsDefault: (val: boolean) => void;
 }
 
-function DeliveryAddress({ orderType, address, setAddress, saveAsDefault, setSaveAsDefault
-}: DeliveryAddressProps) {
+export const DeliveryAddress = ({ orderType, address, setAddress, saveAsDefault, setSaveAsDefault
+}: DeliveryAddressProps) => {
     const { showError } = useNotificationStore()
 
     const [locating, setLocating] = useState(false);
@@ -112,5 +112,3 @@ function DeliveryAddress({ orderType, address, setAddress, saveAsDefault, setSav
         </>
     )
 }
-
-export default DeliveryAddress

@@ -2,12 +2,12 @@
 import React, { useState } from 'react'
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
-import Validation from '@/components/Validation';
+import {Notification} from '@/components/ui/Notication';
 import { useLogin } from '@/hooks/useAuth';
-import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import Image from 'next/image';
 
-function LoginPage() {
+const LoginPage = () => {
     const { mutate, isPending } = useLogin();
     const { showError } = useNotificationStore()
 
@@ -25,19 +25,6 @@ function LoginPage() {
         mutate({ email, password });
     };
 
-    // Helper function to auto-fill credentials for testing
-    const handleQuickLogin = (role: 'CUSTOMER' | 'STAFF' | 'ADMIN') => {
-        if (role === 'CUSTOMER') {
-            setEmail('abc@gmail.com');
-            setPassword('1');
-        } else if (role === 'STAFF') {
-            setEmail('staff@chiba.com');
-            setPassword('1');
-        } else {
-            setEmail('admin@chiba.com');
-            setPassword('1');
-        }
-    };
     return (
         <div className="w-full max-w-sm mx-auto space-y-8 animate-fade-in">
             {/* Chiba Brand Identity */}
@@ -95,7 +82,7 @@ function LoginPage() {
                     </div>
 
                     {/* Error Message */}
-                    <Validation />
+                    <Notification />
 
                     {/* Submit Button */}
                     <button
@@ -116,35 +103,6 @@ function LoginPage() {
                     </div>
                 </form>
 
-                {/* Quick Access Account Options for Testing */}
-                <div className="pt-4 border-t border-border">
-                    <p className="text-[10px] text-center text-muted-foreground/80 font-medium mb-3 uppercase tracking-wider">
-                        Bấm nhanh để test vai trò:
-                    </p>
-                    <div className="grid grid-cols-3 gap-1.5">
-                        <button
-                            type="button"
-                            onClick={() => handleQuickLogin('CUSTOMER')}
-                            className="flex items-center justify-center gap-1 py-2 px-1 text-[10px] bg-accent/10 text-accent font-semibold rounded-lg hover:bg-accent hover:text-white border border-accent/20 active:scale-95 transition-all duration-200"
-                        >
-                            <UserCheck className="w-3.5 h-3.5" /> Khách Hàng
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleQuickLogin('STAFF')}
-                            className="flex items-center justify-center gap-1 py-2 px-1 text-[10px] bg-blue-50 text-blue-700 font-semibold rounded-lg hover:bg-blue-600 hover:text-white border border-blue-200 active:scale-95 transition-all duration-200"
-                        >
-                            <UserCheck className="w-3.5 h-3.5 text-blue-600" /> Nhân Viên
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleQuickLogin('ADMIN')}
-                            className="flex items-center justify-center gap-1 py-2 px-1 text-[10px] bg-primary/10 text-primary font-semibold rounded-lg hover:bg-primary hover:text-white border border-primary/20 active:scale-95 transition-all duration-200"
-                        >
-                            <ShieldCheck className="w-3.5 h-3.5" /> Quản Trị
-                        </button>
-                    </div>
-                </div>
             </div>
 
             {/* Link to Register */}
@@ -160,4 +118,4 @@ function LoginPage() {
     )
 }
 
-export default LoginPage
+export default LoginPage;

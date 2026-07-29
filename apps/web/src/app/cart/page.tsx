@@ -13,7 +13,7 @@
 // import Validation from '@/components/Validation';
 // import { useAuthStore } from '@/lib/stores/useAuthStore';
 
-export default function CartPage() {
+const CartPage = () => {
   // const { items, totalPrice, totalItems } = useCart();
   // const { user, isAuthenticated } = useAuthStore();
   // const router = useRouter();
@@ -169,3 +169,5 @@ export default function CartPage() {
     <></>
   );
 }
+
+export default CartPage;

@@ -8,7 +8,7 @@ import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck } from 'l
 import { useProfile } from '@/hooks/useUser';
 import { useLogout } from '@/hooks/useAuth';
 
-export default function ProfilePage() {
+const ProfilePage = ()=> {
   const { data: user, isLoading } = useProfile()
   const { mutate, isPending } = useLogout()
   // const router = useRouter();
@@ -289,3 +289,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+export default ProfilePage;

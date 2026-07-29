@@ -1,6 +1,6 @@
 
 // import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import { User } from '@/types';
 import { Mail, UserPlus } from 'lucide-react'
 import React, { useState } from 'react'
@@ -11,11 +11,11 @@ interface SystemOverviewProps {
     onSetNotification: (type: 'success' | 'error', msg: string) => void;
 }
 
-function SystemOverview({
+const SystemOverview = ({
     mockOrders,
     allCustomers,
     // onSetNotification
-}: SystemOverviewProps) {
+}: SystemOverviewProps) => {
     // const {
     //     invitedStaffEmails,
     //     activeStaffList,

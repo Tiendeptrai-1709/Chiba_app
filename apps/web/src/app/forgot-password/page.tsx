@@ -4,10 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Mail, ArrowLeft, Send } from "lucide-react";
 import { useForgotPassword } from "@/hooks/useAuth";
-import { useNotificationStore } from "@/lib/stores/useNotificationStore";
-import Validation from "@/components/Validation";
+import { useNotificationStore } from "@/stores/useNotificationStore";
+import {Notification} from "@/components/ui/Notication";
 
-export default function ForgotPasswordPage() {
+const ForgotPasswordPage = ()=> {
   const [email, setEmail] = useState("");
   const { mutate, isPending, isSuccess } = useForgotPassword();
   const { showError } = useNotificationStore();
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              <Validation />
+              <Notification />
 
               <button
                 disabled={isPending}
@@ -106,3 +106,5 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+
+export default ForgotPasswordPage;

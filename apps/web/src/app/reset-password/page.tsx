@@ -5,10 +5,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, ArrowLeft, CheckCircle } from "lucide-react";
 import { useResetPassword } from "@/hooks/useAuth";
-import Validation from "@/components/Validation";
-import { useNotificationStore } from "@/lib/stores/useNotificationStore";
+import {Notification} from "@/components/ui/Notication";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
-export default function ResetPasswordPage() {
+const ResetPasswordPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get("token");
@@ -115,7 +115,7 @@ export default function ResetPasswordPage() {
                                 </div>
                             </div>
 
-                            <Validation />
+                            <Notification />
 
                             <button
                                 disabled={isPending}
@@ -130,3 +130,4 @@ export default function ResetPasswordPage() {
         </div>
     );
 }
+export default ResetPasswordPage;

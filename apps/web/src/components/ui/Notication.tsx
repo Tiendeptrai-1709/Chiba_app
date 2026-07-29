@@ -1,9 +1,9 @@
 'use client';
 
-import { useNotificationStore } from "@/lib/stores/useNotificationStore";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useEffect } from "react";
 
-export default function Validation() {
+export const Notification = () => {
     const { success, error, clearNotification } = useNotificationStore()
 
     // Tự động ẩn thông báo lỗi/thành công sau 5 giây để nâng cao trải nghiệm người dùng
@@ -22,7 +22,8 @@ export default function Validation() {
         <div className="mb-4 space-y-2 animate-fade-in relative">
             {error && (
                 <div className="p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200 font-medium flex items-center justify-between shadow-sm">
-                    <span className="flex items-center gap-2">⚠️ {error}</span>
+                    <span className="flex items-center gap-2">⚠️ {error} </span>
+
                     <button
                         onClick={clearNotification}
                         className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2"

@@ -1,7 +1,7 @@
 import { ToggleLeft, ToggleRight } from 'lucide-react';
 import React, { useState } from 'react'
 
-function StockController() {
+const StockController = () => {
 
     const [productStocks, setProductStocks] = useState<Record<string, boolean>>({
         'p1': true, // Trà Thanh Đào

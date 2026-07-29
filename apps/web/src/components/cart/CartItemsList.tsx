@@ -2,7 +2,7 @@
 // import { Coffee, Trash2 } from 'lucide-react'
 import React from 'react'
 
-function CartItemsList() {
+export const CartItemsList = () => {
     // const {items, updateQuantity, removeItem} = useCart();
     return (
         // <div className="space-y-3">
@@ -59,5 +59,3 @@ function CartItemsList() {
         <></>
     )
 }
-
-export default CartItemsList

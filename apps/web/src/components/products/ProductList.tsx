@@ -32,7 +32,7 @@ export const MOCK_PRODUCTS: Product[] = [
   { id: 'b5', name: 'Bánh Caramel Phô Mai Ngọt Ngào', price: 39000, category: 'BANH', isAvailable: true }
 ];
 
-export default function ProductList() {
+export const ProductList = () => {
   // const { addItem } = useCart();
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('MON_NUOC');
   const [searchQuery, setSearchQuery] = useState('');

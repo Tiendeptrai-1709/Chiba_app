@@ -18,7 +18,7 @@ const MOCK_STORES: Store[] = [
   { id: 's9', name: 'Chiba Thích Quảng Đức', address: 'Số 254 đường Thích Quảng Đức, p. Chánh Nghĩa, Thủ Dầu Một - Bình Dương', phone: '0251.3822.429', isActive: true }
 ];
 
-export default function StoresPage() {
+const StoresPage = ()=> {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
@@ -99,3 +99,5 @@ export default function StoresPage() {
     </div>
   );
 }
+
+export default StoresPage;

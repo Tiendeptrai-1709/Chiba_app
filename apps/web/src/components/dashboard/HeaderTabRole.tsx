@@ -8,7 +8,7 @@ interface HeaderTabRoleProps {
     refreshCustomers: () => void;
 }
 
-function HeaderTabRole({ isAdmin, activeTab, setActiveTab, refreshCustomers }: HeaderTabRoleProps) {
+const HeaderTabRole = ({ isAdmin, activeTab, setActiveTab, refreshCustomers }: HeaderTabRoleProps) => {
     return (
         <div className="flex bg-neutral-100 p-1 rounded-xl border border-border/80 shadow-inner">
             {isAdmin ? (

@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/stores/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const PUBLIC_PATHS = ["/login", "/register","/forgot-password","/reset-password"];
 // const VALID_PATHS = [""]
 
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
+export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { accessToken, isChecking } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
