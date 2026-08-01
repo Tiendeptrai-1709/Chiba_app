@@ -1,9 +1,9 @@
 import { axiosInstance } from "@/lib/axios";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-export const useProfile = ()=> {
+export const useProfile = () => {
   const { accessToken } = useAuthStore();
   return useQuery({
     queryKey: ["profile"],
@@ -13,16 +13,15 @@ export const useProfile = ()=> {
     },
     enabled: !!accessToken,
   });
-}
+};
 
-export const useDeleteProfile = ()=> {
+export const useDeleteProfile = () => {
   const router = useRouter();
 
   const clearAccessToken = useAuthStore((s) => s.clearAccessToken);
 
   return useMutation({
     mutationFn: async (typeDel: "HARD" | "SOFT") => {
-      console.log("use tanstack: ", typeDel);
       await axiosInstance.delete("/users/profile", {
         data: {
           typeDel,
@@ -36,4 +35,20 @@ export const useDeleteProfile = ()=> {
       router.replace("/login");
     },
   });
-}
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      await axiosInstance.patch("/users/profile", data);
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["profile"],
+      });
+    }
+  });
+};

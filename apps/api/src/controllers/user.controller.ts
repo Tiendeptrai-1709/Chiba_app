@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Patch,
   Req,
   Res,
   UseGuards,
@@ -42,4 +43,15 @@ export class UserController {
     res.clearCookie("refreshToken", { path: "/" });
     return { message: "Đã xóa tài khoản thành công" };
   }
-}
+
+  @UseGuards(JwtAuthGuard)
+  @Patch("profile")
+  async updateProfile(
+    @Req() req: Request,
+    @Body() data: any,
+  ) {
+    const { userId } = req.user;
+    return this.userService.updateProfile(userId, data);
+  }
+
+} 

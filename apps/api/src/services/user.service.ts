@@ -57,4 +57,13 @@ export class UserSevice {
       return this.prisma.user.delete({ where: { id: userId } });
     }
   }
+
+  async updateProfile(userId: string, data: any) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data,
+    });
+  }
 }
