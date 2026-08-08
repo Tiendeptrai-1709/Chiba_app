@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 // import { useCart } from '@/lib/context/CartContext';
 import { Product, ProductCategory } from '@/types';
 import { Search, Plus, ShoppingCart, Sparkles, X } from 'lucide-react';
+import ProductOptionModal from './ProductModal';
 
 export const MOCK_PRODUCTS: Product[] = [
   // MÓN NƯỚC (Highlands Coffee & Bubble Tea Style)
@@ -23,6 +24,8 @@ export const MOCK_PRODUCTS: Product[] = [
   { id: 't2', name: 'Thạch Sen Thơm Bùi', price: 10000, category: 'TOPPING', isAvailable: true },
   { id: 't3', name: 'Trân Châu Hoàng Kim', price: 10000, category: 'TOPPING', isAvailable: true },
   { id: 't4', name: 'Kem Phô Mai Macchiato Béo', price: 15000, category: 'TOPPING', isAvailable: true },
+  { id: 't5', name: 'Kem Phô Mai Macchiato Béo2', price: 15000, category: 'TOPPING', isAvailable: true },
+  { id: 't5', name: 'Kem Phô Mai Macchiato Béo3', price: 15000, category: 'TOPPING', isAvailable: true },
 
   // BÁNH & ĐỒ ĂN KÈM (Highlands Style)
   { id: 'b1', name: 'Bánh Mì Que Pate Xá Xíu', price: 29000, category: 'BANH', isAvailable: true },
@@ -116,205 +119,115 @@ export const ProductList = () => {
   }, [selectedProduct, selectedToppings, drinkQuantity]);
 
   return (
-    <div className="space-y-6">
-      {/* Search Input Bar */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
-        <input
-          type="text"
-          placeholder="Tìm trà, cà phê hay món bánh..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3.5 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm placeholder:text-muted-foreground/50 shadow-sm"
-        />
-      </div>
+    <>
+      <div className="space-y-6">
+        {/* Search Input Bar */}
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
+          <input
+            type="text"
+            placeholder="Tìm trà, cà phê hay món bánh..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3.5 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm placeholder:text-muted-foreground/50 shadow-sm"
+          />
+        </div>
 
-      {/* Categories Horizontal Scroll Bar */}
-      <div className="flex border-b border-border overflow-x-auto scrollbar-none gap-2 pb-px -mx-4 px-4 sticky top-[66px] bg-background/95 backdrop-blur-md z-30 py-2">
-        {categories.map((cat) => {
-          const isActive = activeCategory === cat.key;
-          return (
-            <button
-              key={cat.key}
-              onClick={() => {
-                setActiveCategory(cat.key);
-                setSearchQuery('');
-              }}
-              className={`whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                isActive
+        {/* Categories Horizontal Scroll Bar */}
+        <div className="flex border-b border-border overflow-x-auto scrollbar-none gap-2 pb-px -mx-4 px-4 sticky top-[66px] bg-background/95 backdrop-blur-md z-30 py-2">
+          {categories.map((cat) => {
+            const isActive = activeCategory === cat.key;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => {
+                  setActiveCategory(cat.key);
+                  setSearchQuery('');
+                }}
+                className={`whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${isActive
                   ? 'bg-primary text-white shadow-sm'
                   : 'bg-card text-muted-foreground border border-border hover:bg-muted/20'
-              }`}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Visual Toast Notification on Addition */}
-      {addedItemName && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-black/90 text-white text-xs px-4 py-3 rounded-full shadow-floating flex items-center gap-2 animate-fade-in whitespace-nowrap">
-          <Sparkles className="w-4 h-4 text-yellow-400" />
-          Đã thêm <span className="font-bold text-accent">{addedItemName}</span> vào giỏ hàng!
-        </div>
-      )}
-
-      {/* Dynamic Products Grid/List */}
-      {filteredProducts.length > 0 ? (
-        <div className="space-y-3">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => handleAddToCart(product)}
-              className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border interactive-card cursor-pointer select-none"
-            >
-              {/* Product Thumbnail/Icon */}
-              <div className="w-12 h-12 flex items-center justify-center bg-muted text-2xl rounded-xl">
-                {product.category === 'MON_NUOC' ? '☕' : product.category === 'TOPPING' ? '🥛' : '🍰'}
-              </div>
-
-              {/* Product Info */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground text-sm leading-tight truncate sm:whitespace-normal">
-                  {product.name}
-                </h3>
-                <p className="text-primary font-bold text-sm mt-1">
-                  {product.price.toLocaleString('vi-VN')} đ
-                </p>
-              </div>
-
-              {/* Add/Configure Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart(product);
-                }}
-                className="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary-hover active:scale-90 text-white rounded-full transition-all duration-200 shadow-sm"
-                title={product.category === 'MON_NUOC' ? 'Tùy chọn món' : 'Thêm vào giỏ'}
+                  }`}
               >
-                <Plus className="w-5 h-5" />
+                {cat.label}
               </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
-      ) : (
-        <div className="text-center py-16 bg-card border border-border rounded-xl">
-          <div className="text-5xl mb-3">🔍</div>
-          <h3 className="font-semibold text-foreground">Không tìm thấy món</h3>
-          <p className="text-sm text-muted-foreground mt-1 px-4">
-            Hãy thử tìm bằng từ khóa khác hoặc chuyển sang danh mục khác.
-          </p>
-        </div>
-      )}
 
-      {/* PREMIUM TOPPING SELECTION MODAL */}
-      {selectedProduct && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-          <div className="bg-card w-full max-w-md sm:rounded-2xl border-t sm:border border-border shadow-modal overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh] rounded-t-2xl animate-fade-in">
-            
-            {/* Modal Header */}
-            <div className="p-4 border-b border-border flex items-start justify-between bg-[#FAF7F5]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex items-center justify-center bg-primary/10 text-2xl rounded-xl">☕</div>
-                <div>
-                  <h3 className="font-black text-foreground text-base tracking-tight leading-tight">
-                    {selectedProduct.name}
+        {/* Visual Toast Notification on Addition */}
+        {addedItemName && (
+          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-black/90 text-white text-xs px-4 py-3 rounded-full shadow-floating flex items-center gap-2 animate-fade-in whitespace-nowrap">
+            <Sparkles className="w-4 h-4 text-yellow-400" />
+            Đã thêm <span className="font-bold text-accent">{addedItemName}</span> vào giỏ hàng!
+          </div>
+        )}
+
+        {/* Dynamic Products Grid/List */}
+        {filteredProducts.length > 0 ? (
+          <div className="space-y-3">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                onClick={() => handleAddToCart(product)}
+                className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border interactive-card cursor-pointer select-none"
+              >
+                {/* Product Thumbnail/Icon */}
+                <div className="w-12 h-12 flex items-center justify-center bg-muted text-2xl rounded-xl">
+                  {product.category === 'MON_NUOC' ? '☕' : product.category === 'TOPPING' ? '🥛' : '🍰'}
+                </div>
+
+                {/* Product Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm leading-tight truncate sm:whitespace-normal">
+                    {product.name}
                   </h3>
-                  <p className="text-xs text-primary font-extrabold mt-0.5">
-                    Đơn giá: {selectedProduct.price.toLocaleString('vi-VN')} đ
+                  <p className="text-primary font-bold text-sm mt-1">
+                    {product.price.toLocaleString('vi-VN')} đ
                   </p>
                 </div>
+
+                {/* Add/Configure Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(product);
+                  }}
+                  className="w-10 h-10 flex items-center justify-center bg-primary hover:bg-primary-hover active:scale-90 text-white rounded-full transition-all duration-200 shadow-sm"
+                  title={product.category === 'MON_NUOC' ? 'Tùy chọn món' : 'Thêm vào giỏ'}
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="p-1.5 hover:bg-neutral-100 border border-border/80 text-muted-foreground rounded-full active:scale-90 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Modal Body (Scrollable Topping List) */}
-            <div className="p-5 overflow-y-auto space-y-4 flex-grow">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                  Thêm Topping Highlands
-                </span>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
-                  Đã chọn: {selectedToppings.length}
-                </span>
-              </div>
-
-              <div className="space-y-2.5">
-                {availableToppings.map((topping) => {
-                  const isChecked = selectedToppings.some((t) => t.id === topping.id);
-                  return (
-                    <div
-                      key={topping.id}
-                      onClick={() => handleToggleTopping(topping)}
-                      className={`flex items-center justify-between p-3.5 bg-neutral-50 hover:bg-neutral-100/70 border rounded-xl cursor-pointer select-none transition-all duration-200 ${
-                        isChecked 
-                          ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
-                          : 'border-border'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {/* Custom Animated Checkbox */}
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
-                          isChecked 
-                            ? 'bg-primary border-primary text-white' 
-                            : 'bg-white border-border text-transparent'
-                        }`}>
-                          ✓
-                        </div>
-                        <span className="text-xs font-bold text-foreground">{topping.name}</span>
-                      </div>
-                      <span className="text-xs font-extrabold text-primary">
-                        +{topping.price.toLocaleString('vi-VN')} đ
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Modal Footer (Quantity Selector & Fulfill action) */}
-            <div className="p-5 border-t border-border bg-[#FAF7F5] space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground">Số lượng cốc:</span>
-                
-                {/* Micro-interactive Counter */}
-                <div className="flex items-center gap-2 bg-white border border-border px-2 py-1 rounded-xl shadow-sm">
-                  <button
-                    onClick={() => setDrinkQuantity(Math.max(1, drinkQuantity - 1))}
-                    className="w-7 h-7 flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground rounded-lg font-bold transition active:scale-90"
-                  >
-                    −
-                  </button>
-                  <span className="w-8 text-center font-black text-sm text-foreground">{drinkQuantity}</span>
-                  <button
-                    onClick={() => setDrinkQuantity(drinkQuantity + 1)}
-                    className="w-7 h-7 flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground rounded-lg font-bold transition active:scale-90"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Add to Cart Button */}
-              <button
-                onClick={handleConfirmToppings}
-                className="primary-btn flex items-center justify-center gap-2 shadow-premium font-black py-4 w-full"
-              >
-                <ShoppingCart className="w-4.5 h-4.5" />
-                Thêm Vào Giỏ — {currentTotalPrice.toLocaleString('vi-VN')} đ
-              </button>
-            </div>
-
+            ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-16 bg-card border border-border rounded-xl">
+            <div className="text-5xl mb-3">🔍</div>
+            <h3 className="font-semibold text-foreground">Không tìm thấy món</h3>
+            <p className="text-sm text-muted-foreground mt-1 px-4">
+              Hãy thử tìm bằng từ khóa khác hoặc chuyển sang danh mục khác.
+            </p>
+          </div>
+        )}
 
-    </div>
+      </div>
+      {/* PREMIUM TOPPING SELECTION MODAL */}
+      {selectedProduct && (
+        <ProductOptionModal
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          productName={selectedProduct?.name ?? ""}
+          productPrice={selectedProduct?.price ?? 0}
+          availableToppings={availableToppings}
+          selectedToppings={selectedToppings}
+          onToggleTopping={handleToggleTopping}
+          drinkQuantity={drinkQuantity}
+          onChangeQuantity={setDrinkQuantity}
+          currentTotalPrice={currentTotalPrice}
+          onConfirm={handleConfirmToppings}
+        />
+      )}
+    </>
   );
 }

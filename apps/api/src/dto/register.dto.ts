@@ -1,9 +1,9 @@
 // create-user.dto.ts
 
-import { IsEmail, Matches, MinLength } from "class-validator";
+import { IsEmail, IsString, Matches, MinLength } from "class-validator";
 import { Role } from "src/generated/prisma";
 
-export class CreateUserDto {
+export class RegisterDto {
   @IsEmail(
     {},
     {
@@ -19,6 +19,9 @@ export class CreateUserDto {
     message: "Mật khẩu tối thiểu 6 kí tự ",
   })
   password: string;
+
+  @IsString()
   fullName: string;
+
   role?: Role;
 }

@@ -1,9 +1,9 @@
-import { axiosInstance } from "@/lib/axios";
-import { useAuthStore } from "@/stores/useAuthStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "../stores/useAuthStore";
+import { AxiosInstance } from "axios";
 
-export const useProfile = () => {
+export const useProfile = (axiosInstance:AxiosInstance) => {
   const { accessToken } = useAuthStore();
   return useQuery({
     queryKey: ["profile"],
@@ -15,7 +15,7 @@ export const useProfile = () => {
   });
 };
 
-export const useDeleteProfile = () => {
+export const useDeleteProfile = (axiosInstance:AxiosInstance) => {
   const router = useRouter();
 
   const clearAccessToken = useAuthStore((s) => s.clearAccessToken);
@@ -37,7 +37,7 @@ export const useDeleteProfile = () => {
   });
 };
 
-export const useUpdateProfile = () => {
+export const useUpdateProfile = (axiosInstance:AxiosInstance) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -49,6 +49,6 @@ export const useUpdateProfile = () => {
       queryClient.invalidateQueries({
         queryKey: ["profile"],
       });
-    }
+    },
   });
 };

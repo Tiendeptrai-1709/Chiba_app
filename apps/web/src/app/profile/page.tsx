@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck, Pen } from 'lucide-react';
-// import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useProfile, useUpdateProfile } from '@/hooks/useUser';
-import { useLogout } from '@/hooks/useAuth';
+import { useProfile, useUpdateProfile } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+import { useLogout } from '@chiba/api-client/src/hooks/useAuth';
 
 const ProfilePage = () => {
-  const { data: user, isLoading } = useProfile()
-  const { mutate, isPending } = useLogout()
-  const { mutate: updateProfile } = useUpdateProfile()
-  // const router = useRouter();
+  const { data: user, isLoading } = useProfile(api)
+  const { mutate, isPending } = useLogout(api)
+  const { mutate: updateProfile } = useUpdateProfile(api)
+  const router = useRouter();
 
   const [showModal, setShowModal] = useState(false);
 
@@ -58,7 +58,11 @@ const ProfilePage = () => {
   }
 
   const handleLogout = () => {
-    mutate()
+    mutate(undefined,{
+      onSuccess() {
+        router.replace("/login");
+      }
+    })
   };
 
   // const handleSaveName = async () => {

@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
-import { CreateUserDto } from "src/dto/register.dto";
+import { RegisterDto } from 'src/dto/register.dto';
 import { ForgotPasswordDto } from "src/dto/forgot-password.dto";
 import { LoginDto } from "src/dto/login.dto";
 import { ResetPasswordDto } from "src/dto/reset-password.dto";
@@ -18,6 +18,7 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log("first", dto)
     const { accessToken, refreshToken } = await this.authService.login(dto);
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -30,7 +31,8 @@ export class AuthController {
   }
 
   @Post("register")
-  create(@Body() dto: CreateUserDto) {
+  create(@Body() dto: RegisterDto) {
+    console.log("full: ", dto)
     return this.authService.register(dto);
   }
 

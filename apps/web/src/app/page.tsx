@@ -5,12 +5,13 @@ import {Header} from '@/components/layout/Header';
 import {ProductList} from '@/components/products/ProductList';
 import Link from 'next/link';
 import { Home, MapPin, User } from 'lucide-react';
-import { useProfile } from '@/hooks/useUser';
 import { useRouter } from 'next/navigation';
+import { useProfile } from '@chiba/api-client';
+import { api } from '@/lib/axios';
 
 export default function Page() {
-  const { data: user, isLoading } = useProfile();
-
+  const { data: user, isLoading } = useProfile(api);
+  console.log("user: ", user)
   const router = useRouter();
 
   useEffect(() => {
@@ -34,14 +35,14 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28 flex flex-col">
+    <div className="min-h-screen bg-background pb-28 flex flex-col relative overflow-hidden">
       {/* Premium Header */}
       <Header user={user} />
 
       {/* Main Content Area */}
       <div className="px-5 py-6 space-y-6 flex-grow max-w-2xl mx-auto w-full animate-fade-in">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-primary/5 to-accent/5 p-5 rounded-2xl border border-primary/5 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-primary/5 to-accent/5 p-5 rounded-2xl border border-primary/5 relative">
           <div className="absolute right-0 top-0 text-7xl translate-x-3 translate-y-3 opacity-15">🍵</div>
           <h2 className="text-2xl font-black text-foreground tracking-tight">
             Xin chào, {user?.fullName || 'bạn'}!
@@ -56,7 +57,7 @@ export default function Page() {
       </div>
 
       {/* Premium Mobile Dock at bottom */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-white/95 backdrop-blur-md border-t border-border py-2 px-6 flex items-center justify-around z-40 shadow-floating">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-white/95 backdrop-blur-md border-t border-border py-2 px-6 flex items-center justify-around z-[45] shadow-floating">
         <Link href="/" className="flex flex-col items-center gap-1 text-primary transition-all duration-200">
           <Home className="w-5.5 h-5.5 stroke-[2.5]" />
           <span className="text-[10px] font-bold">Món Ngon</span>

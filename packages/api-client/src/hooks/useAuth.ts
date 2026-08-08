@@ -1,25 +1,25 @@
-import { axiosInstance } from "@/lib/axios";
-import { useAuthStore } from "@/stores/useAuthStore";
-import { useNotificationStore } from "@/stores/useNotificationStore";
+
+import { useNotificationStore } from "../stores/useNotificationStore";
+import { useAuthStore } from "../stores/useAuthStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { useRouter } from "next/navigation";
 
-export const useLogin = () => {
+export const useLogin = (axiosInstance:AxiosInstance) => {
   const { setAccessToken } = useAuthStore();
   const { showSuccess, showError } = useNotificationStore();
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: { email: string; password: string }) => {
+      console.log("first1",payload)
       const { data } = await axiosInstance.post("/auth/login", payload);
+      console.log("login: ", data);
       return data;
     },
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
       showSuccess("Đăng nhập thành công");
-      router.replace("/")
 
       queryClient.invalidateQueries({
         queryKey: ["profile"],
@@ -33,11 +33,10 @@ export const useLogin = () => {
       }
     },
   });
-}
+};
 
-export const useRegister = () => {
+export const useRegister = (axiosInstance:AxiosInstance) => {
   const { showSuccess, showError } = useNotificationStore();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: async (payload: {
@@ -50,22 +49,20 @@ export const useRegister = () => {
     },
     onSuccess: () => {
       showSuccess("Tạo tài khoản thành công");
-      router.replace("/login");
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
         showError(error.response?.data.message);
-      }else{
-        showError("Có lỗi xảy ra")
+      } else {
+        showError("Có lỗi xảy ra");
       }
     },
   });
-}
+};
 
-export const useLogout = () => {
+export const useLogout = (axiosInstance:AxiosInstance) => {
   const { clearAccessToken } = useAuthStore();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: async () => {
@@ -77,12 +74,11 @@ export const useLogout = () => {
       queryClient.removeQueries({
         queryKey: ["profile"],
       });
-      router.replace("/login"); // Hoặc trang bạn muốn sau khi logout
     },
   });
-}
+};
 
-export const useForgotPassword = () => {
+export const useForgotPassword = (axiosInstance:AxiosInstance) => {
   return useMutation({
     mutationFn: async (email: string) => {
       const { data } = await axiosInstance.post("/auth/forgot-password", {
@@ -91,10 +87,9 @@ export const useForgotPassword = () => {
       return data;
     },
   });
-}
+};
 
-export const useResetPassword = () => {
-  const router = useRouter();
+export const useResetPassword = (axiosInstance:AxiosInstance) => {
 
   return useMutation({
     mutationFn: async (payload: { token: string; newPassword: string }) => {
@@ -104,8 +99,5 @@ export const useResetPassword = () => {
       );
       return data;
     },
-    onSuccess: () => {
-      router.replace("/login"); // Hoặc trang bạn muốn sau khi logout
-    },
   });
-}
+};

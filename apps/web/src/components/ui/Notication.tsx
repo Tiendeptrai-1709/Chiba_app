@@ -1,6 +1,6 @@
 'use client';
 
-import { useNotificationStore } from "@/stores/useNotificationStore";
+import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
 import { useEffect } from "react";
 
 export const Notification = () => {

@@ -87,7 +87,7 @@ export class AuthService {
       .toString(36)
       .substring(2, 8)
       .toUpperCase()}`;
-    console.log("adas");
+    console.log("full service: ", createUserDto.fullName);
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,

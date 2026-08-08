@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 // import { useAuth } from '@/lib/context/AuthContext';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
-import { useDeleteProfile } from '@/hooks/useUser';
+import { useDeleteProfile } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+// import { useDeleteProfile } from '@/hooks/useUser';
 
 const DeleteAccountPage = ()=> {
   // const { data: user } = useProfile();
-  const { mutate, isPending } = useDeleteProfile()
+  const { mutate, isPending } = useDeleteProfile(api)
   const router = useRouter();
 
   const [selectedOption, setSelectedOption] = useState<'HARD' | 'SOFT'>('SOFT');

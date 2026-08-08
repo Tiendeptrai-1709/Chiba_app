@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
@@ -14,8 +13,9 @@ import SystemOverview from '@/components/dashboard/SystemOverview';
 import {PointActionModal} from '@/components/ui/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
 import { Notification } from '@/components/ui/Notication';
-import { useProfile } from '@/hooks/useUser';
-import { useNotificationStore } from '@/stores/useNotificationStore';
+import { useProfile } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 
 export interface MockOrder {
   id: string;
@@ -28,7 +28,7 @@ export interface MockOrder {
 }
 
 const AdminDashboard = ()=> {
-  const { data: user, isLoading } = useProfile()
+  const { data: user, isLoading } = useProfile(api)
   const {showSuccess,showError} = useNotificationStore()
   const router = useRouter();
 

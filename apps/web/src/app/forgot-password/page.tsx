@@ -3,13 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Mail, ArrowLeft, Send } from "lucide-react";
-import { useForgotPassword } from "@/hooks/useAuth";
-import { useNotificationStore } from "@/stores/useNotificationStore";
 import {Notification} from "@/components/ui/Notication";
+import { useForgotPassword } from "@chiba/api-client/src/hooks/useAuth";
+import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
+import { api } from "@/lib/axios";
 
 const ForgotPasswordPage = ()=> {
   const [email, setEmail] = useState("");
-  const { mutate, isPending, isSuccess } = useForgotPassword();
+  const { mutate, isPending, isSuccess } = useForgotPassword(api);
   const { showError } = useNotificationStore();
 
   const handleSubmit = (e: React.FormEvent) => {
