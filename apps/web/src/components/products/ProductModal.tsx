@@ -12,9 +12,9 @@ interface ProductOptionModalProps {
   onClose: () => void;
   productName: string;
   productPrice: number;
-  availableToppings: { id: string; name: string; price: number }[];
-  selectedToppings: { id: string; name: string; price: number }[];
-  onToggleTopping: (topping: { id: string; name: string; price: number }) => void;
+  availableToppings: { id: string; name: string; price: number; category: string }[];
+  selectedToppings: { id: string; name: string; price: number; category: string }[];
+  onToggleTopping: (topping: { id: string; name: string; price: number; category: string }) => void;
   drinkQuantity: number;
   onChangeQuantity: (qty: number) => void;
   currentTotalPrice: number;

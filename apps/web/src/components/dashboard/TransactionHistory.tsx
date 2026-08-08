@@ -1,5 +1,4 @@
 
-import { useAuthStore } from '@/stores/useAuthStore';
 import { History, Search } from 'lucide-react';
 import React, { useState } from 'react'
 

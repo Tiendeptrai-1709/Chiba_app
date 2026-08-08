@@ -14,15 +14,11 @@ const ProfilePage = () => {
   const { mutate: updateProfile } = useUpdateProfile(api)
   const router = useRouter();
 
-  const [showModal, setShowModal] = useState(false);
-
   const [inputName, setInputName] = useState(user?.fullName || '');
   const [inputPhone, setInputPhone] = useState(user?.phone || '');
 
   const [showInputName, setShowInputName] = useState(false);
   const [showInputPhone, setShowInputPhone] = useState(false);
-
-  const [updating] = useState(false);
 
   const [history] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);

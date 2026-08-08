@@ -1,7 +1,7 @@
 "use client"
 import {AuthGuard} from '@/guards/AuthGuard';
 import { api } from '@/lib/axios';
-import { axiosInstance, useAuthStore } from '@chiba/api-client';
+import {  useAuthStore } from '@chiba/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import React, { useEffect, useState } from 'react'

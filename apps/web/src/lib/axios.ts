@@ -1,4 +1,4 @@
-import axios from "axios";
+
 import { axiosInstance } from "@chiba/api-client";
 
 export const api = axiosInstance(

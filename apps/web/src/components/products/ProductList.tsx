@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 // import { useCart } from '@/lib/context/CartContext';
 import { Product, ProductCategory } from '@/types';
-import { Search, Plus, ShoppingCart, Sparkles, X } from 'lucide-react';
+import { Search, Plus, Sparkles } from 'lucide-react';
 import ProductOptionModal from './ProductModal';
 
 export const MOCK_PRODUCTS: Product[] = [
@@ -84,11 +84,11 @@ export const ProductList = () => {
     }
   };
 
-  const handleToggleTopping = (topping: Product) => {
+  const handleToggleTopping = (topping: { id: string; name: string; price: number; category: string }) => {
     if (selectedToppings.some((t) => t.id === topping.id)) {
       setSelectedToppings(selectedToppings.filter((t) => t.id !== topping.id));
     } else {
-      setSelectedToppings([...selectedToppings, topping]);
+      setSelectedToppings([...selectedToppings, topping as Product]);
     }
   };
 

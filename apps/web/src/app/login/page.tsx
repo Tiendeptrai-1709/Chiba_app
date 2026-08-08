@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react'
 import Link from 'next/link';
-import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
+import { Mail, Lock, ArrowRight} from 'lucide-react';
 import { Notification } from '@/components/ui/Notication';
 import Image from 'next/image';
 import { useLogin } from '@chiba/api-client';

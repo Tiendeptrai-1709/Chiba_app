@@ -1,7 +1,8 @@
 
 // import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useNotificationStore } from '@/stores/useNotificationStore';
+
 import { User } from '@/types';
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 import { Mail, UserPlus } from 'lucide-react'
 import React, { useState } from 'react'
 
