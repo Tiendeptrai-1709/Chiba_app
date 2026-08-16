@@ -12,33 +12,53 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role{
+enum Role {
   ADMIN
   STAFF
   CUSTOMER
 }
 
-model User{
-  id  String @id @default(uuid())
-  email String @unique
-  password  String
-  fullName  String
-  phone String? 
-  address String? 
-  customerCode  String @unique
-  zenPoints Int @default(0)
-  role Role @default(CUSTOMER)
-  isSuspended Boolean @default(false)
+enum ProductCategory {
+  MON_NUOC
+  TOPPING
+  BANH
+}
 
-  hashedRefreshToken String?
-  resetPasswordToken String?
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  password     String
+  fullName     String
+  phone        String?
+  address      String?
+  customerCode String  @unique
+  zenPoints    Int     @default(0)
+  role         Role    @default(CUSTOMER)
+  isSuspended  Boolean @default(false)
+
+  hashedRefreshToken   String?
+  resetPasswordToken   String?
   resetPasswordExpires DateTime?
 
-  isDeleted Boolean @default(false)
+  isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model Product {
+  id          String          @id @default(uuid())
+  name        String
+  price       Int
+  imageUrl    String
+  category    ProductCategory @default(MON_NUOC)
+  isAvailable Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
 }

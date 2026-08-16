@@ -1,35 +1,43 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
+import { Home, MapPin, User } from "lucide-react-native";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        headerShown:false,
+        tabBarActiveTintColor:"#1E4620",
+        tabBarInactiveTintColor:"#6B5E53",
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Món ngon",
+          tabBarIcon: ({ color }) => (
+            <Home color={color} />
+          )
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="stores"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Cửa hàng",
+          tabBarIcon: ({ color }) => (
+            <MapPin color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Hồ sơ",
+          tabBarIcon: ({ color }) => (
+            <User color={color} />
+          )
         }}
       />
     </Tabs>
-  );
+  )
 }

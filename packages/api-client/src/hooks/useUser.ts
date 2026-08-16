@@ -16,7 +16,6 @@ export const useProfile = (axiosInstance:AxiosInstance) => {
 };
 
 export const useDeleteProfile = (axiosInstance:AxiosInstance) => {
-  const router = useRouter();
 
   const clearAccessToken = useAuthStore((s) => s.clearAccessToken);
 
@@ -31,8 +30,6 @@ export const useDeleteProfile = (axiosInstance:AxiosInstance) => {
 
     onSuccess: () => {
       clearAccessToken();
-
-      router.replace("/login");
     },
   });
 };

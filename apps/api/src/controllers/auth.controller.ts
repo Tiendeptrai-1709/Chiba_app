@@ -1,10 +1,10 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { Request, Response } from "express";
-import { RegisterDto } from 'src/dto/register.dto';
-import { ForgotPasswordDto } from "src/dto/forgot-password.dto";
-import { LoginDto } from "src/dto/login.dto";
-import { ResetPasswordDto } from "src/dto/reset-password.dto";
+import { RegisterDto } from 'src/dto/auth/register.dto';
+import { ForgotPasswordDto } from "src/dto/auth/forgot-password.dto";
+import { LoginDto } from "src/dto/auth/login.dto";
+import { ResetPasswordDto } from "src/dto/auth/reset-password.dto";
 import { JwtAuthGuard } from "src/guards/jwt-auth.guard";
 import { JwtRefreshGuard } from "src/guards/jwt-refresh.guard";
 import { AuthService } from "src/services/auth.service";

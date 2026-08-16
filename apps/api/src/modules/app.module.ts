@@ -6,6 +6,7 @@ import { PrismaModule } from "src/prisma/prisma.module";
 import { AppController } from "src/controllers/app.controller";
 import { AppService } from "src/services/app.service";
 import { ThrottlerModule } from "@nestjs/throttler";
+import { ProductModule } from "./product.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
     PrismaModule,
     UserModule,
     AuthModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -11,7 +11,7 @@ import {
 import { UserSevice } from "../services/user.service";
 import { JwtAuthGuard } from "src/guards/jwt-auth.guard";
 import { Request, Response } from "express";
-import { DeleteProfileDto } from "src/dto/delete-profile.dto";
+import { DeleteProfileDto } from "src/dto/auth/delete-profile.dto";
 
 @Controller("users")
 export class UserController {

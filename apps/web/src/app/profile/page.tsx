@@ -127,7 +127,7 @@ const ProfilePage = () => {
               )}
             </div>
             <div className="flex items-center gap-5">
-              <Pen onClick={() => setShowInputName(true)} className="w-5 h-5 opacity-0 group-hover:opacity-100 text-muted-foreground/40" />
+              <Pen onClick={() => setShowInputName(true)} className="w-5 h-5 opacity-0 group-hover:opacity-100 hover:cursor-pointer text-muted-foreground/40" />
               <User className="w-5 h-5 text-muted-foreground/40" />
             </div>
           </div>
@@ -148,7 +148,7 @@ const ProfilePage = () => {
               )}
             </div>
             <div className="flex items-center gap-5">
-              <Pen onClick={() => setShowInputPhone(true)} className="w-5 h-5 opacity-0 group-hover:opacity-100 text-muted-foreground/40" />
+              <Pen onClick={() => setShowInputPhone(true)} className="w-5 h-5 opacity-0 group-hover:opacity-100 hover:cursor-pointer text-muted-foreground/40" />
               <Phone className="w-5 h-5 text-muted-foreground/40" />
             </div>
           </div>

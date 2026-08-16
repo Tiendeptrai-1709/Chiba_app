@@ -1,31 +1,24 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import "../global.css"
+import Providers from '@/providers/QueryProvider';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar, View } from 'react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Text, View } from 'react-native';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+    anchor: '(tabs)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-xl font-bold text-red-500">
-          Welcome to Nativewind! test
-        </Text>
-      </View>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+    return (
+        <Providers>
+            <Stack
+                screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: 'transparent' },
+                }}
+            />
+        </Providers>
+    );
 }

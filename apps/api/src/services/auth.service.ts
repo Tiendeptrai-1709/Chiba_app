@@ -1,3 +1,4 @@
+import { RegisterDto } from 'src/dto/auth/register.dto';
 import {
   BadRequestException,
   ForbiddenException,
@@ -7,12 +8,12 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcryptjs";
-import { CreateUserDto } from "src/dto/register.dto";
-import { LoginDto } from "src/dto/login.dto";
+
+import { LoginDto } from "src/dto/auth/login.dto";
 import { MailService } from "./mail.service";
 import { createHash, randomBytes } from "crypto";
-import { ForgotPasswordDto } from "src/dto/forgot-password.dto";
-import { ResetPasswordDto } from "src/dto/reset-password.dto";
+import { ForgotPasswordDto } from "src/dto/auth/forgot-password.dto";
+import { ResetPasswordDto } from "src/dto/auth/reset-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -74,28 +75,28 @@ export class AuthService {
     return tokens;
   }
 
-  async register(createUserDto: CreateUserDto) {
+  async register(registerDto: RegisterDto) {
     const existedUser = await this.prisma.user.findUnique({
-      where: { email: createUserDto.email },
+      where: { email: registerDto.email },
     });
     if (existedUser) {
       throw new BadRequestException("Email đã tồn tại");
     }
 
-    const hashPassword = await hash(createUserDto.password, 10);
+    const hashPassword = await hash(registerDto.password, 10);
     const generateCustomerCode = `CUS-${Math.random()
       .toString(36)
       .substring(2, 8)
       .toUpperCase()}`;
-    console.log("full service: ", createUserDto.fullName);
+
     return this.prisma.user.create({
       data: {
-        email: createUserDto.email,
+        email: registerDto.email,
         password: hashPassword,
-        fullName: createUserDto.fullName,
+        fullName: registerDto.fullName,
         customerCode: generateCustomerCode,
         zenPoints: 0,
-        role: createUserDto.role ?? "CUSTOMER",
+        role: registerDto.role ?? "CUSTOMER",
         isSuspended: false,
       },
     });
