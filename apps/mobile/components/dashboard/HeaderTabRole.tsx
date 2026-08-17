@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Users, History, UserCheck } from "lucide-react-native";
 
 interface Props {
   isAdmin: boolean;

@@ -5,11 +5,11 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
-    "@tanstack/react-query": "^5.62.0",
+    "@tanstack/react-query": "^5.101.3",
     "axios": "^1.7.0",
     "zustand": "^5.0.0"
   },
   "peerDependencies": {
-    "react": "*"
+    "react": "19.1.0"
   }
 }

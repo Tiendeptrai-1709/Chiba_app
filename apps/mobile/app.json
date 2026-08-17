@@ -11,6 +11,9 @@
     "ios": {
       "supportsTablet": true
     },
+    "expo":{
+      "jsEngine":"jsc"
+    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

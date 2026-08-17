@@ -6,7 +6,7 @@ import {
     View,
 } from "react-native";
 import Notification from "../ui/Notification";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../reusables/select";
+// import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../reusables/select";
 
 interface ProductFormProps {
     initialValues?: {
@@ -93,7 +93,7 @@ const ProductForm = ({
             </View>
 
             {/* Category */}
-            <View className="gap-2">
+            {/* <View className="gap-2">
                 <Text className="text-xs font-bold text-foreground">Danh mục</Text>
 
                 <Select value={{ value: category, label: category }} onValueChange={(option) => {
@@ -117,7 +117,7 @@ const ProductForm = ({
                         </SelectGroup>
                     </SelectContent>
                 </Select>
-            </View>
+            </View> */}
 
             {/* imageUrl */}
             <View className="gap-2">
