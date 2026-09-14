@@ -1,31 +1,32 @@
-// src/components/ProductOptionModal.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { X, ShoppingCart } from "lucide-react";
-import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
+import { Minus, Plus, ShoppingCart, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import Image from "next/image";
+import { Product, Topping } from "@chiba/api-client";
 
-
-interface ProductOptionModalProps {
+interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productName: string;
-  productPrice: number;
-  availableToppings: { id: string; name: string; price: number; category: string }[];
-  selectedToppings: { id: string; name: string; price: number; category: string }[];
-  onToggleTopping: (topping: { id: string; name: string; price: number; category: string }) => void;
+  product: Product | null;
+  availableToppings: Topping[];
+  selectedToppings: Topping[];
+  onToggleTopping: (topping: Topping) => void;
   drinkQuantity: number;
   onChangeQuantity: (qty: number) => void;
   currentTotalPrice: number;
   onConfirm: () => void;
 }
 
-export default function ProductOptionModal({
+export default function ProductModal({
   isOpen,
   onClose,
-  productName,
-  productPrice,
+  product,
   availableToppings,
   selectedToppings,
   onToggleTopping,
@@ -33,128 +34,149 @@ export default function ProductOptionModal({
   onChangeQuantity,
   currentTotalPrice,
   onConfirm,
-}: ProductOptionModalProps) {
-  useLockBodyScroll(isOpen);
+}: ProductModalProps) {
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const formatPrice = (price: number) => `${price.toLocaleString("vi-VN")} đ`;
 
-  if (!isOpen || !mounted) return null;
-
-  return createPortal(
-    // ModalOverlay — luôn phủ kín viewport, canh giữa nội dung bên trong
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-      style={{ position: "fixed" }}
-      onClick={onClose}
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      {/* ModalContent */}
-      <div
-        className="bg-card w-full max-w-md max-h-[90vh] rounded-2xl border border-border shadow-modal overflow-hidden flex flex-col animate-fade-in"
-        onClick={(e) => e.stopPropagation()}
+      <DialogContent
+        showCloseButton={false}
+        className="w-[calc(100%-2rem)] max-w-lg gap-0 overflow-hidden rounded-2xl p-0 shadow-modal sm:max-w-lg"
       >
-        {/* ModalHeader */}
-        <div className="p-4 border-b border-border flex items-start justify-between bg-[#FAF7F5]">
+        <DialogHeader className="border-b border-border bg-[#FAF7F5] p-5 pr-14">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 flex items-center justify-center bg-primary/10 text-2xl rounded-xl">
-              ☕
+            <div className=" rounded-xl bg-primary/10">
+              {product?.imageUrl ? (
+                <Image
+                  src={product.imageUrl}
+                  alt={product.name}
+                  width={40}
+                  height={40}
+                  className="h-20 w-20 rounded-xl object-cover"
+                />
+              ) : (
+                <span className="rounded-xl bg-primary/10 text-5xl">
+                  {product?.category === "MON_NUOC"
+                    ? 
+                      "☕"
+                    : product?.category === "TOPPING"
+                      ? "🥛"
+                      : "🍰"
+                  }
+                </span>
+              )}
             </div>
-            <div>
-              <h3 className="font-black text-foreground text-base tracking-tight leading-tight">
-                {productName}
-              </h3>
-              <p className="text-xs text-primary font-extrabold mt-0.5">
-                Đơn giá: {productPrice.toLocaleString("vi-VN")} đ
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="truncate text-base font-black">
+                {product?.name}
+              </DialogTitle>
+              <p className="mt-1 text-xs font-extrabold text-primary">
+                Đơn giá: {formatPrice(product?.price ?? 0)}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Đóng"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-border/80 text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          {/* ModalCloseButton */}
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-neutral-100 border border-border/80 text-muted-foreground rounded-full active:scale-90 transition"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
-        {/* ModalBody */}
-        <div className="p-5 overflow-y-auto space-y-4 flex-grow min-h-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+        <div className="max-h-[55vh] bg-background overflow-y-auto p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               Thêm Topping Highlands
-            </span>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+            </p>
+            <span className="shrink-0 rounded bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">
               Đã chọn: {selectedToppings.length}
             </span>
           </div>
 
           <div className="space-y-2.5">
             {availableToppings.map((topping) => {
-              const isChecked = selectedToppings.some((t) => t.id === topping.id);
+              const isChecked = selectedToppings.some(
+                (selectedTopping) => selectedTopping.id === topping.id
+              );
+
               return (
-                <div
+                <button
                   key={topping.id}
+                  type="button"
+                  aria-pressed={isChecked}
                   onClick={() => onToggleTopping(topping)}
-                  className={`flex items-center justify-between p-3.5 bg-neutral-50 hover:bg-neutral-100/70 border rounded-xl cursor-pointer select-none transition-all duration-200 ${
-                    isChecked
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                      : "border-border"
-                  }`}
+                  className={`flex w-full items-center justify-between rounded-xl border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isChecked
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-muted/30 hover:bg-muted/60"
+                    }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
-                        isChecked
-                          ? "bg-primary border-primary text-white"
-                          : "bg-white border-border text-transparent"
-                      }`}
+                  <span className="flex min-w-0 flex-1 items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs font-black ${isChecked
+                        ? "border-primary bg-primary text-white"
+                        : "border-border bg-background"
+                        }`}
                     >
-                      ✓
-                    </div>
-                    <span className="text-xs font-bold text-foreground">{topping.name}</span>
-                  </div>
-                  <span className="text-xs font-extrabold text-primary">
-                    +{topping.price.toLocaleString("vi-VN")} đ
+                      {isChecked ? "✓" : ""}
+                    </span>
+                    <span className="truncate text-xs font-bold text-foreground">
+                      {topping.name}
+                    </span>
                   </span>
-                </div>
+                  <span className="ml-2 shrink-0 text-xs font-extrabold text-primary">
+                    +{formatPrice(topping.price)}
+                  </span>
+                </button>
               );
             })}
           </div>
         </div>
 
-        {/* ModalFooter */}
-        <div className="p-5 border-t border-border bg-[#FAF7F5] space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="space-y-4 border-t border-border bg-[#FAF7F5] p-5">
+          <div className="flex items-center justify-between gap-4">
             <span className="text-xs font-bold text-foreground">Số lượng cốc:</span>
-            <div className="flex items-center gap-2 bg-white border border-border px-2 py-1 rounded-xl shadow-sm">
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-2 py-1">
               <button
+                type="button"
                 onClick={() => onChangeQuantity(Math.max(1, drinkQuantity - 1))}
-                className="w-7 h-7 flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground rounded-lg font-bold transition active:scale-90"
+                aria-label="Giảm số lượng"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                −
+                <Minus className="h-4 w-4" />
               </button>
-              <span className="w-8 text-center font-black text-sm text-foreground">
+              <span className="w-8 text-center text-sm font-black text-foreground">
                 {drinkQuantity}
               </span>
               <button
+                type="button"
                 onClick={() => onChangeQuantity(drinkQuantity + 1)}
-                className="w-7 h-7 flex items-center justify-center bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground rounded-lg font-bold transition active:scale-90"
+                aria-label="Tăng số lượng"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                +
+                <Plus className="h-4 w-4" />
               </button>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onConfirm}
-            className="primary-btn flex items-center justify-center gap-2 shadow-premium font-black py-4 w-full"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-black text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ShoppingCart className="w-4.5 h-4.5" />
-            Thêm Vào Giỏ — {currentTotalPrice.toLocaleString("vi-VN")} đ
+            <ShoppingCart className="h-[17px] w-[17px]" />
+            <span>Thêm Vào Giỏ - {formatPrice(currentTotalPrice)}</span>
           </button>
         </div>
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   );
 }

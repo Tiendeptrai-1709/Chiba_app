@@ -1,10 +1,9 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 import 'react-native-reanimated';
 import "../global.css"
 import Providers from '@/providers/QueryProvider';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar, View } from 'react-native';
-
+import { PortalHost } from '@rn-primitives/portal';
 
 export const unstable_settings = {
     anchor: '(tabs)',
@@ -12,13 +11,18 @@ export const unstable_settings = {
 
 export default function RootLayout() {
     return (
-        <Providers>
-            <Stack
-                screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: 'transparent' },
-                }}
-            />
-        </Providers>
+        <>
+            <Providers>
+                <View className="flex-1 pt-10">
+                    <Stack
+                        screenOptions={{
+                            headerShown: false,
+                            contentStyle: { backgroundColor: 'transparent' },
+                        }}
+                    />
+                </View>
+            </Providers>
+            <PortalHost />
+        </>
     );
 }

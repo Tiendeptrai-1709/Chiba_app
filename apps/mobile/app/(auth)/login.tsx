@@ -14,6 +14,7 @@ import { Link, useRouter } from "expo-router";
 import { useLogin } from "@chiba/api-client";
 import { api } from "@/lib/axios";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
+import Notification from "@/components/reuse-components/Notification";
 
 
 export default function LoginScreen() {
@@ -23,13 +24,11 @@ export default function LoginScreen() {
 
   const router = useRouter();
 
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     showError('');
 
     if (!email || !password) {
@@ -116,6 +115,7 @@ export default function LoginScreen() {
           </View>
 
           {/* Notification */}
+          <Notification/>
 
           {/* Component Notification của web cần viết lại bằng React Native*/}
 

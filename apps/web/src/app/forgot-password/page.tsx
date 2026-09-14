@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Mail, ArrowLeft, Send } from "lucide-react";
-import {Notification} from "@/components/ui/Notication";
+import {Notification} from "@/components/reuse-components/Notication";
 import { useForgotPassword } from "@chiba/api-client/src/hooks/useAuth";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
 import { api } from "@/lib/axios";

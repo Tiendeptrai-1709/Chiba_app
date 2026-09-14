@@ -20,7 +20,7 @@ export interface Store {
   isActive: boolean;
 }
 
-export type ProductCategory = 'MON_NUOC' | 'TOPPING' | 'BANH';
+export type ProductCategory = 'ALL' | 'MON_NUOC' | 'TOPPING' | 'BANH';
 
 export interface Product {
   id: string;

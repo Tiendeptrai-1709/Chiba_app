@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateProductDto } from "src/dto/product.dto";
 
 import { PrismaService } from "src/prisma/prisma.service";
@@ -7,8 +12,8 @@ import { PrismaService } from "src/prisma/prisma.service";
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createProduct(createProduct: CreateProductDto) {
-    const existedProduct = await this.prisma.product.findFirst({
+  async createProduct(createProduct: CreateProductDto, imageUrl:string) {
+    const existedProduct = await this.prisma.product.findUnique({
       where: {
         name: createProduct.name,
       },
@@ -21,16 +26,22 @@ export class ProductService {
       data: {
         name: createProduct.name,
         price: createProduct.price,
-        imageUrl: createProduct.imageUrl,
+        imageUrl,
         category: createProduct.category ?? "MON_NUOC",
       },
     });
   }
 
   async getProduct(id: string) {
-    return this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { id },
     });
+
+    if (!product) {
+      throw new NotFoundException("Sản phẩm không tồn tại");
+    }
+
+    return product;
   }
 
   async getAllProduct() {
@@ -47,6 +58,13 @@ export class ProductService {
   }
 
   async updateProduct(id: string, data: any) {
+    const existedProduct = await this.prisma.product.findUnique({
+      where: { id },
+    });
+    if (!existedProduct) {
+      throw new NotFoundException("Sản phẩm không tồn tại");
+    }
+
     return this.prisma.product.update({
       where: {
         id,
@@ -56,6 +74,13 @@ export class ProductService {
   }
 
   async deleteProduct(id: string) {
+    const existedProduct = await this.prisma.product.findUnique({
+      where: { id },
+    });
+    if (!existedProduct) {
+      throw new NotFoundException("Sản phẩm không tồn tại");
+    }
+
     return this.prisma.product.delete({
       where: {
         id,

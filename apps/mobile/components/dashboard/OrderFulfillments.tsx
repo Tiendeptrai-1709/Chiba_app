@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Clock, CheckCircle2, AlertCircle, XCircle } from "lucide-react-native";
+import { Clock, CheckCircle2, XCircle } from "lucide-react-native";
 import { MockOrder } from "@/app/admin/dashboard";
 
 

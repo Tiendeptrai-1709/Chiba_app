@@ -14,17 +14,30 @@ import { api } from "@/lib/axios";
 
 const CreateProductScreen = () => {
     const router = useRouter();
-    const { mutate } = useCreateProduct(api)
+    const { mutate, isPending } = useCreateProduct(api)
 
     const handleCreate = (data: {
         name: string;
         price: number;
-        imageUrl:string;
+        imageUrl?: {
+            uri: string;
+            name: string;
+            type: string;
+        };
         category: string;
+        exsistingImageUrl?: string; //edit mode giữ nguyên ảnh cũ
     }) => {
-        console.log("CREATE PRODUCT", data);
+        // Create bắt buộc phải có ảnh MỚI (không có khái niệm "ảnh cũ" khi tạo mới)
+        if (!data.imageUrl) {
+            return;
+        }
 
-        mutate(data)
+        mutate({
+            name: data.name,
+            price: data.price,
+            category: data.category,
+            imageUrl: data.imageUrl,
+        });
     };
 
     return (
@@ -51,6 +64,7 @@ const CreateProductScreen = () => {
             <ProductForm
                 submitText="Thêm sản phẩm"
                 onSubmit={handleCreate}
+                submitting={isPending}
             />
         </ScrollView>
     );

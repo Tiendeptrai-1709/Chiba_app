@@ -28,7 +28,13 @@ const EditProductScreen = () => {
     //     }
     // ]
 
-    const handleUpdate = (payload: { name: string, price: number, imageUrl: string, category: string }) => {
+    const handleUpdate = (payload: {
+        name: string;
+        price: number;
+        imageUrl?: { uri: string; name: string; type: string };
+        category: string;
+        existingImageUrl?: string;
+    }) => {
         console.log("UPDATE PRODUCT", id, payload);
 
         updateProduct({ id, payload },
@@ -38,8 +44,6 @@ const EditProductScreen = () => {
                 }
             }
         );
-
-
     };
     if (isLoading) {
         return (
@@ -90,6 +94,7 @@ const EditProductScreen = () => {
                 }}
                 submitText="Lưu thay đổi"
                 onSubmit={handleUpdate}
+                submitting={isPending}
             />
         </ScrollView>
     );

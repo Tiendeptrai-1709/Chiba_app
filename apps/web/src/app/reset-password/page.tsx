@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, ArrowLeft, CheckCircle } from "lucide-react";
-import {Notification} from "@/components/ui/Notication";
+import {Notification} from "@/components/reuse-components/Notication";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
 import { useResetPassword } from "@chiba/api-client/src/hooks/useAuth";
 import { api } from "@/lib/axios";

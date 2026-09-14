@@ -51,7 +51,7 @@ model User {
 
 model Product {
   id          String          @id @default(uuid())
-  name        String
+  name        String          @unique
   price       Int
   imageUrl    String
   category    ProductCategory @default(MON_NUOC)

@@ -2,70 +2,68 @@
 
 import React, { useState, useMemo } from 'react';
 // import { useCart } from '@/lib/context/CartContext';
-import { Product, ProductCategory } from '@/types';
+
 import { Search, Plus, Sparkles } from 'lucide-react';
-import ProductOptionModal from './ProductModal';
+import ProductModal from './ProductModal';
+import { Product, Topping, ProductCategory, useGetAllProduct } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+import Image from 'next/image';
 
-export const MOCK_PRODUCTS: Product[] = [
-  // MÓN NƯỚC (Highlands Coffee & Bubble Tea Style)
-  { id: 'p1', name: 'Trà Thanh Đào Highlands', price: 49000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p2', name: 'Trà Thạch Sen Bùi Thơm', price: 49000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p3', name: 'Trà Thạch Vải Dai Ngọt', price: 49000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p4', name: 'Phin Sữa Đá Đậm Đà', price: 35000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p5', name: 'Phin Đen Đá Nguyên Bản', price: 29000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p6', name: 'Freeze Trà Xanh Thạch Vy', price: 55000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p7', name: 'Trà Sữa Thốt Nốt ZEN', price: 54000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p8', name: 'Trà Sữa Trân Châu Hoàng Kim', price: 48000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p9', name: 'Trà Xanh Đậu Đỏ Phố Cổ', price: 49000, category: 'MON_NUOC', isAvailable: true },
-  { id: 'p10', name: 'Freeze Sô-cô-la Bông Kem', price: 55000, category: 'MON_NUOC', isAvailable: true },
-
-  // TOPPING NƯỚC (BÁN RIÊNG)
-  { id: 't1', name: 'Thạch Đào Giòn Sần Sật', price: 10000, category: 'TOPPING', isAvailable: true },
-  { id: 't2', name: 'Thạch Sen Thơm Bùi', price: 10000, category: 'TOPPING', isAvailable: true },
-  { id: 't3', name: 'Trân Châu Hoàng Kim', price: 10000, category: 'TOPPING', isAvailable: true },
-  { id: 't4', name: 'Kem Phô Mai Macchiato Béo', price: 15000, category: 'TOPPING', isAvailable: true },
-  { id: 't5', name: 'Kem Phô Mai Macchiato Béo2', price: 15000, category: 'TOPPING', isAvailable: true },
-  { id: 't5', name: 'Kem Phô Mai Macchiato Béo3', price: 15000, category: 'TOPPING', isAvailable: true },
-
-  // BÁNH & ĐỒ ĂN KÈM (Highlands Style)
-  { id: 'b1', name: 'Bánh Mì Que Pate Xá Xíu', price: 29000, category: 'BANH', isAvailable: true },
-  { id: 'b2', name: 'Bánh Mì Que Gà Phô Mai', price: 29000, category: 'BANH', isAvailable: true },
-  { id: 'b3', name: 'Bánh Chuối Nướng Truyền Thống', price: 35000, category: 'BANH', isAvailable: true },
-  { id: 'b4', name: 'Bánh Tiramisu Highlands Mềm', price: 39000, category: 'BANH', isAvailable: true },
-  { id: 'b5', name: 'Bánh Caramel Phô Mai Ngọt Ngào', price: 39000, category: 'BANH', isAvailable: true }
+const CATEGORIES: {id: ProductCategory, label:string}[] = [
+  { id: 'ALL', label: 'Tất cả' },
+  { id: 'MON_NUOC', label: 'Món Nước' },
+  { id: 'TOPPING', label: 'Topping Nước' },
+  { id: 'BANH', label: 'Bánh & Đồ Ăn Kèm' },
 ];
 
-export const ProductList = () => {
+export const ProductMenuList = () => {
   // const { addItem } = useCart();
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('MON_NUOC');
+  const { data: PRODUCTS } = useGetAllProduct(api)
+  const [activeCategory, setActiveCategory] =
+    useState<ProductCategory>("ALL");
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItemName, setAddedItemName] = useState<string | null>(null);
-
-  // States for toppings integration modal
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedToppings, setSelectedToppings] = useState<Product[]>([]);
+  const [selectedToppings, setSelectedToppings] = useState<Topping[]>([]);
   const [drinkQuantity, setDrinkQuantity] = useState(1);
 
-  const categories: { key: ProductCategory; label: string }[] = [
-    { key: 'MON_NUOC', label: 'Món Nước' },
-    { key: 'TOPPING', label: 'Topping Nước (Bán riêng)' },
-    { key: 'BANH', label: 'Bánh & Đồ Ăn Kèm' }
-  ];
-
-  // Optimize filter calculation using useMemo (Caching filter results)
+  /*
+  * Filter products
+  */
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter(
-      (product) =>
-        product.category === activeCategory &&
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [activeCategory, searchQuery]);
+    const query = searchQuery
+      .toLowerCase()
+      .trim();
 
-  // Cache available toppings list for better rendering performance
+    return PRODUCTS.filter((product: any) => {
+      const matchSearch =
+        !query ||
+        product.name
+          .toLowerCase()
+          .includes(query);
+
+      const matchCategory =
+        activeCategory === "ALL" ||
+        product.category === activeCategory;
+
+      return matchSearch && matchCategory;
+    });
+  }, [
+    PRODUCTS,
+    searchQuery,
+    activeCategory,
+  ]);
+
+  /*
+   * Available toppings
+   */
   const availableToppings = useMemo(() => {
-    return MOCK_PRODUCTS.filter((product) => product.category === 'TOPPING');
-  }, []);
+    return PRODUCTS.filter((product: Product) => product.category === 'TOPPING');
+  }, [PRODUCTS]);
 
+  /*
+   * Toast
+   */
   const triggerToast = (name: string) => {
     setAddedItemName(name);
     setTimeout(() => {
@@ -73,50 +71,76 @@ export const ProductList = () => {
     }, 2000);
   };
 
+  /*
+   * Add product
+   */
   const handleAddToCart = (product: Product) => {
     if (product.category === 'MON_NUOC') {
       setSelectedProduct(product);
       setSelectedToppings([]);
       setDrinkQuantity(1);
-    } else {
-      // addItem({ id: product.id, name: product.name, price: product.price });
-      triggerToast(product.name);
+      return;
     }
+
+    triggerToast(product.name);
   };
 
-  const handleToggleTopping = (topping: { id: string; name: string; price: number; category: string }) => {
-    if (selectedToppings.some((t) => t.id === topping.id)) {
-      setSelectedToppings(selectedToppings.filter((t) => t.id !== topping.id));
-    } else {
-      setSelectedToppings([...selectedToppings, topping as Product]);
-    }
+  /*
+   * Toggle topping
+   */
+  const handleToggleTopping = (topping: Topping) => {
+    setSelectedToppings((prev) => {
+      const exists = prev.some((item) => item.id === topping.id);
+      if (exists) {
+        return prev.filter((item) => item.id !== topping.id);
+      }
+      return [...prev, topping];
+    });
   };
 
+  /*
+   * Confirm
+   */
   const handleConfirmToppings = () => {
     if (!selectedProduct) return;
 
-    // addItem(
-    //   { id: selectedProduct.id, name: selectedProduct.name, price: selectedProduct.price },
-    //   selectedToppings.map((t) => ({ id: t.id, name: t.name, price: t.price })),
-    //   drinkQuantity
-    // );
+    const toppingNames = selectedToppings
+      .map((topping) => topping.name)
+      .join(', ');
+    const toastName = toppingNames
+      ? `${selectedProduct.name} (+Topping)`
+      : selectedProduct.name;
 
-    const toppingNames = selectedToppings.map((t) => t.name).join(', ');
-    const toastName = toppingNames ? `${selectedProduct.name} (+Topping)` : selectedProduct.name;
     triggerToast(toastName);
-
-    // Reset and close
     setSelectedProduct(null);
     setSelectedToppings([]);
     setDrinkQuantity(1);
   };
 
-  // Dynamic price calculation with useMemo caching
+  /*
+   * Calculate total
+   */
   const currentTotalPrice = useMemo(() => {
     if (!selectedProduct) return 0;
-    const toppingsPrice = selectedToppings.reduce((sum, t) => sum + t.price, 0);
+    const toppingsPrice = selectedToppings.reduce(
+      (sum, topping) => sum + topping.price,
+      0,
+    );
     return (selectedProduct.price + toppingsPrice) * drinkQuantity;
   }, [selectedProduct, selectedToppings, drinkQuantity]);
+
+  /*
+   * Product icon
+   */
+  // const getProductIcon = (product: Product) => {
+  //   if (product.category === 'MON_NUOC') {
+  //     return '☕';
+  //   }
+  //   if (product.category === 'TOPPING') {
+  //     return '🥛';
+  //   }
+  //   return '🍰';
+  // };
 
   return (
     <>
@@ -135,13 +159,13 @@ export const ProductList = () => {
 
         {/* Categories Horizontal Scroll Bar */}
         <div className="flex border-b border-border overflow-x-auto scrollbar-none gap-2 pb-px -mx-4 px-4 sticky top-[66px] bg-background/95 backdrop-blur-md z-30 py-2">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat.key;
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.id;
             return (
               <button
-                key={cat.key}
+                key={cat.id}
                 onClick={() => {
-                  setActiveCategory(cat.key);
+                  setActiveCategory(cat.id);
                   setSearchQuery('');
                 }}
                 className={`whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${isActive
@@ -166,16 +190,27 @@ export const ProductList = () => {
         {/* Dynamic Products Grid/List */}
         {filteredProducts.length > 0 ? (
           <div className="space-y-3">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product: Product) => (
               <div
                 key={product.id}
                 onClick={() => handleAddToCart(product)}
                 className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border interactive-card cursor-pointer select-none"
               >
                 {/* Product Thumbnail/Icon */}
-                <div className="w-12 h-12 flex items-center justify-center bg-muted text-2xl rounded-xl">
-                  {product.category === 'MON_NUOC' ? '☕' : product.category === 'TOPPING' ? '🥛' : '🍰'}
-                </div>
+                {
+                  product.imageUrl ? (
+                    <Image
+                      src={product.imageUrl}
+                      alt={product.name}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center bg-muted text-2xl rounded-xl">
+                      {product.category === 'MON_NUOC' ? '☕' : product.category === 'TOPPING' ? '🥛' : '🍰'}
+                    </div>)
+                }
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
@@ -214,11 +249,10 @@ export const ProductList = () => {
       </div>
       {/* PREMIUM TOPPING SELECTION MODAL */}
       {selectedProduct && (
-        <ProductOptionModal
+        <ProductModal
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          productName={selectedProduct?.name ?? ""}
-          productPrice={selectedProduct?.price ?? 0}
+          product={selectedProduct}
           availableToppings={availableToppings}
           selectedToppings={selectedToppings}
           onToggleTopping={handleToggleTopping}

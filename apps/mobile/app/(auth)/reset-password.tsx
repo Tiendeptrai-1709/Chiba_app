@@ -14,14 +14,14 @@ import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { useResetPassword } from "@chiba/api-client/src/hooks/useAuth";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
 import { api } from "@/lib/axios";
-import Notification from "@/components/ui/Notification";
+import Notification from "@/components/reuse-components/Notification";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const { token } = useLocalSearchParams();
 
   const { mutate, isPending, isSuccess } = useResetPassword(api);
-  const { showSuccess, showError, clearNotification } = useNotificationStore();
+  const { showError, clearNotification } = useNotificationStore();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

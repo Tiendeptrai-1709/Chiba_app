@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight} from 'lucide-react';
-import { Notification } from '@/components/ui/Notication';
+import { Notification } from '@/components/reuse-components/Notication';
 import Image from 'next/image';
 import { useLogin } from '@chiba/api-client';
 import { api } from '@/lib/axios';

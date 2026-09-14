@@ -8,12 +8,13 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { Mail, ArrowLeft, Send } from "lucide-react-native";
+import { Mail, Send } from "lucide-react-native";
 import { Link } from "expo-router";
 
 import { useForgotPassword } from "@chiba/api-client/src/hooks/useAuth";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
 import { api } from "@/lib/axios";
+import Notification from "@/components/reuse-components/Notification";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
@@ -99,21 +100,7 @@ export default function ForgotPasswordScreen() {
               </View>
 
               {/* Notification Box */}
-              {/* {message ? (
-                <View
-                  className={`p-3 rounded-lg mb-4 ${
-                    type === "error" ? "bg-red-100" : "bg-green-100"
-                  }`}
-                >
-                  <Text
-                    className={`text-sm text-center font-medium ${
-                      type === "error" ? "text-red-700" : "text-green-700"
-                    }`}
-                  >
-                    {message}
-                  </Text>
-                </View>
-              ) : null} */}
+              <Notification/>
 
               {/* Submit Button */}
               <Pressable

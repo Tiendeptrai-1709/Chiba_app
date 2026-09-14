@@ -20,7 +20,6 @@ import TransactionHistory from "@/components/dashboard/TransactionHistory";
 import CustomerManager from "@/components/dashboard/CustomerManager";
 import OrderFulfillment from "@/components/dashboard/OrderFulfillments";
 import SystemOverview from "@/components/dashboard/SystemOverview";
-// import PointActionModal from "@/components/ui/PointActionModal";
 
 export interface MockOrder {
   id: string;
@@ -40,7 +39,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("");
   const [mockOrders, setMockOrders] = useState<MockOrder[]>([]);
   const [allCustomers] = useState([]);
-  const [pointAction, setPointAction] = useState<{customer: any, type:string} | null>(null);
+  // const [pointAction, setPointAction] = useState<{customer: any, type:string} | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -70,7 +69,7 @@ export default function AdminDashboard() {
       <View className="bg-card border-b border-border px-5 py-4 flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.push("/profile")}
             className="p-2 rounded-full border border-border"
           >
             <ArrowLeft size={18} color="#1F1914" />
@@ -115,9 +114,9 @@ export default function AdminDashboard() {
             mockOrders={mockOrders}
             allCustomers={allCustomers}
             isAdmin={isAdmin}
-            onTriggerAction={(customer, type) =>
-              setPointAction({ customer, type })
-            }
+            // onTriggerAction={(customer, type) =>
+            //   setPointAction({ customer, type })
+            // }
           />
         )}
 

@@ -1,4 +1,4 @@
-import { RegisterDto } from 'src/dto/auth/register.dto';
+
 import {
   BadRequestException,
   ForbiddenException,
@@ -8,12 +8,10 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcryptjs";
-
-import { LoginDto } from "src/dto/auth/login.dto";
 import { MailService } from "./mail.service";
 import { createHash, randomBytes } from "crypto";
-import { ForgotPasswordDto } from "src/dto/auth/forgot-password.dto";
-import { ResetPasswordDto } from "src/dto/auth/reset-password.dto";
+import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from 'src/dto/auth.dto';
+
 
 @Injectable()
 export class AuthService {
@@ -56,6 +54,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
     });
+    console.log("ddasd")
     if (!user || user.isDeleted) {
       throw new UnauthorizedException("Tài khoản không tồn tại");
     }

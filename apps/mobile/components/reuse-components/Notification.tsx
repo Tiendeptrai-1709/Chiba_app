@@ -1,9 +1,20 @@
 import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 const Notification = () => {
     const { error, success, clearNotification } = useNotificationStore();
+    // Tự động ẩn thông báo lỗi/thành công sau 5 giây để nâng cao trải nghiệm người dùng
+    useEffect(() => {
+        if (error || success) {
+            const timer = setTimeout(() => {
+                clearNotification();
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, success, clearNotification]);
+
+    if (!error && !success) return null;
     return (
         <View className="mb-4 space-y-2 animate-fade-in relative">
             {/* Notification Alert Box */}

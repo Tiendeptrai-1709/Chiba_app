@@ -1,4 +1,5 @@
-import { User } from '@/types';
+
+import { User } from '@chiba/api-client';
 import { Coins, Search } from 'lucide-react';
 import React, { useState } from 'react'
 

@@ -2,12 +2,12 @@
 
 import React, { useEffect } from 'react';
 import {Header} from '@/components/layout/Header';
-import {ProductList} from '@/components/products/ProductList';
 import Link from 'next/link';
 import { Home, MapPin, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '@chiba/api-client';
 import { api } from '@/lib/axios';
+import { ProductMenuList } from '@/components/products/ProductMenuList';
 
 export default function Page() {
   const { data: user, isLoading } = useProfile(api);
@@ -53,7 +53,7 @@ export default function Page() {
         </div>
 
         {/* Categories & Products */}
-        <ProductList />
+        <ProductMenuList />
       </div>
 
       {/* Premium Mobile Dock at bottom */}

@@ -11,7 +11,8 @@ import {
 import { UserSevice } from "../services/user.service";
 import { JwtAuthGuard } from "src/guards/jwt-auth.guard";
 import { Request, Response } from "express";
-import { DeleteProfileDto } from "src/dto/auth/delete-profile.dto";
+import { DeleteProfileDto } from "src/dto/auth.dto";
+
 
 @Controller("users")
 export class UserController {
@@ -34,7 +35,7 @@ export class UserController {
   @Delete("profile")
   async deleteProfile(
     @Req() req: Request,
-    @Body() dto:DeleteProfileDto ,
+    @Body() dto:DeleteProfileDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { userId } = req.user;

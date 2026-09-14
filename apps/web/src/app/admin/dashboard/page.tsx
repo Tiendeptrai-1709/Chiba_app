@@ -4,16 +4,16 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import { User } from '@/types';
+
 import StockController from '@/components/dashboard/StockController';
 import OrderFulfillment from '@/components/dashboard/OrderFulfillment';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
-import {PointActionModal} from '@/components/ui/PointActionModal';
+import { PointActionModal } from '@/components/reuse-components/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
-import { Notification } from '@/components/ui/Notication';
-import { useProfile } from '@chiba/api-client';
+import { Notification } from '@/components/reuse-components/Notication';
+import { useProfile, User } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 
@@ -27,9 +27,9 @@ export interface MockOrder {
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 }
 
-const AdminDashboard = ()=> {
+const AdminDashboard = () => {
   const { data: user, isLoading } = useProfile(api)
-  const {showSuccess,showError} = useNotificationStore()
+  const { showSuccess, showError } = useNotificationStore()
   const router = useRouter();
 
   // Navigation tab state
@@ -180,7 +180,10 @@ const AdminDashboard = ()=> {
           <SystemOverview
             mockOrders={mockOrders}
             allCustomers={allCustomers}
-            onSetNotification={handleNotification} />)}
+            onSetNotification={handleNotification}
+            user={user}
+          />)
+        }
 
         {/* ========================================================
             TAB: CUSTOMERS & POINTS REDEMPTION (ADMIN & STAFF)

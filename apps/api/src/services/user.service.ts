@@ -1,5 +1,6 @@
 
 import { Injectable } from "@nestjs/common";
+import { DeleteProfileDto } from "src/dto/auth.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -41,9 +42,9 @@ export class UserSevice {
     });
   }
 
-  async deleteProfile(userId: string, typeDel: "HARD" | "SOFT") {
+  async deleteProfile(deleteProfileDto: DeleteProfileDto, userId: string) {
     // console.log("type: ",typeof(typeDel))
-    if (typeDel == "SOFT") {
+    if (deleteProfileDto.typeDel == "SOFT") {
       return this.prisma.user.update({
         where: {
           id: userId,
@@ -53,7 +54,7 @@ export class UserSevice {
           deletedAt: new Date(),
         },
       });
-    } if(typeDel == "HARD") {
+    } if(deleteProfileDto.typeDel == "HARD") {
       return this.prisma.user.delete({ where: { id: userId } });
     }
   }

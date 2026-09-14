@@ -12,7 +12,6 @@ import {
   User,
   Mail,
   Lock,
-  ArrowLeft,
   UserPlus,
 } from "lucide-react-native";
 import { Link, useRouter } from "expo-router";
@@ -20,6 +19,7 @@ import { Link, useRouter } from "expo-router";
 import { useRegister } from "@chiba/api-client";
 import { api } from "@/lib/axios";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
+import Notification from "@/components/reuse-components/Notification";
 
 export default function RegisterScreen() {
   const { mutate, isPending } = useRegister(api);
@@ -164,21 +164,7 @@ export default function RegisterScreen() {
           </View>
 
           {/* Notification Alert Box */}
-          {/* {message ? (
-            <View
-              className={`p-3 rounded-lg mb-4 ${
-                type === "error" ? "bg-red-100" : "bg-green-100"
-              }`}
-            >
-              <Text
-                className={`text-sm text-center font-medium ${
-                  type === "error" ? "text-red-700" : "text-green-700"
-                }`}
-              >
-                {message}
-              </Text>
-            </View>
-          ) : null} */}
+          <Notification/>
 
           {/* Submit Button */}
           <Pressable

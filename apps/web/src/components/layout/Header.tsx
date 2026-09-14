@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 // import { useCart } from '@/lib/context/CartContext';
-import { User } from '@/types';
 import { MapPin, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
+import { User } from '@chiba/api-client';
 
 interface HeaderProps {
   user: User | null;

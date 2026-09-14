@@ -1,16 +1,10 @@
 import React, { useEffect } from "react";
-import { View, Text, ActivityIndicator, Pressable } from "react-native";
-import { Home, MapPin, User, ShoppingBag } from "lucide-react-native";
-import { Link, useRouter } from "expo-router";
-
+import { View, Text, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
 import { useProfile } from "@chiba/api-client";
 import { api } from "@/lib/axios";
-// components
 import Header from "@/components/layouts/Header";
 import ProductMenuList from "@/components/products/customer/ProductMenuList";
-
-
-
 
 export default function HomeScreen() {
   const { data: user, isLoading } = useProfile(api);
@@ -20,7 +14,7 @@ export default function HomeScreen() {
     if (!user && !isLoading) {
       router.replace("/login");
     }
-  }, [user, isLoading]);
+  }, [user, isLoading,router]);
 
   if (isLoading) {
     return (

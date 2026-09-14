@@ -1,20 +1,21 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { View, Text, TextInput, Pressable, FlatList } from "react-native";
 import { Search, Coins } from "lucide-react-native";
-import { User } from "@/types";
+import { User } from "@chiba/api-client";
+
 
 interface CustomerManagerProps {
   mockOrders: any[];
   allCustomers: User[];
   isAdmin: boolean;
-  onTriggerAction: (customer: User, type: "REDEEM" | "ADJUST") => void;
+  // onTriggerAction: (customer: User, type: "REDEEM" | "ADJUST") => void;
 }
 
 export default function CustomerManager({
   mockOrders,
   allCustomers,
   isAdmin,
-  onTriggerAction,
+  // onTriggerAction,
 }: CustomerManagerProps) {
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
 
@@ -114,7 +115,7 @@ export default function CustomerManager({
             {/* Actions */}
             <View className="flex-row gap-2 pt-1 border-t border-border/50">
               <Pressable
-                onPress={() => onTriggerAction(cust, "REDEEM")}
+                // onPress={() => onTriggerAction(cust, "REDEEM")}
                 className="flex-1 bg-accent/10 p-2.5 rounded-xl active:opacity-70"
               >
                 <Text className="text-xs text-center font-bold">
@@ -124,7 +125,7 @@ export default function CustomerManager({
 
               {isAdmin && (
                 <Pressable
-                  onPress={() => onTriggerAction(cust, "ADJUST")}
+                  // onPress={() => onTriggerAction(cust, "ADJUST")}
                   className="flex-1 bg-primary/10 p-2.5 rounded-xl active:opacity-70"
                 >
                   <Text className="text-xs text-center font-bold">

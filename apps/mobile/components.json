@@ -10,9 +10,9 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/reusable",
+    "components": "@/components",
     "utils": "@/lib/utils",
-    "ui": "@/components/reusables",
+    "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
   }

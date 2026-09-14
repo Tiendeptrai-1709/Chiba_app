@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Providers from './providers';
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
 
-
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: 'Chiba - Tea, Coffee & Foods',
@@ -23,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" className={cn("font-sans", geist.variable)}>
       <body className="bg-neutral-100 min-h-screen flex justify-center overflow-x-hidden">
         {/* Mobile Mockup Wrapper for Premium Feel */}
         <div className="w-full max-w-2xl bg-background min-h-screen flex flex-col shadow-premium border-x border-border/30 relative">

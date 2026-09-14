@@ -2,8 +2,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User } from '@/types';
 import { X } from 'lucide-react';
+import { User } from '@chiba/api-client';
 
 interface PointActionModalProps {
   action: {

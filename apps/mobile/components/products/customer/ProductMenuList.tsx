@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { Plus, Search, Sparkles } from 'lucide-react-native';
 
-import { Product, ProductCategory } from '@/types';
-
-import { useGetAllProduct } from '@chiba/api-client';
+import { Product, ProductCategory, Topping, useGetAllProduct } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import ProductModal from './ProductModal';
 
-const CATEGORIES: { id: ProductCategory; label: string }[] = [
+const CATEGORIES: {id: ProductCategory, label:string}[] = [
   { id: 'ALL', label: 'Tất cả' },
   { id: 'MON_NUOC', label: 'Món Nước' },
   { id: 'TOPPING', label: 'Topping Nước' },
@@ -18,11 +16,11 @@ const CATEGORIES: { id: ProductCategory; label: string }[] = [
 const ProductMenuList = () => {
   const { data: PRODUCTS } = useGetAllProduct(api)
   const [activeCategory, setActiveCategory] =
-    useState<ProductCategory>('MON_NUOC');
+    useState<ProductCategory>("ALL");
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItemName, setAddedItemName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedToppings, setSelectedToppings] = useState<Product[]>([]);
+  const [selectedToppings, setSelectedToppings] = useState<Topping[]>([]);
   const [drinkQuantity, setDrinkQuantity] = useState(1);
 
   /*
@@ -57,7 +55,7 @@ const ProductMenuList = () => {
    */
   const availableToppings = useMemo(() => {
     return PRODUCTS.filter((product: Product) => product.category === 'TOPPING');
-  }, []);
+  }, [PRODUCTS]);
 
   /*
    * Toast
@@ -86,7 +84,7 @@ const ProductMenuList = () => {
   /*
    * Toggle topping
    */
-  const handleToggleTopping = (topping: Product) => {
+  const handleToggleTopping = (topping: Topping) => {
     setSelectedToppings((prev) => {
       const exists = prev.some((item) => item.id === topping.id);
       if (exists) {
@@ -222,7 +220,17 @@ const ProductMenuList = () => {
           >
             {/* Product icon */}
             <View className="w-12 h-12 rounded-xl bg-[#F5F5F5] items-center justify-center mr-3.5">
-              <Text className="text-2xl">{getProductIcon(product)}</Text>
+              {product?.imageUrl ? (
+                <Image source={{ uri: product.imageUrl }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                  }} />
+              ) : (
+                <Text className="text-3xl">{getProductIcon(product)}</Text>
+              )
+              }
             </View>
 
             {/* Product information */}
@@ -267,8 +275,7 @@ const ProductMenuList = () => {
         <ProductModal
           isOpen={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          productName={selectedProduct.name}
-          productPrice={selectedProduct.price}
+          product={selectedProduct}
           availableToppings={availableToppings}
           selectedToppings={selectedToppings}
           onToggleTopping={handleToggleTopping}

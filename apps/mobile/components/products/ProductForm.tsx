@@ -5,8 +5,11 @@ import {
     TextInput,
     View,
 } from "react-native";
-import Notification from "../ui/Notification";
-// import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../reusables/select";
+import Notification from "../reuse-components/Notification";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import * as ImagePicker from 'expo-image-picker';
+import { ImagePlus } from "lucide-react-native";
+import { Image } from 'expo-image';
 
 interface ProductFormProps {
     initialValues?: {
@@ -20,10 +23,22 @@ interface ProductFormProps {
     onSubmit: (data: {
         name: string;
         price: number;
-        imageUrl: string;
+        imageUrl?: {
+            uri: string;
+            name: string;
+            type: string;
+        }
         category: string;
+        existingImageUrl?: string; //edit mode giữ nguyên ảnh cũ
     }) => void;
 }
+
+const buildImageFileFromAsset = (asset: ImagePicker.ImagePickerAsset): { uri: string; name: string; type: string } => {
+    const filename = asset.uri.split("/").pop() ?? "product.jpg";
+    const match = /\.(\w+)$/.exec(filename);
+    const fileType = match ? `image/${match[1].toLowerCase()}` : "image/jpeg";
+    return { uri: asset.uri, name: filename, type: fileType };
+};
 
 const ProductForm = ({
     initialValues,
@@ -33,8 +48,34 @@ const ProductForm = ({
 }: ProductFormProps) => {
     const [name, setName] = useState(initialValues?.name ?? "");
     const [price, setPrice] = useState(initialValues?.price ?? "");
-    const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl ?? "");
     const [category, setCategory] = useState(initialValues?.category ?? "");
+
+    //ảnh cũ edit mode
+    const [existingImageUrl] = useState(initialValues?.imageUrl ?? "");
+
+    //
+    const [pickedImage, setPickedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+    //Ảnh hiển thị trong form, có thể là ảnh mới hoặc ảnh cũ
+    const pickedImageUrl = pickedImage ? pickedImage.uri : existingImageUrl;
+
+    const handlePickImage = async () => {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            alert("Cần quyền truy cập', 'Vui lòng cấp quyền truy cập thư viện ảnh để tiếp tục");
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 0.8,
+            allowsEditing: true,
+            aspect: [1, 1],
+        });
+
+        if (!result.canceled && result.assets.length > 0) {
+            setPickedImage(result.assets[0]);
+        }
+    }
 
     const handleSubmit = () => {
         if (!name.trim()) {
@@ -49,12 +90,13 @@ const ProductForm = ({
         if (Number.isNaN(numericPrice)) {
             return;
         }
-        
+
         onSubmit({
             name: name.trim(),
             price: numericPrice,
             category,
-            imageUrl: imageUrl.trim(),
+            imageUrl: pickedImage ? buildImageFileFromAsset(pickedImage) : undefined,
+            existingImageUrl: pickedImage ? undefined : existingImageUrl, // Nếu có ảnh mới thì không gửi ảnh cũ
         });
     };
 
@@ -93,18 +135,22 @@ const ProductForm = ({
             </View>
 
             {/* Category */}
-            {/* <View className="gap-2">
+            <View className="gap-2">
                 <Text className="text-xs font-bold text-foreground">Danh mục</Text>
 
-                <Select value={{ value: category, label: category }} onValueChange={(option) => {
-                    setCategory(option?.value ?? "");
-                }}>
-                    <SelectTrigger className="w-full bg-card border-border rounded-xl px-4 py-3">
+                <Select
+                    value={{ value: category, label: category }}
+                    onValueChange={(option) => {
+                        setCategory(option?.value ?? "");
+                    }}
+                    className=""
+                >
+                    <SelectTrigger className="w-full">
                         <SelectValue placeholder="Chọn danh mục" />
                     </SelectTrigger>
 
-                    <SelectContent className="bg-card border-border rounded-xl">
-                        <SelectGroup>
+                    <SelectContent className="w-full bg-card border border-border rounded-xl">
+                        <SelectGroup className="">
                             <SelectItem label="Món Nước" value="MON_NUOC">
                                 Món Nước
                             </SelectItem>
@@ -117,24 +163,32 @@ const ProductForm = ({
                         </SelectGroup>
                     </SelectContent>
                 </Select>
-            </View> */}
+            </View>
 
             {/* imageUrl */}
             <View className="gap-2">
-                <Text className="text-xs font-bold text-foreground">
-                    Image
+                <Text className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Ảnh sản phẩm
                 </Text>
-
-                <TextInput
-                    value={imageUrl}
-                    onChangeText={setImageUrl}
-                    placeholder="Image sản phẩm..."
-                    placeholderTextColor="#999"
-                    multiline
-                    numberOfLines={5}
-                    textAlignVertical="top"
-                    className="bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground min-h-[120px]"
-                />
+                <Pressable
+                    onPress={handlePickImage}
+                    className="h-40 rounded-xl border border-dashed border-border bg-input items-center justify-center overflow-hidden"
+                >
+                    {pickedImageUrl ? (
+                        <Image
+                            source={{ uri: pickedImageUrl }}
+                            style={{ width: '100%', height: '100%' }}
+                            contentFit="cover"
+                        />
+                    ) : (
+                        <View className="items-center gap-2">
+                            <ImagePlus size={22} color="#6B5E53" />
+                            <Text className="text-xs text-muted-foreground">
+                                Nhấn để chọn ảnh
+                            </Text>
+                        </View>
+                    )}
+                </Pressable>
             </View>
 
             {/* Submit */}

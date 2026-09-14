@@ -3,7 +3,8 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import { Mail, UserPlus } from "lucide-react-native";
 import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
 import { useRouter } from "expo-router";
-import { User } from "@/types";
+import { User } from "@chiba/api-client";
+
 
 interface Props {
   mockOrders: any[];
@@ -45,7 +46,7 @@ const SystemOverview = ({ mockOrders, allCustomers, user }: Props) => {
       showSuccess(`Đã gửi lời mời Staff tới ${email}`);
       setEmailInput("");
     } catch (err) {
-      showError("Có lỗi xảy ra");
+      showError(`Có lỗi xảy ra ${err}`);
     } finally {
       setSubmitting(false);
     }
