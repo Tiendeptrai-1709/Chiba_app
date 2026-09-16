@@ -2,45 +2,40 @@
 
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/axios';
-import { useGetAllProduct, useProfile } from '@chiba/api-client';
+import { Product, useGetAllProduct, useProfile } from '@chiba/api-client';
 // import { useDeleteProduct } from '@chiba/api-client/src/hooks/useProduct';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import { Notification } from '@/components/reuse-components/Notication';
 
 import ProductEditList from '@/components/products/ProductEditList';
+import DeleteProductModal from '@/components/products/DeleteProductModal';
+import { useDeleteProduct } from '@chiba/api-client/src/hooks/useProduct';
 
 const ProductPage = () => {
     const router = useRouter();
     const { data: PRODUCTS } = useGetAllProduct(api)
-    // const { mutate: deleteProduct } = useDeleteProduct(api)
+    const { mutate: deleteProduct } = useDeleteProduct(api)
     const { data: user } = useProfile(api)
 
-    const [searchQuery, setSearchQuery] = useState("");
-
-    // const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
+    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     if (user?.role !== "ADMIN" && user?.role !== "STAFF") {
         router.replace("/")
     }
-    // const filteredProducts = PRODUCTS.filter((product: Product) =>
-    //     product.name
-    //         .toLowerCase()
-    //         .includes(searchQuery.toLowerCase()),
-    // );
 
-    // const handleDeleteProduct = () => {
-    //     if (selectedProduct) {
-    //         deleteProduct(selectedProduct.id, {
-    //             onSuccess: () => {
-    //                 setSelectedProduct(null);
-    //             },
-    //             onError: (error) => { console.log("Error deleting product", error) },
-    //         });
-    //     }
-    // };
+    const handleDeleteProduct = () => {
+        if (selectedProduct) {
+            deleteProduct(selectedProduct.id, {
+                onSuccess: () => {
+                    setSelectedProduct(null);
+                },
+                onError: (error) => { console.log("Error deleting product", error) },
+            });
+        }
+    };
 
     return (
         <div className="flex-1 bg-background px-4 pt-5">
@@ -74,23 +69,14 @@ const ProductPage = () => {
                 </Button>
             </div>
 
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
-                <input
-                    type="text"
-                    placeholder="Tìm trà, cà phê hay món bánh..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm placeholder:text-muted-foreground/50 shadow-sm"
-                />
-            </div>
-
             {/* Product list */}
-            <ProductEditList />
+            <ProductEditList 
+                setSelectedProduct={setSelectedProduct}
+                setIsOpenDeleteModal={setIsOpenDeleteModal} 
+            />
 
             <Notification />
-            {/* {isOpenDeleteModal && (
+            {isOpenDeleteModal && (
                 <DeleteProductModal
                     isOpenDeleteModal={isOpenDeleteModal}
                     setIsOpenDeleteModal={setIsOpenDeleteModal}
@@ -98,7 +84,7 @@ const ProductPage = () => {
                     productPrice={selectedProduct?.price || 0}
                     onConfirm={handleDeleteProduct}
                 />
-            )} */}
+            )}
         </div>
     );
 }

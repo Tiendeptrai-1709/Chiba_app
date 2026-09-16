@@ -21,11 +21,11 @@ interface ProductFormProps {
     };
     submitText: string;
     submitting?: boolean;
-    onSubmit1: (data: {
+    onSubmit: (data: {
         name: string;
         price: number;
         // Chỉ CÓ khi người dùng vừa chọn ảnh mới -> cần upload
-        imageUrl?: File;
+        imageUrl?: File | { uri: string; name: string; type: string };
         category: string;
         // Chỉ CÓ khi KHÔNG đổi ảnh (edit mode, giữ nguyên ảnh cũ) -> không cần upload lại
         existingImageUrl?: string;
@@ -36,7 +36,7 @@ const ProductForm = ({
     initialValues,
     submitText,
     submitting = false,
-    onSubmit1,
+    onSubmit,
 }: ProductFormProps) => {
     const [name, setName] = useState(initialValues?.name ?? '');
     const [price, setPrice] = useState(initialValues?.price ?? '');
@@ -72,7 +72,7 @@ const ProductForm = ({
         // Bắt buộc phải có ảnh: hoặc vừa chọn mới, hoặc đã có sẵn từ trước (edit)
         if (!pickedFile && !existingImageUrl) return;
 
-        onSubmit1({
+        onSubmit({
             name: name.trim(),
             price: numericPrice,
             category,

@@ -12,7 +12,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createProduct(createProduct: CreateProductDto, imageUrl:string) {
+  async createProduct(createProduct: CreateProductDto, imageUrl: string) {
     const existedProduct = await this.prisma.product.findUnique({
       where: {
         name: createProduct.name,
@@ -57,7 +57,7 @@ export class ProductService {
     });
   }
 
-  async updateProduct(id: string, data: any) {
+  async updateProduct(id: string, data: any, imageUrl?: string) {
     const existedProduct = await this.prisma.product.findUnique({
       where: { id },
     });
@@ -65,11 +65,21 @@ export class ProductService {
       throw new NotFoundException("Sản phẩm không tồn tại");
     }
 
+    const updateData: any = {
+      name: data.name,
+      price: Number(data.price),
+      category: data.category,
+    };
+
+    // Chỉ update imageUrl nếu user upload ảnh mới
+    if (imageUrl) {
+      updateData.imageUrl = imageUrl;
+    }
     return this.prisma.product.update({
       where: {
         id,
       },
-      data,
+      data:updateData
     });
   }
 

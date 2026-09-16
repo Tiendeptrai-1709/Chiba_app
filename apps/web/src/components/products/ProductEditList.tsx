@@ -6,22 +6,28 @@ import React, { useMemo, useState } from 'react'
 import { Button } from '../ui/button';
 import ProductCard from './ProductCard';
 import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react';
 
-const CATEGORIES: {id: ProductCategory, label:string}[] = [
-  { id: 'ALL', label: 'Tất cả' },
-  { id: 'MON_NUOC', label: 'Món Nước' },
-  { id: 'TOPPING', label: 'Topping Nước' },
-  { id: 'BANH', label: 'Bánh & Đồ Ăn Kèm' },
+const CATEGORIES: { id: ProductCategory, label: string }[] = [
+    { id: 'ALL', label: 'Tất cả' },
+    { id: 'MON_NUOC', label: 'Món Nước' },
+    { id: 'TOPPING', label: 'Topping Nước' },
+    { id: 'BANH', label: 'Bánh & Đồ Ăn Kèm' },
 ];
 
-const ProductEditList = () => {
+interface ProductEditListProps {
+    setSelectedProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+    setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const ProductEditList = ({
+    setSelectedProduct,
+    setIsOpenDeleteModal,
+}: ProductEditListProps) => {
     const { data: PRODUCTS } = useGetAllProduct(api)
     const router = useRouter();
 
     const [activeCategory, setActiveCategory] = useState<ProductCategory>("ALL");
     const [searchQuery, setSearchQuery] = useState('');
-    // const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
 
     const filteredProducts = useMemo(() => {
         const query = searchQuery
@@ -61,6 +67,17 @@ const ProductEditList = () => {
     // };
     return (
         <>
+            {/* Search */}
+            <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
+                <input
+                    type="text"
+                    placeholder="Tìm trà, cà phê hay món bánh..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3.5 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm placeholder:text-muted-foreground/50 shadow-sm"
+                />
+            </div>
             <div className="space-y-6">
                 {/* Categories Horizontal Scroll Bar */}
                 <div className="flex border-b border-border gap-2 z-30 py-2">
@@ -97,9 +114,12 @@ const ProductEditList = () => {
                                 <ProductCard
                                     products={product}
                                     onEdit={() =>
-                                        router.push(`/products/${product.id}/edit`)
+                                        router.push(`/products/edit/${product.id}`)
                                     }
-                                    // setSelectedProduct={setSelectedProduct}
+                                    onDelete={() => {
+                                        setSelectedProduct(product);
+                                        setIsOpenDeleteModal(true);
+                                    }}
                                 />
                             </div>
                         ))}

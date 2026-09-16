@@ -19,7 +19,7 @@ const Notification = () => {
         <View className="mb-4 space-y-2 animate-fade-in relative">
             {/* Notification Alert Box */}
             {error && (
-                <View className="p-4 bg-red-500 text-red-700 border border-red-200 text-sm rounded-xl font-medium flex items-center justify-between shadow-sm">
+                <View className="p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200 font-medium flex items-center justify-between shadow-sm">
                     <Text className="flex items-center gap-2">⚠️ {error} </Text>
                     <Pressable onPress={clearNotification}>
                         <Text className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2">✕</Text>
@@ -27,7 +27,7 @@ const Notification = () => {
                 </View>
             )}
             {success && (
-                <View className="p-4 bg-emerald-500 text-emerald-700 border border-emerald-200 text-sm rounded-xl font-medium flex items-center justify-between shadow-sm">
+                <View className="p-4 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-200 font-medium flex items-center justify-between shadow-sm">
                     <Text className="flex items-center gap-2">✅ {success}</Text>
                     <Pressable onPress={clearNotification}>
                         <Text className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2">✕</Text>

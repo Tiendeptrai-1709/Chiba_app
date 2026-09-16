@@ -11,7 +11,7 @@ export const useCreateProduct = (axiosInstance: AxiosInstance) => {
       name: string;
       price: number;
       imageUrl:
-        File
+        | File
         | {
             uri: string;
             name: string;
@@ -19,31 +19,35 @@ export const useCreateProduct = (axiosInstance: AxiosInstance) => {
           };
       category: string;
     }) => {
-      console.log("🚀 ~ file: useProduct.ts:17 ~ mutationFn: ~ payload:", payload);
+      console.log(
+        "🚀 ~ file: useProduct.ts:17 ~ mutationFn: ~ payload:",
+        payload,
+      );
       const formData = new FormData();
-      
+
       formData.append("name", payload.name);
       formData.append("price", String(payload.price));
       formData.append("category", payload.category);
-      
+
       // KHÔNG cần biết đang chạy web hay mobile — chỉ cần hỏi:
       // "object này có phải Blob/File thật không?"
       // - true  -> web, append trực tiếp (không cần fetch lại từ URI)
       // - false -> mobile, append object {uri,name,type} y như nó vốn có
-      const isRealBlob = typeof Blob !== "undefined" && payload.imageUrl instanceof Blob;
-      
+      const isRealBlob =
+        typeof Blob !== "undefined" && payload.imageUrl instanceof Blob;
+
       if (isRealBlob) {
         const file = payload.imageUrl as File;
         formData.append("image", file, file.name || "product.jpg");
       } else {
         formData.append("image", payload.imageUrl as any);
       }
-      
+
       const { data } = await axiosInstance.post("/product/create", formData);
       console.log("🚀 ~ file: useProduct.ts:35 ~ mutationFn: ~ data:", data);
       return data;
     },
-    
+
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["products"],
@@ -96,15 +100,38 @@ export const useUpdateProduct = (axiosInstance: AxiosInstance) => {
       payload: {
         name: string;
         price: number;
-        imageUrl: {
-          uri: string;
-          name: string;
-          type: string;
-        };
+        imageUrl:
+          | File
+          | {
+              uri: string;
+              name: string;
+              type: string;
+            };
         category: string;
       };
     }) => {
-      const { data } = await axiosInstance.patch(`/product/${id}`, payload);
+      console.log("update hooks: ", id, payload);
+      const formData = new FormData();
+      formData.append("name", payload.name);
+      formData.append("price", String(payload.price));
+      formData.append("category", payload.category);
+
+      // Chỉ gửi image nếu user chọn ảnh mới
+      if (payload.imageUrl) {
+        const isRealBlob =
+          typeof Blob !== "undefined" && payload.imageUrl instanceof Blob;
+
+        if (isRealBlob) {
+          const file = payload.imageUrl as File;
+
+          formData.append("image", file, file.name || "product.jpg");
+        } else {
+          formData.append("image", payload.imageUrl as any);
+        }
+      }
+
+      const { data } = await axiosInstance.patch(`/product/${id}`, formData);
+      console.log("updatedddddd: ", data);
       return data;
     },
 

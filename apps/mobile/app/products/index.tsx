@@ -109,12 +109,14 @@ const ProductsScreen = () => {
                         onEdit={() =>
                             router.push(`/products/${item.id}/edit`)
                         }
-                        setSelectedProduct={setSelectedProduct}
+                        onDelete={() => {
+                            setSelectedProduct(item);
+                            setIsOpenDeleteModal(true);
+                        }}
                     />
                 )}
             />
-
-            <Notification/>
+            <Notification />
             {isOpenDeleteModal && (
                 <DeleteProductModal
                     isOpenDeleteModal={isOpenDeleteModal}

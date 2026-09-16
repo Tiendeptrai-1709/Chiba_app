@@ -11,13 +11,13 @@ import { api } from "@/lib/axios";
 interface ProductCardProps {
     product: Product;
     onEdit: () => void;
-    setSelectedProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+    onDelete:() =>void;
 }
 
 const ProductCard = ({
     product,
     onEdit,
-    setSelectedProduct,
+    onDelete,
 }: ProductCardProps) => {
     const { data: productData } = useGetProduct(api, product.id);
     return (
@@ -67,10 +67,10 @@ const ProductCard = ({
             </View>
 
             {/* Actions */}
-            <View className="flex-row justify-end items-center gap-2 mt-4 pt-3 border-t border-border">
+            <View className="flex justify-end items-center gap-2 mt-4 pt-3 border-t border-border">
                 <Pressable
                     onPress={onEdit}
-                    className="flex-row items-center gap-1.5 px-3 py-2 rounded-lg active:bg-muted"
+                    className="flex-row gap-2 secondary-btn mt-2"
                 >
                     <Pencil
                         size={14}
@@ -83,10 +83,8 @@ const ProductCard = ({
                 </Pressable>
 
                 <Pressable
-                    onPress={() => {
-                        setSelectedProduct(product);
-                    }}
-                    className="flex-row items-center gap-1.5 px-3 py-2 rounded-lg active:bg-red-50"
+                    onPress={onDelete}
+                    className="flex-row gap-2 secondary-btn mt-2"
                 >
                     <Trash2
                         size={14}

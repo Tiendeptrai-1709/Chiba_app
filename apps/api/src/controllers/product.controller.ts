@@ -47,7 +47,7 @@ export class ProductController {
     @Body() dto: CreateProductDto,
   ) {
     console.log("IMAGE FILE:", image);
-    const uploadResult = await this.cloudinaryService.uploadImage(image)
+    const uploadResult = await this.cloudinaryService.uploadImage(image);
     return this.productService.createProduct(dto, uploadResult.secure_url);
   }
 
@@ -64,8 +64,30 @@ export class ProductController {
   @Patch(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
-  async updateProduct(@Param("id") id: string, @Body() data: any) {
-    return this.productService.updateProduct(id, data);
+  @UseInterceptors(
+    FileInterceptor("image", {
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async updateProduct(
+    @Param("id") id: string,
+    @Body() data: any,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ })
+        .build({ fileIsRequired: false }), // KHÁC với create: ảnh không bắt buộc
+    )
+    image?: Express.Multer.File,
+  ) {
+    let imageUrl: string | undefined;
+
+    if (image) {
+      const uploadResult = await this.cloudinaryService.uploadImage(image);
+
+      imageUrl = uploadResult.secure_url;
+    }
+    return this.productService.updateProduct(id, data, imageUrl);
   }
 
   @Delete(":id")

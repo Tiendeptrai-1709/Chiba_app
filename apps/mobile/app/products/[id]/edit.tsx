@@ -16,9 +16,8 @@ const EditProductScreen = () => {
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string; }>();
 
-    const { mutate: updateProduct, isPending } = useUpdateProduct(api)
+    const { mutate, isPending } = useUpdateProduct(api)
     const { data: product, isLoading, isError } = useGetProduct(api, id)
-    console.log("data: ", product)
     // const product = [
     //     {
     //         name: "Cà phê sữa",
@@ -28,16 +27,25 @@ const EditProductScreen = () => {
     //     }
     // ]
 
-    const handleUpdate = (payload: {
+    const handleUpdate = (data: {
         name: string;
         price: number;
-        imageUrl?: { uri: string; name: string; type: string };
+        imageUrl?: File | { uri: string; name: string; type: string }; // Chỉ CÓ khi người dùng vừa chọn ảnh mới -> cần upload
         category: string;
-        existingImageUrl?: string;
+        existingImageUrl?: string; //edit mode giữ nguyên ảnh cũ
     }) => {
-        console.log("UPDATE PRODUCT", id, payload);
+        console.log("UPDATE PRODUCT", id, data);
 
-        updateProduct({ id, payload },
+        mutate(
+            {
+                id,
+                payload: {
+                    name: data.name,
+                    price: data.price,
+                    category: data.category,
+                    imageUrl: data.imageUrl,
+                },
+            },
             {
                 onSuccess: () => {
                     router.push("/products");

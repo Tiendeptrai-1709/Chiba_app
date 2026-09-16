@@ -36,7 +36,6 @@ const CreateProduct = () => {
     <div
       className="flex-1 bg-background px-4 pt-5"
     >
-      {/* <Button onClick={() => mutate({ name: 'Test Product', price: 1000, category: 'MON_NUOC', imageUrl: { uri: 'http://example.com/image.jpg', name: 'image.jpg', type: 'image/jpeg' } })}>Test function</Button> */}
       <div className="flex items-center justify-between mb-5">
         <Button onClick={() => router.push("/products")} className="bg-primary hover:bg-primary-hover py-5 px-12 rounded-xl transition-all duration-200 disabled:opacity-50">
           <p className="text-white font-semibold">Back</p>
@@ -57,7 +56,7 @@ const CreateProduct = () => {
 
       <ProductForm
         submitText="Thêm sản phẩm"
-        onSubmit1={handleCreate}
+        onSubmit={handleCreate}
         submitting={isPending}
       />
     </div>

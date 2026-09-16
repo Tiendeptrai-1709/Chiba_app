@@ -9,13 +9,13 @@ import { Pencil, Trash2 } from "lucide-react";
 interface ProductCardProps {
     products: Product;
     onEdit: () => void;
-    // setSelectedProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+    onDelete: () => void;
 }
 
 const ProductCard = ({
     products,
     onEdit,
-    // setSelectedProduct,
+    onDelete,
 }: ProductCardProps) => {
     const { data: productData } = useGetProduct(api, products.id);
 
@@ -75,9 +75,7 @@ const ProductCard = ({
                 </Button>
 
                 <Button
-                    // onClick={() => {
-                    //     setSelectedProduct(products);
-                    // }}
+                    onClick={onDelete}
                     className="secondary-btn mt-2"
                 >
                     <Trash2 className="w-4 h-4 text-destructive" />

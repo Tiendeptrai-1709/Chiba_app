@@ -11,9 +11,10 @@ interface DeleteProductModalProps {
     onConfirm: () => void;
 }
 const DeleteProductModal = ({ isOpenDeleteModal, setIsOpenDeleteModal, productName, productPrice, onConfirm }: DeleteProductModalProps) => {
+    console.log("123123", productName, productPrice)
     return (
         <Dialog open={isOpenDeleteModal} onOpenChange={setIsOpenDeleteModal}>
-            <DialogContent className="w-[92%] max-w-md rounded-2xl p-0 overflow-hidden">
+            <DialogContent className="w-[92%] max-w-md rounded-2xl p-0 overflow-hidden border border-border bg-background shadow-xl">
                 {/* ================= HEADER ================= */}
                 <DialogHeader className="p-4 border-b border-border bg-[#FAF7F5]">
                     <View className="flex-row items-center justify-between">
@@ -42,21 +43,22 @@ const DeleteProductModal = ({ isOpenDeleteModal, setIsOpenDeleteModal, productNa
                         </Pressable>
                     </View>
                 </DialogHeader>
-                <View className="p-4">
-                    <Text className="text-sm font-bold text-foreground">
-                        Bạn có chắc chắn muốn xóa sản phẩm này không?
-                    </Text>
-                    <Text className="text-xs text-muted-foreground mt-2">
-                        Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống.
-                    </Text>
-                </View>
-                <Pressable onPress={onConfirm}>
-                    <View className="bg-destructive py-3 px-4 rounded-b-2xl items-center justify-center">
+                <View className="m-5">
+                    <View className="p-5">
+                        <Text className="text-sm font-bold text-foreground">
+                            Bạn có chắc chắn muốn xóa sản phẩm này không?
+                        </Text>
+                        <Text className="text-xs text-muted-foreground mt-2">
+                            Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                        </Text>
+                    </View>
+                    <Pressable onPress={onConfirm} className="primary-btn">
                         <Text className="text-sm font-bold text-white">
                             Xóa sản phẩm
                         </Text>
-                    </View>
-                </Pressable>
+
+                    </Pressable>
+                </View>
             </DialogContent>
         </Dialog>
     )
