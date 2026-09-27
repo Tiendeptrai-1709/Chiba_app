@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-input {
+  @apply w-full px-4 py-3 bg-card border border-border rounded-xl;
+}
+
+.primary-btn {
+  @apply flex items-center justify-center w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 px-6 rounded-xl hover:shadow-premium transition-all duration-200 disabled:opacity-50;
+}
+
+.secondary-btn {
+  @apply flex items-center justify-center w-full bg-card hover:shadow-sm active:scale-[0.98] transition-all duration-200 border border-border rounded-xl py-3 px-6;
+}
