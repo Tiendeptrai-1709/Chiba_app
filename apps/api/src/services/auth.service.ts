@@ -65,7 +65,6 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
-    console.log("accessToken: ", tokens);
     // console.log(
     //   "refreshToken: ",
     //   await this.prisma.user.findMany({ where: { hashedRefreshToken } }),

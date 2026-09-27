@@ -140,6 +140,42 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+<<<<<<< Updated upstream
+=======
+exports.Prisma.ProductScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  price: 'price',
+  imageUrl: 'imageUrl',
+  category: 'category',
+  isAvailable: 'isAvailable',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartItemScalarFieldEnum = {
+  id: 'id',
+  cartId: 'cartId',
+  productId: 'productId',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartItemToppingScalarFieldEnum = {
+  id: 'id',
+  cartItemId: 'cartItemId',
+  toppingId: 'toppingId'
+};
+
+>>>>>>> Stashed changes
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -161,7 +197,15 @@ exports.Role = exports.$Enums.Role = {
 };
 
 exports.Prisma.ModelName = {
+<<<<<<< Updated upstream
   User: 'User'
+=======
+  User: 'User',
+  Product: 'Product',
+  Cart: 'Cart',
+  CartItem: 'CartItem',
+  CartItemTopping: 'CartItemTopping'
+>>>>>>> Stashed changes
 };
 
 /**

@@ -6,14 +6,19 @@ import Link from 'next/link';
 import { User } from '@/types';
 import { MapPin, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
+<<<<<<< Updated upstream
+=======
+import { useGetCart, User } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+>>>>>>> Stashed changes
 
 interface HeaderProps {
   user: User | null;
 }
 
 export const Header = ({ user }: HeaderProps) => {
-  // const { totalItems } = useCart();
-  const totalItems =0;
+  const { data: cart } = useGetCart(api);
+
   const [selectedStore, setSelectedStore] = useState('Chọn cửa hàng');
 
   useEffect(() => {
@@ -44,9 +49,9 @@ export const Header = ({ user }: HeaderProps) => {
             {/* Cart Button */}
             <Link href="/cart" className="relative p-2.5 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full transition-all duration-200">
               <ShoppingCart className="w-5 h-5 text-white" />
-              {totalItems > 0 && (
+              {cart.items.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white ring-2 ring-primary animate-bounce">
-                  {totalItems}
+                  {cart.items.length}
                 </span>
               )}
             </Link>

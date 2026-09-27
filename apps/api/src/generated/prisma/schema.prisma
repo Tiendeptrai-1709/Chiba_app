@@ -30,6 +30,8 @@ model User {
   role         Role    @default(CUSTOMER)
   isSuspended  Boolean @default(false)
 
+  cart Cart?
+
   hashedRefreshToken   String?
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
@@ -42,3 +44,63 @@ model User {
 
   @@map("users")
 }
+<<<<<<< Updated upstream
+=======
+
+model Product {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  price       Int
+  imageUrl    String
+  category    ProductCategory @default(MON_NUOC)
+  isAvailable Boolean?
+
+  cartItems        CartItem[]        @relation("CartItem")
+  cartItemToppings CartItemTopping[] @relation("CartItemTopping")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int    @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart     Cart              @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product  Product           @relation("CartItem", fields: [productId], references: [id], onDelete: Cascade)
+  toppings CartItemTopping[]
+
+  @@map("cart_items")
+}
+
+model CartItemTopping {
+  id         String @id @default(uuid())
+  cartItemId String
+  toppingId  String
+
+  cartItem CartItem @relation(fields: [cartItemId], references: [id], onDelete: Cascade)
+  topping  Product  @relation("CartItemTopping", fields: [toppingId], references: [id], onDelete: Cascade)
+
+  @@unique([cartItemId, toppingId])
+  @@map("cart_items_toppings")
+}
+>>>>>>> Stashed changes

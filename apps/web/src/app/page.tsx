@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+<<<<<<< Updated upstream
 import {Header} from '@/components/layout/Header';
 import {ProductList} from '@/components/products/ProductList';
 import Link from 'next/link';
@@ -10,21 +11,32 @@ import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const { data: user, isLoading } = useProfile();
+=======
+import { Header } from '@/components/layout/Header';
+import Link from 'next/link';
+import { Home, MapPin, ShoppingBag, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useGetCart, useNotificationStore, useProfile } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+import { ProductMenuList } from '@/components/products/ProductMenuList';
+import { Notification } from '@/components/reuse-components/Notication';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+
+export default function Page() {
+  const { data: user, isLoading: isUserLoading } = useProfile(api);
+  const { data: cart, isLoading: isCartLoading } = useGetCart(api);
+>>>>>>> Stashed changes
 
   const router = useRouter();
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isUserLoading) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, isUserLoading, router]);
 
-
-
-  // <div className="flex flex-col justify-center min-h-screen bg-gradient-to-br from-orange-50 to-orange-100/60 px-6 py-12">
-  //   <div>App</div>
-  // </div>
-  if (isLoading) {
+  if (isUserLoading || isCartLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -67,15 +79,15 @@ export default function Page() {
           <span className="text-[10px] font-medium">Cửa Hàng</span>
         </Link>
 
-        {/* <Link href="/cart" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary relative transition-all duration-200">
+        <Link href="/cart" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary relative transition-all duration-200">
           <ShoppingBag className="w-5.5 h-5.5" />
-          {totalItems > 0 && (
+          {cart.items.length > 0 && (
             <span className="absolute -top-1 -right-2 bg-accent text-[9px] font-bold text-white h-5 w-5 flex items-center justify-center rounded-full border border-white">
-              {totalItems}
+              {cart.items.length}
             </span>
           )}
           <span className="text-[10px] font-medium">Giỏ Hàng</span>
-        </Link> */}
+        </Link>
 
         <Link href="/profile" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-all duration-200">
           <User className="w-5.5 h-5.5" />

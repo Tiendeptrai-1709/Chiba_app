@@ -84,8 +84,6 @@ const ForgotPasswordPage = ()=> {
                 </div>
               </div>
 
-              <Notification />
-
               <button
                 disabled={isPending}
                 className="primary-btn flex w-full items-center justify-center gap-2"

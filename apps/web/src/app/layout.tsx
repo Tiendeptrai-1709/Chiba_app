@@ -1,6 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Providers from './providers';
+<<<<<<< Updated upstream
+=======
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+import { Notification } from '@/components/reuse-components/Notication';
+import { Toaster } from 'sonner';
+>>>>>>> Stashed changes
 
 
 
@@ -31,6 +38,7 @@ export default function RootLayout({
             <main className="flex-grow flex flex-col">
               {children}
             </main>
+            <Notification/>
           </Providers>
         </div>
       </body>

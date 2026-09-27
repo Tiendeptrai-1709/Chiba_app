@@ -171,7 +171,6 @@ const AdminDashboard = ()=> {
         )}
 
         {/* Global Notifications */}
-        <Notification />
 
         {/* ========================================================
             TAB: SYSTEM OVERVIEW (ADMIN ONLY)

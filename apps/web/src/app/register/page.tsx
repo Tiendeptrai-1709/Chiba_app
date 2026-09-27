@@ -128,7 +128,6 @@ const RegisterPage = () => {
             </div>
 
             {/* Error Message Display */}
-            <Notification />
 
             {/* Register Action Button */}
             <button

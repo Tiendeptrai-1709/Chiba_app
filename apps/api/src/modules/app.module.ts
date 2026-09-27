@@ -6,6 +6,11 @@ import { PrismaModule } from "src/prisma/prisma.module";
 import { AppController } from "src/controllers/app.controller";
 import { AppService } from "src/services/app.service";
 import { ThrottlerModule } from "@nestjs/throttler";
+<<<<<<< Updated upstream
+=======
+import { ProductModule } from "./product.module";
+import { CartModule } from "./cart.module";
+>>>>>>> Stashed changes
 
 @Module({
   imports: [
@@ -13,6 +18,11 @@ import { ThrottlerModule } from "@nestjs/throttler";
     PrismaModule,
     UserModule,
     AuthModule,
+<<<<<<< Updated upstream
+=======
+    ProductModule,
+    CartModule
+>>>>>>> Stashed changes
   ],
   controllers: [AppController],
   providers: [AppService],

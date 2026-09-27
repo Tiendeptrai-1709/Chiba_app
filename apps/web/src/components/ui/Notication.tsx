@@ -1,49 +1,32 @@
+// apps/web/components/Notification.tsx
 'use client';
 
+<<<<<<< Updated upstream:apps/web/src/components/ui/Notication.tsx
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useEffect } from "react";
+=======
+import { useEffect } from 'react';
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
+>>>>>>> Stashed changes:apps/web/src/components/reuse-components/Notication.tsx
 
 export const Notification = () => {
-    const { success, error, clearNotification } = useNotificationStore()
+  const { error, success, clearNotification } = useNotificationStore();
 
-    // Tự động ẩn thông báo lỗi/thành công sau 5 giây để nâng cao trải nghiệm người dùng
-    useEffect(() => {
-        if (error || success) {
-            const timer = setTimeout(() => {
-                clearNotification();
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error, success, clearNotification]);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearNotification(); // reset để lần sau cùng nội dung vẫn hiện lại
+    }
+  }, [error, clearNotification]);
 
-    if (!error && !success) return null;
+  useEffect(() => {
+    if (success) {
+      toast.success(success);
+      clearNotification();
+    }
+  }, [success, clearNotification]);
 
-    return (
-        <div className="mb-4 space-y-2 animate-fade-in relative">
-            {error && (
-                <div className="p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200 font-medium flex items-center justify-between shadow-sm">
-                    <span className="flex items-center gap-2">⚠️ {error} </span>
-
-                    <button
-                        onClick={clearNotification}
-                        className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2"
-                    >
-                        ✕
-                    </button>
-                </div>
-            )}
-
-            {success && (
-                <div className="p-4 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-200 font-medium flex items-center justify-between shadow-sm">
-                    <span className="flex items-center gap-2">✅ {success}</span>
-                    <button
-                        onClick={clearNotification}
-                        className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2"
-                    >
-                        ✕
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
+  return <Toaster position="top-center" richColors closeButton />;
+};

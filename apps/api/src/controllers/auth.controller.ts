@@ -30,7 +30,11 @@ export class AuthController {
   }
 
   @Post("register")
+<<<<<<< Updated upstream
   create(@Body() dto: CreateUserDto) {
+=======
+  create(@Body() dto: RegisterDto) {
+>>>>>>> Stashed changes
     return this.authService.register(dto);
   }
 
@@ -41,6 +45,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log("refesh")
     const { userId, refreshToken } = req.user;
     const tokens = await this.authService.refreshTokens(userId, refreshToken);
 

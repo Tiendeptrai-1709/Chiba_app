@@ -6,6 +6,14 @@ import {Notification} from '@/components/ui/Notication';
 import { useLogin } from '@/hooks/useAuth';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import Image from 'next/image';
+<<<<<<< Updated upstream
+=======
+import { useLogin, useNotificationStore } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+
+import { useRouter } from 'next/navigation';
+
+>>>>>>> Stashed changes
 
 const LoginPage = () => {
     const { mutate, isPending } = useLogin();
@@ -82,7 +90,6 @@ const LoginPage = () => {
                     </div>
 
                     {/* Error Message */}
-                    <Notification />
 
                     {/* Submit Button */}
                     <button

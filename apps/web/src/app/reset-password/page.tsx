@@ -115,8 +115,6 @@ const ResetPasswordPage = () => {
                                 </div>
                             </div>
 
-                            <Notification />
-
                             <button
                                 disabled={isPending}
                                 className="primary-btn w-full"
