@@ -1,4 +1,5 @@
-import { useNotificationStore } from '@/stores/useNotificationStore';
+
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 import React, { useState } from 'react'
 
 interface DeliveryAddressProps {

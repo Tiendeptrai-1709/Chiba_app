@@ -3,14 +3,18 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { User, Mail, Lock, ArrowLeft, UserPlus } from 'lucide-react';
-import { useRegister } from '@/hooks/useAuth';
-import { useNotificationStore } from '@/stores/useNotificationStore';
-import { Notification } from '@/components/ui/Notication';
+import { Notification } from '@/components/reuse-components/Notication';
+import { useRouter } from 'next/navigation';
+import { useRegister } from '@chiba/api-client';
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
+import { api } from '@/lib/axios';
 
 
 const RegisterPage = () => {
-  const { mutate, isPending } = useRegister()
+  const { mutate, isPending } = useRegister(api)
   const { showError } = useNotificationStore()
+  const router = useRouter();
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,8 +34,10 @@ const RegisterPage = () => {
       showError("Email không đúng định dạng");
       return;
     }
-
-    mutate({ email, password, fullName });
+    mutate({ email, password, fullName },{
+      onSuccess() {
+        router.replace("/login")}
+    });
   };
 
   return (
@@ -128,6 +134,7 @@ const RegisterPage = () => {
             </div>
 
             {/* Error Message Display */}
+            <Notification />
 
             {/* Register Action Button */}
             <button

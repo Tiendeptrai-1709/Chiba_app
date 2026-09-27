@@ -1,13 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Providers from './providers';
-<<<<<<< Updated upstream
-=======
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Notification } from '@/components/reuse-components/Notication';
 import { Toaster } from 'sonner';
->>>>>>> Stashed changes
 
 
 

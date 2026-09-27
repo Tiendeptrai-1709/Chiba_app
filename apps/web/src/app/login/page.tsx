@@ -1,23 +1,20 @@
 "use client"
 import React, { useState } from 'react'
 import Link from 'next/link';
-import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
-import {Notification} from '@/components/ui/Notication';
-import { useLogin } from '@/hooks/useAuth';
-import { useNotificationStore } from '@/stores/useNotificationStore';
+import { Mail, Lock, ArrowRight} from 'lucide-react';
+import { Notification } from '@/components/reuse-components/Notication';
 import Image from 'next/image';
-<<<<<<< Updated upstream
-=======
-import { useLogin, useNotificationStore } from '@chiba/api-client';
+import { useLogin } from '@chiba/api-client';
 import { api } from '@/lib/axios';
-
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 import { useRouter } from 'next/navigation';
 
->>>>>>> Stashed changes
 
 const LoginPage = () => {
-    const { mutate, isPending } = useLogin();
+    // const { mutate, isPending } = useLogin();
+    const { mutate, isPending } = useLogin(api);
     const { showError } = useNotificationStore()
+    const router = useRouter();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -30,7 +27,12 @@ const LoginPage = () => {
             showError('Vui lòng nhập đầy đủ thông tin');
             return;
         }
-        mutate({ email, password });
+
+        mutate({email, password}, {
+            onSuccess() {
+                router.replace("/")
+            }
+        })
     };
 
     return (
@@ -90,6 +92,7 @@ const LoginPage = () => {
                     </div>
 
                     {/* Error Message */}
+                    <Notification />
 
                     {/* Submit Button */}
                     <button

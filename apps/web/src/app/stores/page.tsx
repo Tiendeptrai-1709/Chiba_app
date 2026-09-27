@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Store } from '@/types';
+
 import { ArrowLeft, MapPin, Search } from 'lucide-react';
+import { Store } from '@chiba/api-client';
 
 const MOCK_STORES: Store[] = [
   { id: 's1', name: 'Chiba Biên Hùng', address: 'Số 241 đường 30/4, p. Trung Dũng Biên Hoà - Đồng Nai', phone: '0251.3822.421', isActive: true },

@@ -1,6 +1,5 @@
 import { Coins, Sparkles } from 'lucide-react';
 import React from 'react'
-import { Button } from '../ui/button';
 
 interface LoyaltyPointsProps {
     userPoints: number;
@@ -31,6 +30,7 @@ export const LoyaltyPoints = ({
     };
     return (
         <div className="bg-card border border-border p-5 rounded-2xl space-y-4 shadow-sm relative overflow-hidden">
+            <div className="absolute right-0 top-0 text-7xl translate-x-4 -translate-y-4 opacity-5 select-none text-accent">🪙</div>
             <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
                 <Coins className="w-5 h-5 text-accent" />
                 <h3 className="text-xs font-black text-primary uppercase tracking-widest">
@@ -69,20 +69,22 @@ export const LoyaltyPoints = ({
                         </p>
 
                         <div className="flex items-center gap-3">
-                            <Button
+                            <button
+                                type="button"
                                 disabled={pointsToUse <= 0}
                                 onClick={() => setPointsToUse(Math.max(0, pointsToUse - 5))}
-                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-muted-foreground text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
                             >
                                 -5
-                            </Button>
-                            <Button
+                            </button>
+                            <button
+                                type="button"
                                 disabled={pointsToUse <= 0}
                                 onClick={() => setPointsToUse(Math.max(0, pointsToUse - 1))}
-                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-muted-foreground text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
                             >
                                 -1
-                            </Button>
+                            </button>
                             <input
                                 type="number"
                                 min={0}
@@ -94,32 +96,35 @@ export const LoyaltyPoints = ({
                                 }}
                                 className="w-20 text-center font-black text-sm bg-neutral-50 border border-border py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                             />
-                            <Button
+                            <button
+                                type="button"
                                 disabled={pointsToUse >= maxPointsPossible}
                                 onClick={() => setPointsToUse(Math.min(maxPointsPossible, pointsToUse + 1))}
-                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-muted-foreground text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
                             >
                                 +1
-                            </Button>
-                            <Button
+                            </button>
+                            <button
+                                type="button"
                                 disabled={pointsToUse >= maxPointsPossible}
                                 onClick={() => setPointsToUse(Math.min(maxPointsPossible, pointsToUse + 5))}
-                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-muted-foreground text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-neutral-100 border border-border flex items-center justify-center font-bold text-sm hover:bg-neutral-200 disabled:opacity-50 transition active:scale-95"
                             >
                                 +5
-                            </Button>
-                            <Button
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => setPointsToUse(maxPointsPossible)}
                                 className="text-[10px] font-black text-accent bg-accent/10 border border-accent/20 px-2.5 py-2 rounded-lg active:scale-95 transition"
                             >
                                 Tối đa
-                            </Button>
+                            </button>
                         </div>
 
-                        <div className="flex items-center gap-1.5 p-2 bg-[#FAF7F2] rounded-lg border border-border/80 text-[10px] text-muted-foreground font-semibold">
+                        <div className="flex items-center gap-1.5 p-2 bg-[#FAF7F2] rounded-lg border border-border/80 text-[10px] text-accent-foreground font-semibold">
                             <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
                             <span>
-                                Giảm giá áp dụng: <span>{(pointsToUse * 500).toLocaleString('vi-VN')}₫</span> (Khấu trừ {pointsToUse} điểm)
+                                Giảm giá áp dụng: <strong>{(pointsToUse * 500).toLocaleString('vi-VN')}₫</strong> (Khấu trừ {pointsToUse} điểm)
                             </span>
                         </div>
 
@@ -132,7 +137,7 @@ export const LoyaltyPoints = ({
                 )}
 
                 <div className="p-3 bg-neutral-50 rounded-xl border border-dashed border-border/80 text-[10px] text-muted-foreground leading-normal">
-                    💡 <span>Quy tắc tích điểm:</span> Mỗi đơn hàng mua 10.000đ tích lũy 1 điểm. Điểm tích lũy mới được tính dựa trên số tiền thực tế thanh toán sau khi trừ điểm giảm giá.
+                    💡 <strong>Quy tắc tích điểm:</strong> Mỗi đơn hàng mua 10.000đ tích lũy 1 điểm. Điểm tích lũy mới được tính dựa trên số tiền thực tế thanh toán sau khi trừ điểm giảm giá.
                 </div>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useAuthStore } from "@chiba/api-client";
 
 const PUBLIC_PATHS = ["/login", "/register","/forgot-password","/reset-password"];
 // const VALID_PATHS = [""]

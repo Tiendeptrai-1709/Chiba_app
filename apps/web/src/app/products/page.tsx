@@ -75,6 +75,7 @@ const ProductPage = () => {
                 setIsOpenDeleteModal={setIsOpenDeleteModal} 
             />
 
+            <Notification />
             {isOpenDeleteModal && (
                 <DeleteProductModal
                     isOpenDeleteModal={isOpenDeleteModal}

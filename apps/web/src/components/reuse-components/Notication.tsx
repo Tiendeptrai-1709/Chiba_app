@@ -1,15 +1,9 @@
 // apps/web/components/Notification.tsx
 'use client';
 
-<<<<<<< Updated upstream:apps/web/src/components/ui/Notication.tsx
-import { useNotificationStore } from "@/stores/useNotificationStore";
-import { useEffect } from "react";
-=======
 import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { Toaster } from '@/components/ui/sonner';
+import { toast, Toaster } from 'sonner';
 import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
->>>>>>> Stashed changes:apps/web/src/components/reuse-components/Notication.tsx
 
 export const Notification = () => {
   const { error, success, clearNotification } = useNotificationStore();

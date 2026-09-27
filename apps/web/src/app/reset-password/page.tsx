@@ -4,15 +4,17 @@ import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, ArrowLeft, CheckCircle } from "lucide-react";
-import { useResetPassword } from "@/hooks/useAuth";
-import {Notification} from "@/components/ui/Notication";
-import { useNotificationStore } from "@/stores/useNotificationStore";
+import {Notification} from "@/components/reuse-components/Notication";
+import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
+import { useResetPassword } from "@chiba/api-client/src/hooks/useAuth";
+import { api } from "@/lib/axios";
+
 
 const ResetPasswordPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get("token");
-    const { mutate, isPending, isSuccess } = useResetPassword();
+    const { mutate, isPending, isSuccess } = useResetPassword(api);
     const { showError } = useNotificationStore();
 
     const [password, setPassword] = useState("");
@@ -32,7 +34,11 @@ const ResetPasswordPage = () => {
             return;
         }
 
-        mutate({ token: token!, newPassword: password });
+        mutate({ token: token!, newPassword: password },{
+            onSuccess() {
+                router.replace("/login");
+            }
+        });
     };
 
     return (
@@ -114,6 +120,8 @@ const ResetPasswordPage = () => {
                                     />
                                 </div>
                             </div>
+
+                            <Notification />
 
                             <button
                                 disabled={isPending}

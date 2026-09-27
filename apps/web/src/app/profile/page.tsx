@@ -1,21 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
-// import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck } from 'lucide-react';
-// import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useProfile } from '@/hooks/useUser';
-import { useLogout } from '@/hooks/useAuth';
+import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck, Pen } from 'lucide-react';
+import { useProfile, useUpdateProfile } from '@chiba/api-client';
+import { api } from '@/lib/axios';
+import { useLogout } from '@chiba/api-client/src/hooks/useAuth';
 
-const ProfilePage = ()=> {
-  const { data: user, isLoading } = useProfile()
-  const { mutate, isPending } = useLogout()
-  // const router = useRouter();
+const ProfilePage = () => {
+  const { data: user, isLoading } = useProfile(api)
+  const { mutate, isPending } = useLogout(api)
+  const { mutate: updateProfile } = useUpdateProfile(api)
+  const router = useRouter();
 
-  const [showModal, setShowModal] = useState(false);
-  const [inputName, setInputName] = useState('');
-  const [updating] = useState(false);
+  const [inputName, setInputName] = useState(user?.fullName || '');
+  const [inputPhone, setInputPhone] = useState(user?.phone || '');
+
+  const [showInputName, setShowInputName] = useState(false);
+  const [showInputPhone, setShowInputPhone] = useState(false);
 
   const [history] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -33,15 +36,14 @@ const ProfilePage = ()=> {
   // }, [ isLoading, router]);
 
   // // Show the welcome modal automatically if name is "Noname" (similar to image pop-up)
-  // useEffect(() => {
-  //   if (user && user?.fullName === 'Noname') {
-  //     const timer = setTimeout(() => {
-  //       setInputName('');
-  //       setShowModal(true);
-  //     }, 500);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [user]);
+  useEffect(() => {
+    if (!user) return;
+
+    setInputName(user?.fullName ?? '');
+    setInputPhone(user?.phone ?? '');
+  }, [user]);
+
+
 
   if (isLoading || !user) {
     return (
@@ -52,7 +54,11 @@ const ProfilePage = ()=> {
   }
 
   const handleLogout = () => {
-    mutate()
+    mutate(undefined,{
+      onSuccess() {
+        router.replace("/login");
+      }
+    })
   };
 
   // const handleSaveName = async () => {
@@ -68,10 +74,12 @@ const ProfilePage = ()=> {
   //   }
   // };
 
-  // const triggerUpdateModal = () => {
-  //   setInputName(user?.fullName);
-  //   setShowModal(true);
-  // };
+  const triggerUpdateModal = () => {
+    setShowInputName(false);
+    setShowInputPhone(false);
+
+    updateProfile({ fullName: inputName, phone: inputPhone });
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 relative">
@@ -104,26 +112,50 @@ const ProfilePage = ()=> {
         {/* User Info Form Grid from screenshot */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
           {/* Full Name field */}
-          <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
-            <div className="space-y-1">
+          <div className="p-5 flex items-center justify-between hover:bg-neutral-200/50 group transition">
+            <div className="w-[50%] space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Họ và tên</p>
-              <p className="font-bold text-foreground text-sm">{user?.fullName}</p>
+              {showInputName ? (
+                <input
+                  type="text"
+                  value={inputName}
+                  onChange={(e) => setInputName(e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-200 border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white mt-3 font-semibold text-foreground placeholder:font-normal placeholder:text-muted-foreground/45"
+                />
+              ) : (
+                <p className="font-bold text-foreground text-sm">{user?.fullName}</p>
+              )}
             </div>
-            <User className="w-5 h-5 text-muted-foreground/40" />
+            <div className="flex items-center gap-5">
+              <Pen onClick={() => setShowInputName(true)} className="w-5 h-5 opacity-0 group-hover:opacity-100 hover:cursor-pointer text-muted-foreground/40" />
+              <User className="w-5 h-5 text-muted-foreground/40" />
+            </div>
           </div>
 
           {/* Phone field */}
-          <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
-            <div className="space-y-1">
+          <div className="p-5 flex items-center justify-between hover:bg-neutral-200/50 group transition">
+            <div className="w-[50%] space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Số điện thoại</p>
-              <p className="font-bold text-foreground text-sm">{user?.phone || 'Chưa cập nhật'}</p>
+              {showInputPhone ? (
+                <input
+                  type="text"
+                  value={inputPhone}
+                  onChange={(e) => setInputPhone(e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-200 border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white mt-3 font-semibold text-foreground placeholder:font-normal placeholder:text-muted-foreground/45"
+                />
+              ) : (
+                <p className="font-bold text-foreground text-sm">{user?.phone || 'Chưa cập nhật'}</p>
+              )}
             </div>
-            <Phone className="w-5 h-5 text-muted-foreground/40" />
+            <div className="flex items-center gap-5">
+              <Pen onClick={() => setShowInputPhone(true)} className="w-5 h-5 opacity-0 group-hover:opacity-100 hover:cursor-pointer text-muted-foreground/40" />
+              <Phone className="w-5 h-5 text-muted-foreground/40" />
+            </div>
           </div>
 
           {/* Customer code field */}
-          <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
-            <div className="space-y-1">
+          <div className="p-5 flex items-center justify-between hover:bg-neutral-200/50 transition">
+            <div className="w-[50%] space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Mã khách hàng</p>
               <p className="font-bold text-primary text-sm tracking-widest">{user?.customerCode}</p>
             </div>
@@ -131,8 +163,8 @@ const ProfilePage = ()=> {
           </div>
 
           {/* Zen points field */}
-          <div className="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition">
-            <div className="space-y-1">
+          <div className="p-5 flex items-center justify-between hover:bg-neutral-200/50 transition">
+            <div className="w-[50%] space-y-1">
               <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">Điểm Chiba</p>
               <p className="font-bold text-accent text-sm">{user?.zenPoints} điểm</p>
             </div>
@@ -232,8 +264,9 @@ const ProfilePage = ()=> {
 
           {/* Large Black Charcoal Button matches screenshot */}
           <button
-            // onClick={triggerUpdateModal}
-            className="w-full bg-[#1A1A1A] hover:bg-black text-white font-bold py-4 rounded-xl shadow-premium transition active:scale-[0.99] text-sm uppercase tracking-wider"
+            onClick={triggerUpdateModal}
+            disabled={!showInputName && !showInputPhone}
+            className="w-full bg-[#1A1A1A] hover:bg-black text-white font-bold py-4 rounded-xl shadow-premium transition active:scale-[0.99] text-sm uppercase tracking-wider disabled:bg-neutral-300 disabled:text-muted-foreground/70 "
           >
             Cập nhật thông tin
           </button>
@@ -247,45 +280,6 @@ const ProfilePage = ()=> {
         </div>
       </div>
 
-      {/* POPUP MODAL (ZEN xin chào!) MATCHING SCREENSHOT 4 */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-card w-full max-w-[280px] rounded-2xl border border-border shadow-modal text-center overflow-hidden animate-fade-in">
-            {/* Modal Heading Details */}
-            <div className="p-5 space-y-2">
-              <h3 className="text-lg font-bold text-foreground tracking-tight">Chiba xin chào!</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">Vui lòng nhập tên của bạn</p>
-              <input
-                type="text"
-                value={inputName}
-                onChange={(e) => setInputName(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-50 border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:bg-white text-center mt-3 font-semibold text-foreground placeholder:font-normal placeholder:text-muted-foreground/45"
-                placeholder="Nhập họ và tên..."
-                autoFocus
-              />
-            </div>
-
-            {/* Actions: Bỏ qua / Đồng ý side by side */}
-            <div className="flex border-t border-border mt-2">
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="flex-1 py-3 text-sm text-muted-foreground font-semibold hover:bg-neutral-50 active:bg-neutral-100 border-r border-border transition-colors"
-              >
-                Bỏ qua
-              </button>
-              <button
-                type="button"
-                // onClick={handleSaveName}
-                disabled={updating || !inputName.trim()}
-                className="flex-1 py-3 text-sm text-primary font-bold hover:bg-neutral-50 active:bg-neutral-100 transition-colors disabled:opacity-40"
-              >
-                {updating ? 'Đang lưu...' : 'Đồng ý'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

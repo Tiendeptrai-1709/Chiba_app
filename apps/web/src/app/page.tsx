@@ -1,17 +1,6 @@
 'use client';
 
 import React, { useEffect } from 'react';
-<<<<<<< Updated upstream
-import {Header} from '@/components/layout/Header';
-import {ProductList} from '@/components/products/ProductList';
-import Link from 'next/link';
-import { Home, MapPin, User } from 'lucide-react';
-import { useProfile } from '@/hooks/useUser';
-import { useRouter } from 'next/navigation';
-
-export default function Page() {
-  const { data: user, isLoading } = useProfile();
-=======
 import { Header } from '@/components/layout/Header';
 import Link from 'next/link';
 import { Home, MapPin, ShoppingBag, User } from 'lucide-react';
@@ -26,7 +15,6 @@ import { toast } from 'sonner';
 export default function Page() {
   const { data: user, isLoading: isUserLoading } = useProfile(api);
   const { data: cart, isLoading: isCartLoading } = useGetCart(api);
->>>>>>> Stashed changes
 
   const router = useRouter();
 

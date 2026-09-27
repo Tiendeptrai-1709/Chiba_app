@@ -1,19 +1,40 @@
 
 // import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useNotificationStore } from '@/stores/useNotificationStore';
-import { User } from '@/types';
+import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 import { Mail, UserPlus } from 'lucide-react'
 import React, { useState } from 'react'
+import { Button } from '../ui/button';
+import { useRouter } from 'next/navigation';
+import { User } from '@chiba/api-client';
+
+interface StatCardProps {
+    icon: string;
+    title: string;
+    value: string | number;
+    colorBg: string;
+    colorText: string;
+}
 
 interface SystemOverviewProps {
     mockOrders: any[];
     allCustomers: User[];
     onSetNotification: (type: 'success' | 'error', msg: string) => void;
+    user: User;
 }
 
+const StatCard = ({ icon, title, value, colorBg, colorText }: StatCardProps) => {
+    return (
+        <div className={`${colorBg} rounded-xl p-4 border border-border/50`}>
+            <span className="text-2xl">{icon}</span>
+            <p className={`text-xs font-bold ${colorText}-500`}>{title}</p>
+            <p className={`text-xl font-black ${colorText}-900 mt-0.5`}>{value}</p>
+        </div>
+    );
+};
 const SystemOverview = ({
     mockOrders,
     allCustomers,
+    user
     // onSetNotification
 }: SystemOverviewProps) => {
     // const {
@@ -22,8 +43,9 @@ const SystemOverview = ({
     //     inviteStaff,
     //     revokeInvitation
     // } = useAuthStore();
-    const { showError, showSuccess} = useNotificationStore()
+    const { showError, showSuccess } = useNotificationStore()
 
+    const router = useRouter()
     const [emailInput, setEmailInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -56,6 +78,9 @@ const SystemOverview = ({
     //         showError('Không thể thu hồi lời mời này');
     //     }
     // };
+    const totalRevenue = (
+        mockOrders.reduce((sum, o) => sum + (o.total || 0), 0) / 1000
+    ).toFixed(1);
     return (
         <>
             {/* ========================================================
@@ -68,28 +93,31 @@ const SystemOverview = ({
                         📈 Giám sát hệ thống (Kiểm tra dữ liệu)
                     </h2>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/70 border border-blue-200 p-4 rounded-xl shadow-sm">
-                            <div className="text-2xl mb-1">📋</div>
-                            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Đơn hàng</p>
-                            <p className="text-2xl font-black text-blue-900">{mockOrders.length}</p>
+                        <StatCard icon="📋" title="Đơn hàng" value={mockOrders.length} colorBg="bg-gradient-to-br from-blue-50 to-blue-100/70 border border-blue-200" colorText="text-blue" />
+                        <StatCard icon="💰" title="Doanh thu" value={`${totalRevenue}k`} colorBg="bg-gradient-to-br from-green-50 to-green-100/70 border border-green-200" colorText="text-green" />
+
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 rounded-xl p-4 flex items-center justify-between mt-1">
+                            <div>
+                                <span className="text-2xl">📦</span>
+                                <p className="text-xs text-purple-500 mt-1">Sản phẩm</p>
+                                <p className="text-xl font-black text-purple-900 mt-0.5">19</p>
+                            </div>
+
+                            <div>
+                                {user.role && (
+                                    <Button
+                                        onClick={() => router.push("/products")}
+                                        className="bg-primary p-5 rounded-xl hover:bg-primary-hover"
+                                    >
+                                        <p className="text-white font-semibold">
+                                            + Thêm sản phẩm
+                                        </p>
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                        <div className="bg-gradient-to-br from-green-50 to-green-100/70 border border-green-200 p-4 rounded-xl shadow-sm">
-                            <div className="text-2xl mb-1">💰</div>
-                            <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Doanh thu</p>
-                            <p className="text-2xl font-black text-green-900">
-                                {(mockOrders.reduce((sum, o) => sum + o.total, 0) / 1000).toFixed(1)}k₫
-                            </p>
-                        </div>
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 p-4 rounded-xl shadow-sm">
-                            <div className="text-2xl mb-1">📦</div>
-                            <p className="text-[10px] text-purple-600 font-bold uppercase tracking-wider">Sản phẩm</p>
-                            <p className="text-2xl font-black text-purple-900">19</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-100/70 border border-orange-200 p-4 rounded-xl shadow-sm">
-                            <div className="text-2xl mb-1">👥</div>
-                            <p className="text-[10px] text-orange-600 font-bold uppercase tracking-wider">Khách hàng</p>
-                            <p className="text-2xl font-black text-orange-900">{allCustomers.length}</p>
-                        </div>
+
+                        <StatCard icon="👥" title="Khách hàng" value={allCustomers.length} colorBg="bg-gradient-to-br from-orange-50 to-orange-100/70 border border-orange-200" colorText="text-orange" />
                     </div>
                 </div>
 

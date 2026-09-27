@@ -23,6 +23,7 @@ const CreateProduct = () => {
       return;
     }
 
+    console.log('Creating product with data:', data);
     mutate({
       name: data.name,
       price: data.price,

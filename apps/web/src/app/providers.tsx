@@ -1,7 +1,7 @@
 "use client"
 import {AuthGuard} from '@/guards/AuthGuard';
-import { axiosInstance } from '@/lib/axios';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { api } from '@/lib/axios';
+import {  useAuthStore } from '@chiba/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import React, { useEffect, useState } from 'react'
@@ -17,7 +17,7 @@ function Providers({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const refresh = async () => {
             try {
-                const res = await axiosInstance.post("/auth/refresh");
+                const res = await api.post("/auth/refresh");
                 setAccessToken(res.data.accessToken);
             } catch (error) {
                 console.log("Chưa đăng nhập",error)

@@ -1,300 +1,185 @@
-import React, { useMemo } from "react";
-import {
-    useGetCart,
-    useNotificationStore,
-    useProfile,
-} from "@chiba/api-client";
 
-import { api } from "@/lib/axios";
-import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
-import { CartItem, CartItemTopping } from "@chiba/api-client/src/types";
+// import { useAuthStore } from '@/lib/stores/useAuthStore';
+// import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+// import { Coins } from 'lucide-react';
+import React from 'react'
 
 interface BillingSummaryProps {
-    orderType: "DELIVERY" | "PICKUP";
+    orderType: string;
     address: string;
     usePoints: boolean;
     pointsToUse: number;
     saveAsDefault: boolean;
     setEarnedPoints: (points: number) => void;
-    onCheckout: (data: {
-        orderType: "DELIVERY" | "PICKUP";
-        address: string;
-        pointsUsed: number;
-        discountAmount: number;
-        shippingFee: number;
-        finalPrice: number;
-    }) => Promise<void>;
-
-    onSuccess?: () => void;
+    setShowSuccessModal: (show: boolean) => void;
 }
 
-export const BillingSummary = ({
-    orderType,
-    address,
-    usePoints,
-    pointsToUse,
-    saveAsDefault,
-    setEarnedPoints,
-    onCheckout,
-    onSuccess,
-}: BillingSummaryProps) => {
-    const { data: cart, isLoading: isCartLoading } = useGetCart(api);
-    const { data: user } = useProfile(api);
-    const { showError } = useNotificationStore();
+export const BillingSummary =({
+    // orderType,
+    // address,
+    // usePoints,
+    // pointsToUse,
+    // saveAsDefault,
+    // setEarnedPoints,
+    // setShowSuccessModal,
+}: BillingSummaryProps)=> {
+    // const { items, totalPrice, totalItems, clearCart } = useCart();
+    // const { user, updateProfileAddress, updateUserPoints } = useAuthStore()
+    // const { showError } = useNotificationStore()
 
-    const router = useRouter();
+    // const [loading, setLoading] = useState(false)
 
-    const items = cart?.items ?? [];
+    // const discountAmount = usePoints ? pointsToUse * 500 : 0;
+    // const shippingFee = orderType === 'DELIVERY' ? (totalPrice >= 100000 ? 0 : 20000) : 0;
+    // const finalPrice = totalPrice - discountAmount + shippingFee;
 
-    //  Tính tổng tiền sản phẩm.
-    const totalPrice = useMemo(() => {
-        return items.reduce((total: number, item: CartItem) => {
-            const toppingsPrice = item.toppings.reduce(
-                (sum: number, cartTopping: CartItemTopping) => {
-                    return sum + cartTopping.topping.price;
-                },
-                0,
-            );
+    // const handleCheckout = async () => {
+    //     if (items.length === 0) {
+    //         showError('Giỏ hàng trống');
+    //         return;
+    //     }
 
-            const itemUnitPrice =
-                item.product.price + toppingsPrice;
+    //     if (orderType === 'DELIVERY' && !address.trim()) {
+    //         showError('Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍');
+    //         return;
+    //     }
 
-            return total + itemUnitPrice * item.quantity;
-        }, 0);
-    }, [items]);
+    //     setLoading(true);
+    //     showError('');
 
-    // Tổng số sản phẩm.     
-    const totalItems = useMemo(() => {
-        return items.reduce((total: number, item: CartItem) => {
-            return total + item.quantity;
-        }, 0);
-    }, [items]);
+    //     try {
+    //         if (!user) {
+    //             showError('Bạn cần đăng nhập để thực hiện đặt hàng');
+    //             setLoading(false);
+    //             return;
+    //         }
 
-    /**
-     * 1 point = 500đ
-     */
-    const discountAmount = usePoints ? pointsToUse * 500 : 0;
+    //         // Simulate API call delay
+    //         await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    /**
-     * Delivery:
-     * - >= 100k: free
-     * - < 100k: 20k
-     *
-     * Pickup:
-     * - free
-     */
-    const shippingFee = ((orderType === "DELIVERY") ? (totalPrice >= 100000 ? 0 : 20000) : 0);
+    //         // 1. Save address to profile if checked
+    //         if (saveAsDefault && orderType === 'DELIVERY') {
+    //             await updateProfileAddress(address.trim());
+    //         }
 
-    // Tổng tiền cuối cùng.
-    const finalPrice = Math.max(0, totalPrice - discountAmount + shippingFee);
+    //         // 2. Synchronize order with simulated database in localStorage
+    //         const storedOrders = localStorage.getItem('zen_fb_orders');
+    //         const orders = storedOrders ? JSON.parse(storedOrders) : [];
 
-    /**
-     * 10.000đ = 1 point
-     *
-     * Không tính shipping.
-     */
-    const earnedPoints = Math.floor(Math.max(0, totalPrice - discountAmount) / 10000);
+    //         // Calculate formatted items text for simple admin reading
+    //         const formattedItemsText = items
+    //             .map(item => {
+    //                 const toppingsText = item.selectedToppings && item.selectedToppings.length > 0
+    //                     ? ` (${item.selectedToppings.map(t => t.name).join(', ')})`
+    //                     : '';
+    //                 return `${item.quantity}x ${item.name}${toppingsText}`;
+    //             })
+    //             .join(', ');
 
-    const handleCheckout = async () => {
-        /**
-         * 1. Kiểm tra cart
-         */
-        if (items.length === 0) {
-            showError("Giỏ hàng trống");
-            return;
-        }
+    //         const orderId = `DH00` + (orders.length + 4);
+    //         const discount = usePoints ? pointsToUse * 500 : 0;
+    //         const shipFee = orderType === 'DELIVERY' ? (totalPrice >= 100000 ? 0 : 20000) : 0;
+    //         const finalTotal = totalPrice - discount + shipFee;
 
-        /**
-         * 2. Kiểm tra login
-         */
-        if (!user) {
-            showError("Bạn cần đăng nhập để thực hiện đặt hàng");
-            return;
-        }
+    //         const newOrder = {
+    //             id: orderId,
+    //             userId: user.id,
+    //             customerName: user.fullName,
+    //             address: orderType === 'DELIVERY' ? address.trim() : 'Đến nhận tại cửa hàng 🏠',
+    //             items: formattedItemsText,
+    //             total: finalTotal,
+    //             orderType: orderType,
+    //             shippingFee: shipFee,
+    //             pointsUsed: usePoints ? pointsToUse : 0,
+    //             discountAmount: discount,
+    //             status: 'PENDING' as const,
+    //             createdAt: new Date().toISOString()
+    //         };
 
-        /**
-         * 3. Delivery bắt buộc có address
-         */
-        if (orderType === "DELIVERY" && !address.trim()) {
-            showError(
-                "Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍"
-            );
-            return;
-        }
+    //         orders.unshift(newOrder); // Prepend so newest is at the top
+    //         localStorage.setItem('zen_fb_orders', JSON.stringify(orders));
 
-        /**
-         * 4. Kiểm tra points
-         */
-        if (usePoints) {
-            if (pointsToUse <= 0) {
-                showError("Số điểm sử dụng không hợp lệ");
-                return;
-            }
+    //         // 3. Deduct points first via Context
+    //         if (usePoints && pointsToUse > 0) {
+    //             await updateUserPoints(
+    //                 user.id,
+    //                 -pointsToUse,
+    //                 'REDEEMED_APP',
+    //                 `Áp dụng điểm giảm giá cho đơn hàng ${orderId} (-${discount.toLocaleString('vi-VN')}đ)`
+    //             );
+    //         }
 
-            if (pointsToUse > user.zenPoints) {
-                showError("Bạn không đủ điểm để sử dụng");
-                return;
-            }
+    //         // 4. Calculate earned points from final product amount (excluding shipping fee): 10,000đ spent = 1 point
+    //         const pointsAdded = Math.floor((totalPrice - discount) / 10000);
+    //         setEarnedPoints(pointsAdded);
 
-            if (discountAmount > totalPrice) {
-                showError("Số điểm sử dụng vượt quá giá trị đơn hàng");
-                return;
-            }
-        }
+    //         if (pointsAdded > 0) {
+    //             await updateUserPoints(
+    //                 user.id,
+    //                 pointsAdded,
+    //                 'EARNED_ORDER',
+    //                 `Tích điểm từ đơn hàng ${orderId} (+${pointsAdded} điểm)`
+    //             );
+    //         }
 
-        try {
-            /**
-             * 5. Nếu user chọn lưu địa chỉ mặc định
-             */
-            // if (saveAsDefault && orderType === "DELIVERY") {
-            //     await updateProfileAddress(address.trim());
-            // }
-
-            /**
-             * 6. Gọi Order API
-             *
-             * BillingSummary không tự tạo order.
-             *
-             * Component cha sẽ quyết định:
-             * POST /orders
-             *
-             * và backend sẽ lấy cart hiện tại để tạo order.
-             */
-            await onCheckout({
-                orderType,
-                address:
-                    orderType === "DELIVERY"
-                        ? address.trim()
-                        : "Đến nhận tại cửa hàng 🏠",
-                pointsUsed: usePoints ? pointsToUse : 0,
-                discountAmount,
-                shippingFee,
-                finalPrice,
-            });
-
-            /**
-             * 7. Trừ điểm
-             *
-             * Chỉ thực hiện sau khi Order API thành công.
-             */
-
-            /**
-             * 8. Cộng điểm
-             */
-            setEarnedPoints(earnedPoints);
-
-            // if (earnedPoints > 0) {
-            //     await updateUserPoints(
-            //         user.id,
-            //         earnedPoints,
-            //         "EARNED_ORDER",
-            //         `Tích điểm từ đơn hàng (+${earnedPoints} điểm)`
-            //     );
-            // }
-
-            onSuccess?.();
-        } catch (error: unknown) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : "Đặt hàng thất bại. Vui lòng thử lại.";
-
-            showError(message);
-        }
-    };
-
-    /**
-     * Loading cart
-     */
-    if (isCartLoading) {
-        return (
-            <div className="bg-card border border-border p-5 rounded-2xl">
-                <p className="text-sm text-muted-foreground">
-                    Đang tải thông tin giỏ hàng...
-                </p>
-            </div>
-        );
-    }
+    //         clearCart();
+    //         setShowSuccessModal(true);
+    //     } catch (err: any) {
+    //         showError(err?.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     return (
         <div className="bg-card border border-border p-5 rounded-2xl space-y-4 shadow-sm">
-            {/* SUMMARY */}
             <div className="space-y-2 border-b border-border pb-4">
-                {/* Total items */}
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
                     <span>Tổng số món:</span>
-                    <span>{totalItems} cốc/phần</span>
+                    {/* <span>{totalItems} cốc/phần</span> */}
                 </div>
-
-                {/* Product price */}
-                <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                    <span>Tạm tính:</span>
-                    <span>{totalPrice.toLocaleString("vi-VN")}₫</span>
-                </div>
-
-                {/* Shipping */}
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
                     <span>Phí giao hàng:</span>
-                    {shippingFee === 0 ? (
+                    {/* {shippingFee === 0 ? (
                         <span className="text-primary font-bold">
-                            {orderType === "DELIVERY"
-                                ? "Miễn phí (Đơn > 100k) 🎁"
-                                : "Miễn phí (Nhận tại quán) 🎁"}
+                            {orderType === 'DELIVERY' ? 'Miễn phí (Đơn > 100k) 🎁' : 'Miễn phí (Nhận tại quán) 🎁'}
                         </span>
                     ) : (
-                        <span className="text-foreground font-bold">
-                            {shippingFee.toLocaleString("vi-VN")}₫
-                        </span>
-                    )}
+                        <span className="text-foreground font-bold">{shippingFee.toLocaleString('vi-VN')}₫</span>
+                    )} */}
                 </div>
-
-                {/* Point discount */}
-                {usePoints && discountAmount > 0 && (
-                    <div className="flex justify-between text-xs text-muted-foreground font-semibold bg-orange-50 border border-orange-100 p-2.5 rounded-xl">
-                        <span>Giảm bằng điểm ({pointsToUse} điểm):</span>
-                        <span>-{discountAmount.toLocaleString("vi-VN")}₫</span>
+                {/* {usePoints && discountAmount > 0 && (
+                    <div className="flex justify-between text-xs text-accent-foreground font-semibold bg-orange-50 border border-orange-100 p-2.5 rounded-xl">
+                        <span className="flex items-center gap-1">
+                            <Coins className="w-3.5 h-3.5 text-accent" /> Giảm giá bằng điểm ({pointsToUse} điểm):
+                        </span>
+                        <span>-{discountAmount.toLocaleString('vi-VN')}₫</span>
                     </div>
-                )}
+                )} */}
             </div>
 
-            {/* FINAL PRICE */}
             <div className="flex items-center justify-between text-base font-bold text-foreground pt-1">
                 <span>Tổng tiền thanh toán:</span>
                 <span className="text-primary text-2xl tracking-tight">
-                    {finalPrice.toLocaleString("vi-VN")}₫
+                    {/* {finalPrice.toLocaleString('vi-VN')}₫ */}
                 </span>
             </div>
 
-            {/* EARNED POINTS */}
-            {earnedPoints > 0 && (
-                <div className="text-xs text-muted-foreground text-right">
-                    Bạn sẽ nhận được{" "}
-                    <span className="font-bold text-primary">
-                        +{earnedPoints} điểm
-                    </span>
-                </div>
-            )}
-
-            {/* CHECKOUT */}
-            <Button
+            {/* Checkout Buttons */}
+            {/* <button
                 onClick={handleCheckout}
-                disabled={isCartLoading || items.length === 0}
-                className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-6 rounded-xl shadow-premium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
+                disabled={loading}
+                className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-premium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
             >
-                {/* {loading
-                    ? "Đang xử lý đặt hàng..."
-                    : "✓ Đặt Hàng Ngay"} */}
-                ✓ Đặt Hàng Ngay
-            </Button>
+                {loading ? 'Đang xử lý đặt hàng...' : '✓ Đặt Hàng Ngay'}
+            </button> */}
 
-            {/* CONTINUE SHOPPING */}
-            <Button
-                onClick={() => router.push("/")}
-                className="w-full bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground font-semibold py-6 rounded-xl transition active:scale-98 text-sm"
+            <button
+                // onClick={() => router.push('/')}
+                className="w-full bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground font-semibold py-3 rounded-xl transition active:scale-98 text-sm"
             >
                 Quay lại mua thêm nước
-            </Button>
+            </button>
         </div>
-    );
-};
+    )
+}
