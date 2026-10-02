@@ -3,6 +3,7 @@ import './globals.css';
 import Providers from './providers';
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Notification } from '@/components/reuse-components/Notication';
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             <main className="flex-grow flex flex-col">
               {children}
             </main>
+            <Notification/>
           </Providers>
         </div>
       </body>

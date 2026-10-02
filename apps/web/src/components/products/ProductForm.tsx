@@ -169,8 +169,6 @@ const ProductForm = ({
                 />
             </div>
 
-            <Notification />
-
             {/* Submit */}
             <Button
                 type="submit"

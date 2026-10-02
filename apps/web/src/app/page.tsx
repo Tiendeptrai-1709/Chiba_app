@@ -1,31 +1,28 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import {Header} from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Link from 'next/link';
-import { Home, MapPin, User } from 'lucide-react';
+import { Home, MapPin, ShoppingBag, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useProfile } from '@chiba/api-client';
+import { useGetCart, useProfile } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import { ProductMenuList } from '@/components/products/ProductMenuList';
 
+
 export default function Page() {
-  const { data: user, isLoading } = useProfile(api);
-  console.log("user: ", user)
+  const { data: user, isLoading: isUserLoading } = useProfile(api);
+  const { data: cart, isLoading: isCartLoading } = useGetCart(api);
+
   const router = useRouter();
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isUserLoading) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, isUserLoading, router]);
 
-
-
-  // <div className="flex flex-col justify-center min-h-screen bg-gradient-to-br from-orange-50 to-orange-100/60 px-6 py-12">
-  //   <div>App</div>
-  // </div>
-  if (isLoading) {
+  if (isUserLoading || isCartLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -35,14 +32,14 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-background pb-28 flex flex-col">
       {/* Premium Header */}
       <Header user={user} />
 
       {/* Main Content Area */}
       <div className="px-5 py-6 space-y-6 flex-grow max-w-2xl mx-auto w-full animate-fade-in">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-primary/5 to-accent/5 p-5 rounded-2xl border border-primary/5 relative">
+        <div className="bg-gradient-to-r from-primary/5 to-accent/5 p-5 rounded-2xl border border-primary/5 relative overflow-hidden">
           <div className="absolute right-0 top-0 text-7xl translate-x-3 translate-y-3 opacity-15">🍵</div>
           <h2 className="text-2xl font-black text-foreground tracking-tight">
             Xin chào, {user?.fullName || 'bạn'}!
@@ -57,7 +54,7 @@ export default function Page() {
       </div>
 
       {/* Premium Mobile Dock at bottom */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-white/95 backdrop-blur-md border-t border-border py-2 px-6 flex items-center justify-around z-[45] shadow-floating">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-white/95 backdrop-blur-md border-t border-border py-2 px-6 flex items-center justify-around z-40 shadow-floating">
         <Link href="/" className="flex flex-col items-center gap-1 text-primary transition-all duration-200">
           <Home className="w-5.5 h-5.5 stroke-[2.5]" />
           <span className="text-[10px] font-bold">Món Ngon</span>
@@ -68,15 +65,15 @@ export default function Page() {
           <span className="text-[10px] font-medium">Cửa Hàng</span>
         </Link>
 
-        {/* <Link href="/cart" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary relative transition-all duration-200">
+        <Link href="/cart" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary relative transition-all duration-200">
           <ShoppingBag className="w-5.5 h-5.5" />
-          {totalItems > 0 && (
+          {cart.items.length > 0 && (
             <span className="absolute -top-1 -right-2 bg-accent text-[9px] font-bold text-white h-5 w-5 flex items-center justify-center rounded-full border border-white">
-              {totalItems}
+              {cart.items.length}
             </span>
           )}
           <span className="text-[10px] font-medium">Giỏ Hàng</span>
-        </Link> */}
+        </Link>
 
         <Link href="/profile" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-all duration-200">
           <User className="w-5.5 h-5.5" />

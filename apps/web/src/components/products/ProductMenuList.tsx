@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-// import { useCart } from '@/lib/context/CartContext';
-
 import { Search, Plus, Sparkles } from 'lucide-react';
 import ProductModal from './ProductModal';
-import { Product, Topping, ProductCategory, useGetAllProduct } from '@chiba/api-client';
+import { Product, Topping, ProductCategory, useGetAllProduct, useAddCartItems, useNotificationStore } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import Image from 'next/image';
+import { Button } from '../ui/button';
 
-const CATEGORIES: {id: ProductCategory, label:string}[] = [
+const CATEGORIES: { id: ProductCategory, label: string }[] = [
   { id: 'ALL', label: 'Tất cả' },
   { id: 'MON_NUOC', label: 'Món Nước' },
   { id: 'TOPPING', label: 'Topping Nước' },
@@ -19,8 +18,10 @@ const CATEGORIES: {id: ProductCategory, label:string}[] = [
 export const ProductMenuList = () => {
   // const { addItem } = useCart();
   const { data: PRODUCTS } = useGetAllProduct(api)
-  const [activeCategory, setActiveCategory] =
-    useState<ProductCategory>("ALL");
+  const { mutate: addToCart, isPending: isAddingToCart, } = useAddCartItems(api)
+  const { showError, showSuccess } = useNotificationStore()
+
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>("ALL");
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItemName, setAddedItemName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -62,27 +63,34 @@ export const ProductMenuList = () => {
   }, [PRODUCTS]);
 
   /*
-   * Toast
-   */
-  const triggerToast = (name: string) => {
-    setAddedItemName(name);
-    setTimeout(() => {
-      setAddedItemName(null);
-    }, 2000);
-  };
-
-  /*
    * Add product
    */
+
   const handleAddToCart = (product: Product) => {
-    if (product.category === 'MON_NUOC') {
-      setSelectedProduct(product);
-      setSelectedToppings([]);
-      setDrinkQuantity(1);
+    // Topping / sản phẩm không cần chọn option
+    if (product.category === "TOPPING") {
+      addToCart(
+        {
+          productId: product.id,
+          quantity: 1,
+          toppingIds: [],
+        },
+        {
+          onSuccess: () => {
+            showSuccess("Đã thêm sản phẩm vào giỏ hàng");
+          },
+          onError: () => {
+            showError("Thêm sản phẩm thất bại");
+          },
+        }
+      );
+
       return;
     }
-
-    triggerToast(product.name);
+    // Món nước → mở modal chọn topping
+    setSelectedProduct(product);
+    setSelectedToppings([]);
+    setDrinkQuantity(1);
   };
 
   /*
@@ -104,17 +112,26 @@ export const ProductMenuList = () => {
   const handleConfirmToppings = () => {
     if (!selectedProduct) return;
 
-    const toppingNames = selectedToppings
-      .map((topping) => topping.name)
-      .join(', ');
-    const toastName = toppingNames
-      ? `${selectedProduct.name} (+Topping)`
-      : selectedProduct.name;
+    const toppingIds = selectedToppings.map(
+      (topping) => topping.id
+    );
 
-    triggerToast(toastName);
-    setSelectedProduct(null);
-    setSelectedToppings([]);
-    setDrinkQuantity(1);
+    addToCart(
+      { productId: selectedProduct.id, quantity: drinkQuantity, toppingIds },
+      {
+        onSuccess: () => {
+          showSuccess("Đã thêm sản phẩm vào giỏ hàng");
+
+          setSelectedProduct(null);
+          setSelectedToppings([]);
+          setDrinkQuantity(1);
+        },
+
+        onError: () => {
+          showError("Thêm sản phẩm thất bại");
+        },
+      }
+    );
   };
 
   /*
@@ -128,19 +145,6 @@ export const ProductMenuList = () => {
     );
     return (selectedProduct.price + toppingsPrice) * drinkQuantity;
   }, [selectedProduct, selectedToppings, drinkQuantity]);
-
-  /*
-   * Product icon
-   */
-  // const getProductIcon = (product: Product) => {
-  //   if (product.category === 'MON_NUOC') {
-  //     return '☕';
-  //   }
-  //   if (product.category === 'TOPPING') {
-  //     return '🥛';
-  //   }
-  //   return '🍰';
-  // };
 
   return (
     <>
@@ -193,7 +197,6 @@ export const ProductMenuList = () => {
             {filteredProducts.map((product: Product) => (
               <div
                 key={product.id}
-                onClick={() => handleAddToCart(product)}
                 className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border interactive-card cursor-pointer select-none"
               >
                 {/* Product Thumbnail/Icon */}
@@ -223,7 +226,7 @@ export const ProductMenuList = () => {
                 </div>
 
                 {/* Add/Configure Button */}
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddToCart(product);
@@ -232,7 +235,7 @@ export const ProductMenuList = () => {
                   title={product.category === 'MON_NUOC' ? 'Tùy chọn món' : 'Thêm vào giỏ'}
                 >
                   <Plus className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -260,6 +263,7 @@ export const ProductMenuList = () => {
           onChangeQuantity={setDrinkQuantity}
           currentTotalPrice={currentTotalPrice}
           onConfirm={handleConfirmToppings}
+          isAddingToCart={isAddingToCart}
         />
       )}
     </>

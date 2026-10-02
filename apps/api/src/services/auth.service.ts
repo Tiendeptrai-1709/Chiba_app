@@ -54,7 +54,6 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
     });
-    console.log("ddasd")
     if (!user || user.isDeleted) {
       throw new UnauthorizedException("Tài khoản không tồn tại");
     }
@@ -65,7 +64,6 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
-    console.log("accessToken: ", tokens);
     // console.log(
     //   "refreshToken: ",
     //   await this.prisma.user.findMany({ where: { hashedRefreshToken } }),

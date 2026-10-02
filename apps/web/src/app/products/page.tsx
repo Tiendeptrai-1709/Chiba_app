@@ -7,8 +7,6 @@ import { Product, useGetAllProduct, useProfile } from '@chiba/api-client';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
-import { Notification } from '@/components/reuse-components/Notication';
-
 import ProductEditList from '@/components/products/ProductEditList';
 import DeleteProductModal from '@/components/products/DeleteProductModal';
 import { useDeleteProduct } from '@chiba/api-client/src/hooks/useProduct';
@@ -75,7 +73,6 @@ const ProductPage = () => {
                 setIsOpenDeleteModal={setIsOpenDeleteModal} 
             />
 
-            <Notification />
             {isOpenDeleteModal && (
                 <DeleteProductModal
                     isOpenDeleteModal={isOpenDeleteModal}

@@ -12,7 +12,6 @@ import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
 import { PointActionModal } from '@/components/reuse-components/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
-import { Notification } from '@/components/reuse-components/Notication';
 import { useProfile, User } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
@@ -171,7 +170,6 @@ const AdminDashboard = () => {
         )}
 
         {/* Global Notifications */}
-        <Notification />
 
         {/* ========================================================
             TAB: SYSTEM OVERVIEW (ADMIN ONLY)

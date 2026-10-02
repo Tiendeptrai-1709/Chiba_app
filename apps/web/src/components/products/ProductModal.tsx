@@ -8,7 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { Product, Topping } from "@chiba/api-client";
+import { Product, Topping, useAddCartItems, useNotificationStore } from "@chiba/api-client";
+import { api } from "@/lib/axios";
+import { Button } from "../ui/button";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ interface ProductModalProps {
   onChangeQuantity: (qty: number) => void;
   currentTotalPrice: number;
   onConfirm: () => void;
+  isAddingToCart: boolean;
 }
 
 export default function ProductModal({
@@ -34,9 +37,24 @@ export default function ProductModal({
   onChangeQuantity,
   currentTotalPrice,
   onConfirm,
+  isAddingToCart
 }: ProductModalProps) {
-
   const formatPrice = (price: number) => `${price.toLocaleString("vi-VN")} đ`;
+  // const { mutate: addToCart } = useAddCartItems(api)
+  // const { showError, showSuccess } = useNotificationStore()
+
+  // const handleAddToCart = (product: Product) => {
+  //   if (product.category === 'MON_NUOC' || product.category === "BANH") {
+  //     addToCart({ productId: product.id, quantity: 1 }, {
+  //       onSuccess: () => {
+  //         showSuccess("Đã thêm sản phẩm vào giỏ hàng");
+  //       },
+  //       onError: () => {
+  //         showError("Thêm sản phẩm thất bại");
+  //       },
+  //     })
+  //   }
+  // };
 
   return (
     <Dialog
@@ -63,8 +81,8 @@ export default function ProductModal({
               ) : (
                 <span className="rounded-xl bg-primary/10 text-5xl">
                   {product?.category === "MON_NUOC"
-                    ? 
-                      "☕"
+                    ?
+                    "☕"
                     : product?.category === "TOPPING"
                       ? "🥛"
                       : "🍰"
@@ -80,14 +98,13 @@ export default function ProductModal({
                 Đơn giá: {formatPrice(product?.price ?? 0)}
               </p>
             </div>
-            <button
-              type="button"
+            <Button
               onClick={onClose}
               aria-label="Đóng"
               className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-border/80 text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </DialogHeader>
 
@@ -108,12 +125,11 @@ export default function ProductModal({
               );
 
               return (
-                <button
+                <Button
                   key={topping.id}
-                  type="button"
                   aria-pressed={isChecked}
                   onClick={() => onToggleTopping(topping)}
-                  className={`flex w-full items-center justify-between rounded-xl border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isChecked
+                  className={`flex w-full items-center justify-between rounded-xl border px-4 py-6 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isChecked
                     ? "border-primary bg-primary/5"
                     : "border-border bg-muted/30 hover:bg-muted/60"
                     }`}
@@ -135,7 +151,7 @@ export default function ProductModal({
                   <span className="ml-2 shrink-0 text-xs font-extrabold text-primary">
                     +{formatPrice(topping.price)}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -145,36 +161,37 @@ export default function ProductModal({
           <div className="flex items-center justify-between gap-4">
             <span className="text-xs font-bold text-foreground">Số lượng cốc:</span>
             <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-2 py-1">
-              <button
-                type="button"
+              <Button
                 onClick={() => onChangeQuantity(Math.max(1, drinkQuantity - 1))}
                 aria-label="Giảm số lượng"
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Minus className="h-4 w-4" />
-              </button>
+              </Button>
               <span className="w-8 text-center text-sm font-black text-foreground">
                 {drinkQuantity}
               </span>
-              <button
-                type="button"
+              <Button
                 onClick={() => onChangeQuantity(drinkQuantity + 1)}
                 aria-label="Tăng số lượng"
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
-          <button
-            type="button"
+          <Button
             onClick={onConfirm}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-black text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            disabled={isAddingToCart}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-6 text-sm font-black text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ShoppingCart className="h-[17px] w-[17px]" />
-            <span>Thêm Vào Giỏ - {formatPrice(currentTotalPrice)}</span>
-          </button>
+            {isAddingToCart
+              ? "Đang thêm..."
+              :`Thêm Vào Giỏ - ${formatPrice(currentTotalPrice)}`
+            }
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

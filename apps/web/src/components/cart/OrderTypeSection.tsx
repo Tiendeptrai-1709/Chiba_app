@@ -2,7 +2,7 @@ import React from 'react'
 
 interface OrderTypeSectionProps{
     orderType:string;
-    setOrderType: React.Dispatch<React.SetStateAction<"DELIVERY" | "STORE">>;
+    setOrderType: React.Dispatch<React.SetStateAction<"DELIVERY" | "PICKUP">>;
 }
 
 export const OrderTypeSection =({orderType, setOrderType}: OrderTypeSectionProps) => {
@@ -14,7 +14,6 @@ export const OrderTypeSection =({orderType, setOrderType}: OrderTypeSectionProps
 
             <div className="grid grid-cols-2 gap-3">
                 <button
-                    type="button"
                     onClick={() => setOrderType('DELIVERY')}
                     className={`py-3.5 px-4 rounded-xl border font-bold text-xs flex flex-col items-center justify-center gap-1.5 transition-all active:scale-98 ${orderType === 'DELIVERY'
                             ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/20 shadow-sm'
@@ -26,9 +25,8 @@ export const OrderTypeSection =({orderType, setOrderType}: OrderTypeSectionProps
                 </button>
 
                 <button
-                    type="button"
-                    onClick={() => setOrderType('STORE')}
-                    className={`py-3.5 px-4 rounded-xl border font-bold text-xs flex flex-col items-center justify-center gap-1.5 transition-all active:scale-98 ${orderType === 'STORE'
+                    onClick={() => setOrderType('PICKUP')}
+                    className={`py-3.5 px-4 rounded-xl border font-bold text-xs flex flex-col items-center justify-center gap-1.5 transition-all active:scale-98 ${orderType === 'PICKUP'
                             ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/20 shadow-sm'
                             : 'border-border bg-neutral-50/50 text-muted-foreground hover:bg-neutral-50'
                         }`}

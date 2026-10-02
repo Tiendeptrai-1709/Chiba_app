@@ -16,7 +16,6 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log("first", dto)
     const { accessToken, refreshToken } = await this.authService.login(dto);
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -30,7 +29,6 @@ export class AuthController {
 
   @Post("register")
   create(@Body() dto: RegisterDto) {
-    console.log("full: ", dto)
     return this.authService.register(dto);
   }
 
@@ -41,6 +39,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log("refesh")
     const { userId, refreshToken } = req.user;
     const tokens = await this.authService.refreshTokens(userId, refreshToken);
 

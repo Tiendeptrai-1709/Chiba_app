@@ -1,185 +1,260 @@
+import React, { useMemo } from "react";
+import {
+    useGetCart,
+    useNotificationStore,
+    useProfile,
+    useUpdateProfile,
+} from "@chiba/api-client";
 
-// import { useAuthStore } from '@/lib/stores/useAuthStore';
-// import { useNotificationStore } from '@/lib/stores/useNotificationStore';
-// import { Coins } from 'lucide-react';
-import React from 'react'
+import { api } from "@/lib/axios";
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
+import { calculateCartTotals } from "@chiba/api-client/src/lib/cart-pricing";
+
 
 interface BillingSummaryProps {
-    orderType: string;
+    orderType: "DELIVERY" | "PICKUP";
     address: string;
     usePoints: boolean;
     pointsToUse: number;
     saveAsDefault: boolean;
     setEarnedPoints: (points: number) => void;
-    setShowSuccessModal: (show: boolean) => void;
+    // onCheckout: (data: {
+    //     orderType: "DELIVERY" | "PICKUP";
+    //     address: string;
+    //     pointsUsed: number;
+    //     discountAmount: number;
+    //     shippingFee: number;
+    //     finalPrice: number;
+    // }) => Promise<void>;
+
 }
 
-export const BillingSummary =({
-    // orderType,
-    // address,
-    // usePoints,
-    // pointsToUse,
-    // saveAsDefault,
-    // setEarnedPoints,
-    // setShowSuccessModal,
-}: BillingSummaryProps)=> {
-    // const { items, totalPrice, totalItems, clearCart } = useCart();
-    // const { user, updateProfileAddress, updateUserPoints } = useAuthStore()
-    // const { showError } = useNotificationStore()
+export const BillingSummary = ({
+    orderType,
+    address,
+    usePoints,
+    pointsToUse,
+    saveAsDefault,
+    setEarnedPoints,
+    // onCheckout,
+}: BillingSummaryProps) => {
+    const { data: cart, isLoading: isCartLoading } = useGetCart(api);
+    const { data: user } = useProfile(api);
+    const { mutate: updateProfile } = useUpdateProfile(api)
+    const { showError } = useNotificationStore();
 
-    // const [loading, setLoading] = useState(false)
+    const router = useRouter();
 
-    // const discountAmount = usePoints ? pointsToUse * 500 : 0;
-    // const shippingFee = orderType === 'DELIVERY' ? (totalPrice >= 100000 ? 0 : 20000) : 0;
-    // const finalPrice = totalPrice - discountAmount + shippingFee;
+    const items = cart?.items ?? [];
+    const { subtotal, totalItems, maxPointsAllowed, discountAmount, shippingFee, finalPrice, earnedPoints } = useMemo(
+        () =>
+            calculateCartTotals({
+                items,
+                orderType,
+                pointsToUse: usePoints ? pointsToUse : 0,
+            }),
+        [items, orderType, usePoints, pointsToUse],
+    );
 
-    // const handleCheckout = async () => {
-    //     if (items.length === 0) {
-    //         showError('Giỏ hàng trống');
-    //         return;
-    //     }
+    const handleCheckout = async () => {
+        /**
+         * 1. Kiểm tra cart
+         */
+        if (items.length === 0) {
+            showError("Giỏ hàng trống");
+            return;
+        }
 
-    //     if (orderType === 'DELIVERY' && !address.trim()) {
-    //         showError('Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍');
-    //         return;
-    //     }
+        /**
+         * 2. Kiểm tra login
+         */
+        if (!user) {
+            showError("Bạn cần đăng nhập để thực hiện đặt hàng");
+            return;
+        }
 
-    //     setLoading(true);
-    //     showError('');
+        /**
+         * 3. Delivery bắt buộc có address
+         */
+        if (orderType === "DELIVERY" && !address.trim()) {
+            showError(
+                "Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍"
+            );
+            return;
+        }
 
-    //     try {
-    //         if (!user) {
-    //             showError('Bạn cần đăng nhập để thực hiện đặt hàng');
-    //             setLoading(false);
-    //             return;
-    //         }
+        /**
+         * 4. Kiểm tra points
+         */
+        if (usePoints) {
+            if (!Number.isInteger(pointsToUse) || pointsToUse <= 0) {
+                showError("Số điểm sử dụng không hợp lệ");
+                return;
+            }
 
-    //         // Simulate API call delay
-    //         await new Promise((resolve) => setTimeout(resolve, 1500));
+            if (pointsToUse > (user?.zenPoints ?? 0)) {
+                showError("Bạn không đủ điểm để sử dụng");
+                return;
+            }
 
-    //         // 1. Save address to profile if checked
-    //         if (saveAsDefault && orderType === 'DELIVERY') {
-    //             await updateProfileAddress(address.trim());
-    //         }
+            if (pointsToUse > maxPointsAllowed) {
+                showError("Số điểm sử dụng vượt quá giới hạn giảm giá");
+                return;
+            }
+        }
 
-    //         // 2. Synchronize order with simulated database in localStorage
-    //         const storedOrders = localStorage.getItem('zen_fb_orders');
-    //         const orders = storedOrders ? JSON.parse(storedOrders) : [];
+        try {
+            /**
+             * 5. Nếu user chọn lưu địa chỉ mặc định
+             */
+            if (saveAsDefault && orderType === "DELIVERY") {
+                await updateProfile({ address: address.trim() });
+            }
 
-    //         // Calculate formatted items text for simple admin reading
-    //         const formattedItemsText = items
-    //             .map(item => {
-    //                 const toppingsText = item.selectedToppings && item.selectedToppings.length > 0
-    //                     ? ` (${item.selectedToppings.map(t => t.name).join(', ')})`
-    //                     : '';
-    //                 return `${item.quantity}x ${item.name}${toppingsText}`;
-    //             })
-    //             .join(', ');
+            /**
+             * 6. Gọi Order API
+             *
+             * BillingSummary không tự tạo order.
+             *
+             * Component cha sẽ quyết định:
+             * POST /orders
+             *
+             * và backend sẽ lấy cart hiện tại để tạo order.
+             */
+            // await onCheckout({
+            //     orderType,
+            //     address:
+            //         orderType === "DELIVERY"
+            //             ? address.trim()
+            //             : "Đến nhận tại cửa hàng 🏠",
+            //     pointsUsed: usePoints ? validPointsToUse : 0,
+            //     discountAmount,
+            //     shippingFee,
+            //     finalPrice,
+            // });
 
-    //         const orderId = `DH00` + (orders.length + 4);
-    //         const discount = usePoints ? pointsToUse * 500 : 0;
-    //         const shipFee = orderType === 'DELIVERY' ? (totalPrice >= 100000 ? 0 : 20000) : 0;
-    //         const finalTotal = totalPrice - discount + shipFee;
+            /**
+             * 7. Trừ điểm
+             *
+             * Chỉ thực hiện sau khi Order API thành công.
+             */
 
-    //         const newOrder = {
-    //             id: orderId,
-    //             userId: user.id,
-    //             customerName: user.fullName,
-    //             address: orderType === 'DELIVERY' ? address.trim() : 'Đến nhận tại cửa hàng 🏠',
-    //             items: formattedItemsText,
-    //             total: finalTotal,
-    //             orderType: orderType,
-    //             shippingFee: shipFee,
-    //             pointsUsed: usePoints ? pointsToUse : 0,
-    //             discountAmount: discount,
-    //             status: 'PENDING' as const,
-    //             createdAt: new Date().toISOString()
-    //         };
+            /**
+             * 8. Cộng điểm
+             */
+            setEarnedPoints(earnedPoints);
 
-    //         orders.unshift(newOrder); // Prepend so newest is at the top
-    //         localStorage.setItem('zen_fb_orders', JSON.stringify(orders));
+            // if (earnedPoints > 0) {
+            //     await updateUserPoints(
+            //         user.id,
+            //         earnedPoints,
+            //         "EARNED_ORDER",
+            //         `Tích điểm từ đơn hàng (+${earnedPoints} điểm)`
+            //     );
+            // }
 
-    //         // 3. Deduct points first via Context
-    //         if (usePoints && pointsToUse > 0) {
-    //             await updateUserPoints(
-    //                 user.id,
-    //                 -pointsToUse,
-    //                 'REDEEMED_APP',
-    //                 `Áp dụng điểm giảm giá cho đơn hàng ${orderId} (-${discount.toLocaleString('vi-VN')}đ)`
-    //             );
-    //         }
+        } catch (error: unknown) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Đặt hàng thất bại. Vui lòng thử lại.";
 
-    //         // 4. Calculate earned points from final product amount (excluding shipping fee): 10,000đ spent = 1 point
-    //         const pointsAdded = Math.floor((totalPrice - discount) / 10000);
-    //         setEarnedPoints(pointsAdded);
+            showError(message);
+        }
+    };
 
-    //         if (pointsAdded > 0) {
-    //             await updateUserPoints(
-    //                 user.id,
-    //                 pointsAdded,
-    //                 'EARNED_ORDER',
-    //                 `Tích điểm từ đơn hàng ${orderId} (+${pointsAdded} điểm)`
-    //             );
-    //         }
-
-    //         clearCart();
-    //         setShowSuccessModal(true);
-    //     } catch (err: any) {
-    //         showError(err?.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+    /**
+     * Loading cart
+     */
+    if (isCartLoading) {
+        return (
+            <div className="bg-card border border-border p-5 rounded-2xl">
+                <p className="text-sm text-muted-foreground">
+                    Đang tải thông tin giỏ hàng...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-card border border-border p-5 rounded-2xl space-y-4 shadow-sm">
+            {/* SUMMARY */}
             <div className="space-y-2 border-b border-border pb-4">
+                {/* Total items */}
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
                     <span>Tổng số món:</span>
-                    {/* <span>{totalItems} cốc/phần</span> */}
+                    <span>{totalItems} cốc/phần</span>
                 </div>
+
+                {/* Product price */}
+                <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                    <span>Tạm tính:</span>
+                    <span>{subtotal.toLocaleString("vi-VN")}₫</span>
+                </div>
+
+                {/* Shipping */}
                 <div className="flex justify-between text-xs text-muted-foreground font-medium">
                     <span>Phí giao hàng:</span>
-                    {/* {shippingFee === 0 ? (
+                    {shippingFee === 0 ? (
                         <span className="text-primary font-bold">
-                            {orderType === 'DELIVERY' ? 'Miễn phí (Đơn > 100k) 🎁' : 'Miễn phí (Nhận tại quán) 🎁'}
+                            {orderType === "DELIVERY"
+                                ? "Miễn phí (Đơn > 100k) 🎁"
+                                : "Miễn phí (Nhận tại quán) 🎁"}
                         </span>
                     ) : (
-                        <span className="text-foreground font-bold">{shippingFee.toLocaleString('vi-VN')}₫</span>
-                    )} */}
-                </div>
-                {/* {usePoints && discountAmount > 0 && (
-                    <div className="flex justify-between text-xs text-accent-foreground font-semibold bg-orange-50 border border-orange-100 p-2.5 rounded-xl">
-                        <span className="flex items-center gap-1">
-                            <Coins className="w-3.5 h-3.5 text-accent" /> Giảm giá bằng điểm ({pointsToUse} điểm):
+                        <span className="text-foreground font-bold">
+                            {shippingFee.toLocaleString("vi-VN")}₫
                         </span>
-                        <span>-{discountAmount.toLocaleString('vi-VN')}₫</span>
+                    )}
+                </div>
+
+                {/* Point discount */}
+                {usePoints && discountAmount > 0 && (
+                    <div className="flex justify-between text-xs text-muted-foreground font-semibold bg-orange-50 border border-orange-100 p-2.5 rounded-xl">
+                        <span>Giảm bằng điểm ({pointsToUse} điểm):</span>
+                        <span>-{discountAmount.toLocaleString("vi-VN")}₫</span>
                     </div>
-                )} */}
+                )}
             </div>
 
+            {/* FINAL PRICE */}
             <div className="flex items-center justify-between text-base font-bold text-foreground pt-1">
                 <span>Tổng tiền thanh toán:</span>
                 <span className="text-primary text-2xl tracking-tight">
-                    {/* {finalPrice.toLocaleString('vi-VN')}₫ */}
+                    {finalPrice.toLocaleString("vi-VN")}₫
                 </span>
             </div>
 
-            {/* Checkout Buttons */}
-            {/* <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-premium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
-            >
-                {loading ? 'Đang xử lý đặt hàng...' : '✓ Đặt Hàng Ngay'}
-            </button> */}
+            {/* EARNED POINTS */}
+            {earnedPoints > 0 && (
+                <div className="text-xs text-muted-foreground text-right">
+                    Bạn sẽ nhận được{" "}
+                    <span className="font-bold text-primary">
+                        +{earnedPoints} điểm
+                    </span>
+                </div>
+            )}
 
-            <button
-                // onClick={() => router.push('/')}
-                className="w-full bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground font-semibold py-3 rounded-xl transition active:scale-98 text-sm"
+            {/* CHECKOUT */}
+            <Button
+                onClick={handleCheckout}
+                disabled={isCartLoading || items.length === 0}
+                className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-6 rounded-xl shadow-premium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
+            >
+                {/* {loading
+                    ? "Đang xử lý đặt hàng..."
+                    : "✓ Đặt Hàng Ngay"} */}
+                ✓ Đặt Hàng Ngay
+            </Button>
+
+            {/* CONTINUE SHOPPING */}
+            <Button
+                onClick={() => router.push("/")}
+                className="w-full bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground font-semibold py-6 rounded-xl transition active:scale-98 text-sm"
             >
                 Quay lại mua thêm nước
-            </button>
+            </Button>
         </div>
-    )
-}
+    );
+};

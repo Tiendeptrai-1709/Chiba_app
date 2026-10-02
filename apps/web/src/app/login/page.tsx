@@ -2,11 +2,10 @@
 import React, { useState } from 'react'
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight} from 'lucide-react';
-import { Notification } from '@/components/reuse-components/Notication';
 import Image from 'next/image';
-import { useLogin } from '@chiba/api-client';
+import { useLogin, useNotificationStore } from '@chiba/api-client';
 import { api } from '@/lib/axios';
-import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
+
 import { useRouter } from 'next/navigation';
 
 
@@ -92,7 +91,6 @@ const LoginPage = () => {
                     </div>
 
                     {/* Error Message */}
-                    <Notification />
 
                     {/* Submit Button */}
                     <button

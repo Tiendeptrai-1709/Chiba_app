@@ -25,7 +25,7 @@ export interface Topping {
   name: string;
   price: number;
   category: string;
-};
+}
 
 export type ProductCategory = "ALL" | "MON_NUOC" | "TOPPING" | "BANH";
 
@@ -38,41 +38,101 @@ export interface Product {
   isAvailable?: boolean;
 }
 
+export interface CartItemTopping {
+  id: string;
+  cartItemId: string;
+  toppingId: string;
+  topping: Product;
+}
+
 export interface CartItem {
   id: string;
-  name: string;
-  price: number;
+  cartId: string;
+  productId: string;
   quantity: number;
-  selectedToppings?: { id: string; name: string; price: number }[];
+  product: Product;
+  toppings: CartItemTopping[];
+}
+
+export interface Cart {
+  id: string;
+  userId: string;
+  items: CartItem[];
+}
+
+// =========================
+// ORDER
+// =========================
+
+export type OrderStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+
+export type OrderType = "DELIVERY" | "STORE";
+
+export interface OrderItem {
+  id: string;
+
+  productId: string;
+
+  name: string;
+
+  price: number;
+
+  quantity: number;
+
+  imageUrl?: string | null;
+
+  selectedToppings?: Topping[];
 }
 
 export interface Order {
   id: string;
+
   userId: string;
-  storeId: string;
-  storeName: string;
-  address?: string;
-  items: CartItem[];
+
+  storeId?: string | null;
+
+  storeName?: string | null;
+
+  address?: string | null;
+
+  items: OrderItem[];
+
   totalPrice: number;
+
   totalItems: number;
-  status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
-  createdAt: string;
+
+  status: OrderStatus;
+
+  orderType: OrderType;
+
   pointsUsed?: number;
+
   discountAmount?: number;
 }
+
+// =========================
+// POINT
+// =========================
 
 export type PointTransactionType =
   "EARNED_ORDER" | "REDEEMED_APP" | "REDEEMED_STORE" | "ADMIN_ADJUST";
 
 export interface PointTransaction {
   id: string;
+
   userId: string;
+
   userEmail: string;
+
   userName: string;
-  points: number; // Positive for earning, negative for spending/redemption
-  pointsBefore: number; // User points before transaction
-  pointsAfter: number; // User points after transaction
+
+  points: number;
+
+  pointsBefore: number;
+
+  pointsAfter: number;
+
   type: PointTransactionType;
+
   description: string;
-  createdAt: string;
 }
