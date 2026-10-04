@@ -9,7 +9,7 @@ import { Product, Topping } from "@chiba/api-client";
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product:Product;
+  product: Product;
   availableToppings: Topping[];
   selectedToppings: Topping[];
   onToggleTopping: (topping: Topping) => void;
@@ -17,6 +17,7 @@ interface ProductModalProps {
   onChangeQuantity: (qty: number) => void;
   currentTotalPrice: number;
   onConfirm: () => void;
+  isAddingToCart: boolean;
 }
 
 export default function ProductModal({
@@ -30,6 +31,7 @@ export default function ProductModal({
   onChangeQuantity,
   currentTotalPrice,
   onConfirm,
+  isAddingToCart
 }: ProductModalProps) {
   return (
     <Dialog
@@ -101,16 +103,16 @@ export default function ProductModal({
                   key={topping.id}
                   onPress={() => onToggleTopping(topping)}
                   className={`flex-row items-center justify-between p-3.5 rounded-xl border ${isChecked
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-muted/30"
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-muted/30"
                     }`}
                 >
                   <View className="flex-1 flex-row items-center gap-3">
                     {/* Checkbox */}
                     <View
                       className={`w-5 h-5 rounded-md items-center justify-center border ${isChecked
-                          ? "bg-primary border-primary"
-                          : "bg-background border-border"
+                        ? "bg-primary border-primary"
+                        : "bg-background border-border"
                         }`}
                     >
                       {isChecked && (
@@ -176,12 +178,14 @@ export default function ProductModal({
           <Pressable
             onPress={onConfirm}
             className="w-full flex-row items-center justify-center gap-2 bg-primary rounded-xl py-4 active:opacity-80"
+            disabled={isAddingToCart}
           >
             <ShoppingCart size={17} className="text-primary-foreground" />
 
             <Text className="text-sm font-black text-primary-foreground">
-              Thêm Vào Giỏ —{" "}
-              {currentTotalPrice.toLocaleString("vi-VN")} đ
+              {isAddingToCart
+                ? "Đang thêm..."
+                : `Thêm Vào Giỏ - ${currentTotalPrice.toLocaleString("vi-VN")} đ`}
             </Text>
           </Pressable>
         </View>

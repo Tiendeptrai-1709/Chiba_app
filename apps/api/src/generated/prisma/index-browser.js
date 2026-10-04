@@ -163,6 +163,7 @@ exports.Prisma.CartItemScalarFieldEnum = {
   cartId: 'cartId',
   productId: 'productId',
   quantity: 'quantity',
+  note: 'note',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -171,6 +172,50 @@ exports.Prisma.CartItemToppingScalarFieldEnum = {
   id: 'id',
   cartItemId: 'cartItemId',
   toppingId: 'toppingId'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  orderCode: 'orderCode',
+  userId: 'userId',
+  orderType: 'orderType',
+  status: 'status',
+  paymentStatus: 'paymentStatus',
+  deliveryAddress: 'deliveryAddress',
+  customerName: 'customerName',
+  customerPhone: 'customerPhone',
+  subtotal: 'subtotal',
+  pointsUsed: 'pointsUsed',
+  discountAmount: 'discountAmount',
+  shippingFee: 'shippingFee',
+  totalAmount: 'totalAmount',
+  earnedPoints: 'earnedPoints',
+  note: 'note',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt',
+  cancelledAt: 'cancelledAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  productName: 'productName',
+  productImage: 'productImage',
+  unitPrice: 'unitPrice',
+  quantity: 'quantity',
+  lineTotal: 'lineTotal',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OrderItemToppingScalarFieldEnum = {
+  id: 'id',
+  orderItemId: 'orderItemId',
+  toppingId: 'toppingId',
+  toppingName: 'toppingName',
+  unitPrice: 'unitPrice',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -199,12 +244,36 @@ exports.ProductCategory = exports.$Enums.ProductCategory = {
   BANH: 'BANH'
 };
 
+exports.OrderType = exports.$Enums.OrderType = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP'
+};
+
+exports.OrderStatus = exports.$Enums.OrderStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  DELIVERING: 'DELIVERING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.PaymentStatus = exports.$Enums.PaymentStatus = {
+  UNPAID: 'UNPAID',
+  PAID: 'PAID',
+  REFUNDED: 'REFUNDED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Product: 'Product',
   Cart: 'Cart',
   CartItem: 'CartItem',
-  CartItemTopping: 'CartItemTopping'
+  CartItemTopping: 'CartItemTopping',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  OrderItemTopping: 'OrderItemTopping'
 };
 
 /**

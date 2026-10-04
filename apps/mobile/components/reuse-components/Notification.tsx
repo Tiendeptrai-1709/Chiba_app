@@ -1,41 +1,29 @@
-import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
-import React, { useEffect } from 'react'
-import { Pressable, Text, View } from 'react-native'
+
+import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
+import { toast } from "sonner-native";
+import { useEffect } from "react";
 
 const Notification = () => {
-    const { error, success, clearNotification } = useNotificationStore();
-    // Tự động ẩn thông báo lỗi/thành công sau 5 giây để nâng cao trải nghiệm người dùng
-    useEffect(() => {
-        if (error || success) {
-            const timer = setTimeout(() => {
-                clearNotification();
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [error, success, clearNotification]);
+  const { error, success, clearNotification } =
+    useNotificationStore();
 
-    if (!error && !success) return null;
-    return (
-        <View className="mb-4 space-y-2 animate-fade-in relative">
-            {/* Notification Alert Box */}
-            {error && (
-                <View className="p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200 font-medium flex items-center justify-between shadow-sm">
-                    <Text className="flex items-center gap-2">⚠️ {error} </Text>
-                    <Pressable onPress={clearNotification}>
-                        <Text className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2">✕</Text>
-                    </Pressable>
-                </View>
-            )}
-            {success && (
-                <View className="p-4 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-200 font-medium flex items-center justify-between shadow-sm">
-                    <Text className="flex items-center gap-2">✅ {success}</Text>
-                    <Pressable onPress={clearNotification}>
-                        <Text className="text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-2">✕</Text>
-                    </Pressable>
-                </View>
-            )}
-        </View>
-    )
-}
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        duration: 3000,
+      });
 
-export default Notification
+      clearNotification();
+    } else if (success) {
+      toast.success(success, {
+        duration: 3000,
+      });
+
+      clearNotification();
+    }
+  }, [error, success, clearNotification]);
+
+  return null;
+};
+
+export default Notification;

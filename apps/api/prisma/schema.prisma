@@ -12,16 +12,13 @@ datasource db {
   provider = "postgresql"
 }
 
+// ================================
+// USER MANAGEMENT
+// ================================
 enum Role {
   ADMIN
   STAFF
   CUSTOMER
-}
-
-enum ProductCategory {
-  MON_NUOC
-  TOPPING
-  BANH
 }
 
 model User {
@@ -36,7 +33,8 @@ model User {
   role         Role    @default(CUSTOMER)
   isSuspended  Boolean @default(false)
 
-  cart Cart?
+  cart   Cart?
+  orders Order[]
 
   hashedRefreshToken   String?
   resetPasswordToken   String?
@@ -51,16 +49,28 @@ model User {
   @@map("users")
 }
 
+// ================================
+// PRODUCT MANAGEMENT
+// ================================
+enum ProductCategory {
+  MON_NUOC
+  TOPPING
+  BANH
+}
+
 model Product {
   id          String          @id @default(uuid())
   name        String          @unique
   price       Int
   imageUrl    String
   category    ProductCategory @default(MON_NUOC)
-  isAvailable Boolean?
+  isAvailable Boolean @default(true)
 
   cartItems        CartItem[]        @relation("CartItem")
   cartItemToppings CartItemTopping[] @relation("CartItemTopping")
+
+  orderItems    OrderItem[]
+  orderToppings OrderItemTopping[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +78,9 @@ model Product {
   @@map("products")
 }
 
+// ================================
+// CART MANAGEMENT
+// ================================
 model Cart {
   id        String   @id @default(uuid())
   userId    String   @unique
@@ -85,6 +98,7 @@ model CartItem {
   cartId    String
   productId String
   quantity  Int    @default(1)
+  note String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,8 +116,119 @@ model CartItemTopping {
   toppingId  String
 
   cartItem CartItem @relation(fields: [cartItemId], references: [id], onDelete: Cascade)
-  topping Product  @relation("CartItemTopping", fields: [toppingId], references: [id], onDelete: Cascade)
+  topping  Product  @relation("CartItemTopping", fields: [toppingId], references: [id], onDelete: Cascade)
 
   @@unique([cartItemId, toppingId])
   @@map("cart_items_toppings")
+}
+
+// ================================
+// ORDER MANAGEMENT
+// ================================
+enum OrderType {
+  DELIVERY
+  PICKUP
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+model Order {
+  id        String @id @default(uuid())
+  orderCode String @unique @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  orderType     OrderType
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  // Snapshot địa chỉ tại thời điểm đặt hàng
+  deliveryAddress String?
+  customerName    String?
+  customerPhone   String?
+
+  // Giá trị tiền tại thời điểm checkout, đơn vị VND
+  subtotal       Int
+  pointsUsed     Int @default(0)
+  discountAmount Int @default(0)
+  shippingFee    Int @default(0)
+  totalAmount    Int
+
+  // Điểm dự kiến nhận được khi đơn hoàn tất
+  earnedPoints Int @default(0)
+
+  note String?
+
+  items OrderItem[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("orders")
+
+}
+
+model OrderItem {
+  id String @id @default(uuid()) 
+
+  orderId String 
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Có thể null nếu sản phẩm bị xóa về sau
+  productId String?  
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  // Snapshot thông tin sản phẩm
+  productName  String
+  productImage String?
+  unitPrice    Int
+  quantity     Int
+  lineTotal    Int
+
+  toppings OrderItemTopping[]
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("orders_items")
+}
+
+model OrderItemTopping {
+  id String @id @default(uuid()) 
+
+  orderItemId String   
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  toppingId String? 
+  topping   Product? @relation(fields: [toppingId], references: [id], onDelete: SetNull)
+
+  // Snapshot topping
+  toppingName String
+  unitPrice   Int
+
+  createdAt DateTime @default(now())
+
+  @@index([orderItemId])
+  @@index([toppingId])
+  @@map("orders_items_toppings")
 }

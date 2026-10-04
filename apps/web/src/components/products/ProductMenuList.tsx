@@ -184,12 +184,6 @@ export const ProductMenuList = () => {
         </div>
 
         {/* Visual Toast Notification on Addition */}
-        {addedItemName && (
-          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-black/90 text-white text-xs px-4 py-3 rounded-full shadow-floating flex items-center gap-2 animate-fade-in whitespace-nowrap">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            Đã thêm <span className="font-bold text-accent">{addedItemName}</span> vào giỏ hàng!
-          </div>
-        )}
 
         {/* Dynamic Products Grid/List */}
         {filteredProducts.length > 0 ? (

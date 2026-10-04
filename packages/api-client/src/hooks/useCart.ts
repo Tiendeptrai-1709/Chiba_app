@@ -125,9 +125,27 @@ export const useRemoveItem = (axiosInstance: AxiosInstance) => {
 };
 
 export const useClearCart = (axiosInstance: AxiosInstance) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async () => {
       await axiosInstance.delete("/cart");
+    },
+    onSuccess: async () => {
+      // Cập nhật cache ngay sau khi API thành công
+      queryClient.setQueryData(["cart"], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          items: [],
+        };
+      });
+
+      // Tiếp tục đồng bộ với backend
+      await queryClient.invalidateQueries({
+        queryKey: ["cart"],
+      });
     },
   });
 };

@@ -8,12 +8,12 @@ import {
 } from "react-native";
 import { Plus, Search } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import ProductCard from "@/components/products/admin/ProductCard";
+import ProductCard from "@/components/products/ProductCard";
 import { Product, useGetAllProduct, useProfile } from "@chiba/api-client";
 import { api } from "@/lib/axios";
 
 import { useDeleteProduct } from "@chiba/api-client/src/hooks/useProduct";
-import DeleteProductModal from "@/components/products/admin/DeleteProductModal";
+import DeleteProductModal from "@/components/products/DeleteProductModal";
 import Notification from "@/components/reuse-components/Notification";
 
 

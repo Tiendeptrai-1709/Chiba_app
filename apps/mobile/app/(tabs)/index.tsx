@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useProfile } from "@chiba/api-client";
 import { api } from "@/lib/axios";
 import Header from "@/components/layouts/Header";
-import ProductMenuList from "@/components/products/customer/ProductMenuList";
+import ProductMenuList from "@/components/products/ProductMenuList";
 
 export default function HomeScreen() {
   const { data: user, isLoading } = useProfile(api);

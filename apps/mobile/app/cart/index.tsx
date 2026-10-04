@@ -67,7 +67,7 @@ export default function CartPage() {
   // Redirect nếu user chưa đăng nhập.
   useEffect(() => {
     if (!isUserLoading && !user) {
-      router.replace("/login");
+      router.push("/login");
     }
   }, [user, isUserLoading, router]);
 
@@ -145,13 +145,13 @@ export default function CartPage() {
   }
 
   // Tránh render trang cart trong lúc điều hướng đăng nhập.
-  if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  // if (!user) {
+  //   return (
+  //     <View className="flex-1 items-center justify-center bg-background">
+  //       <ActivityIndicator size="large" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <View className="flex-1 bg-background">

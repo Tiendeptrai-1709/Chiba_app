@@ -2,11 +2,11 @@ import React, { useMemo, useState } from 'react';
 import { FlatList, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { Plus, Search, Sparkles } from 'lucide-react-native';
 
-import { Product, ProductCategory, Topping, useGetAllProduct } from '@chiba/api-client';
+import { Product, ProductCategory, Topping, useAddCartItems, useGetAllProduct, useNotificationStore } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import ProductModal from './ProductModal';
 
-const CATEGORIES: {id: ProductCategory, label:string}[] = [
+const CATEGORIES: { id: ProductCategory, label: string }[] = [
   { id: 'ALL', label: 'Tất cả' },
   { id: 'MON_NUOC', label: 'Món Nước' },
   { id: 'TOPPING', label: 'Topping Nước' },
@@ -15,10 +15,11 @@ const CATEGORIES: {id: ProductCategory, label:string}[] = [
 
 const ProductMenuList = () => {
   const { data: PRODUCTS } = useGetAllProduct(api)
-  const [activeCategory, setActiveCategory] =
-    useState<ProductCategory>("ALL");
+  const { mutate: addToCart, isPending: isAddingToCart, } = useAddCartItems(api)
+  const { showError, showSuccess } = useNotificationStore()
+
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>("ALL");
   const [searchQuery, setSearchQuery] = useState('');
-  const [addedItemName, setAddedItemName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedToppings, setSelectedToppings] = useState<Topping[]>([]);
   const [drinkQuantity, setDrinkQuantity] = useState(1);
@@ -58,27 +59,33 @@ const ProductMenuList = () => {
   }, [PRODUCTS]);
 
   /*
-   * Toast
-   */
-  const triggerToast = (name: string) => {
-    setAddedItemName(name);
-    setTimeout(() => {
-      setAddedItemName(null);
-    }, 2000);
-  };
-
-  /*
    * Add product
    */
   const handleAddToCart = (product: Product) => {
-    if (product.category === 'MON_NUOC') {
-      setSelectedProduct(product);
-      setSelectedToppings([]);
-      setDrinkQuantity(1);
+    // Topping / sản phẩm không cần chọn option
+    if (product.category === "TOPPING") {
+      addToCart(
+        {
+          productId: product.id,
+          quantity: 1,
+          toppingIds: [],
+        },
+        {
+          onSuccess: () => {
+            showSuccess("Đã thêm sản phẩm vào giỏ hàng");
+          },
+          onError: () => {
+            showError("Thêm sản phẩm thất bại");
+          },
+        }
+      );
+
       return;
     }
-
-    triggerToast(product.name);
+    // Món nước → mở modal chọn topping
+    setSelectedProduct(product);
+    setSelectedToppings([]);
+    setDrinkQuantity(1);
   };
 
   /*
@@ -100,17 +107,26 @@ const ProductMenuList = () => {
   const handleConfirmToppings = () => {
     if (!selectedProduct) return;
 
-    const toppingNames = selectedToppings
-      .map((topping) => topping.name)
-      .join(', ');
-    const toastName = toppingNames
-      ? `${selectedProduct.name} (+Topping)`
-      : selectedProduct.name;
+    const toppingIds = selectedToppings.map(
+      (topping) => topping.id
+    );
 
-    triggerToast(toastName);
-    setSelectedProduct(null);
-    setSelectedToppings([]);
-    setDrinkQuantity(1);
+    addToCart(
+      { productId: selectedProduct.id, quantity: drinkQuantity, toppingIds },
+      {
+        onSuccess: () => {
+          showSuccess("Đã thêm sản phẩm vào giỏ hàng");
+
+          setSelectedProduct(null);
+          setSelectedToppings([]);
+          setDrinkQuantity(1);
+        },
+
+        onError: () => {
+          showError("Thêm sản phẩm thất bại");
+        },
+      }
+    );
   };
 
   /*
@@ -128,15 +144,7 @@ const ProductMenuList = () => {
   /*
    * Product icon
    */
-  const getProductIcon = (product: Product) => {
-    if (product.category === 'MON_NUOC') {
-      return '☕';
-    }
-    if (product.category === 'TOPPING') {
-      return '🥛';
-    }
-    return '🍰';
-  };
+
 
   return (
     <View className="flex-1">
@@ -192,18 +200,6 @@ const ProductMenuList = () => {
       {/* =========================================
           TOAST
       ========================================== */}
-      {addedItemName && (
-        <View className="absolute z-[100] bottom-5 left-5 right-5 min-h-12 px-4 rounded-full bg-black/90 flex-row items-center justify-center">
-          <Sparkles size={16} color="#FFD54A" />
-          <Text className="ml-2 text-xs font-medium text-white">
-            Đã thêm{' '}
-            <Text className="font-extrabold text-accent">
-              {addedItemName}
-            </Text>{' '}
-            vào giỏ hàng!
-          </Text>
-        </View>
-      )}
 
       {/* =========================================
           PRODUCT LIST
@@ -228,7 +224,7 @@ const ProductMenuList = () => {
                     borderRadius: 10,
                   }} />
               ) : (
-                <Text className="text-3xl">{getProductIcon(product)}</Text>
+                <Text className="w-12 h-12 flex items-center justify-center bg-muted text-2xl rounded-xl"> {product.category === 'MON_NUOC' ? '☕' : product.category === 'TOPPING' ? '🥛' : '🍰'} </Text>
               )
               }
             </View>
@@ -283,6 +279,7 @@ const ProductMenuList = () => {
           onChangeQuantity={setDrinkQuantity}
           currentTotalPrice={currentTotalPrice}
           onConfirm={handleConfirmToppings}
+          isAddingToCart={isAddingToCart}
         />
       )}
     </View>

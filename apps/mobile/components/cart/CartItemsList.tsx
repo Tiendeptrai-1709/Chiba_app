@@ -209,9 +209,7 @@ export const CartItemsList = () => {
             <Pressable
               onPress={() => handleRemoveItem(item.id)}
               disabled={isRemoving}
-              className="items-center justify-center p-2"
-              accessibilityRole="button"
-              accessibilityLabel={`Xóa ${item.product.name}`}
+              className="p-2 text-white hover:bg-destructive/5 rounded-lg transition active:scale-90"
             >
               <Trash2 size={20} color="#dc2626" />
             </Pressable>
@@ -249,8 +247,7 @@ export const CartItemsList = () => {
                 onPress={() => setIsOpen(false)}
                 disabled={isClearing}
                 className="ml-2 h-8 w-8 items-center justify-center rounded-full"
-                accessibilityRole="button"
-                accessibilityLabel="Đóng"
+
               >
                 <X size={20} color="#6b7280" />
               </Pressable>
