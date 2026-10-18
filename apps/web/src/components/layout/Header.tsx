@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 // import { useCart } from '@/lib/context/CartContext';
 import { MapPin, ShoppingCart } from 'lucide-react';
@@ -14,17 +14,17 @@ interface HeaderProps {
 
 export const Header = ({ user }: HeaderProps) => {
   const { data: cart } = useGetCart(api);
+  console.log("cart: ",cart)
+  const [selectedStore] = useState('Chọn cửa hàng');
 
-  const [selectedStore, setSelectedStore] = useState('Chọn cửa hàng');
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedStore = localStorage.getItem('zen_selected_store');
-      if (storedStore) {
-        setSelectedStore(storedStore);
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const storedStore = localStorage.getItem('zen_selected_store');
+  //     if (storedStore) {
+  //       setSelectedStore(storedStore);
+  //     }
+  //   }
+  // }, []);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-primary text-white shadow-md rounded-b-[1.5rem] overflow-hidden">

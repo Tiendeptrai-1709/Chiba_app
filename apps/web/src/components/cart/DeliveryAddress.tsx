@@ -2,12 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  useNotificationStore,
-  useUpdateProfile,
-} from "@chiba/api-client";
-
-import { api } from "@/lib/axios";
+import { useNotificationStore } from "@chiba/api-client";
 
 interface DeliveryAddressProps {
   orderType: "DELIVERY" | "PICKUP";
@@ -24,7 +19,7 @@ export const DeliveryAddress = ({
   saveAsDefault,
   setSaveAsDefault,
 }: DeliveryAddressProps) => {
-  const { showError, showSuccess } = useNotificationStore();
+  const { showError } = useNotificationStore();
 
   const [locating, setLocating] = useState(false);
 

@@ -7,6 +7,7 @@ import {
   Min,
   ValidateIf,
 } from "class-validator";
+import { OrderStatus } from "src/generated/prisma";
 
 export enum OrderType {
   DELIVERY = "DELIVERY",
@@ -31,4 +32,9 @@ export class CreateOrderDto {
   @IsString()
   @MaxLength(500)
   note?: string;
+}
+
+export class UpdateStatusOrderDto {
+  @IsEnum(OrderStatus)
+  newStatus: OrderStatus;
 }

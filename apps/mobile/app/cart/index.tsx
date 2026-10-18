@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -38,17 +37,13 @@ export default function CartPage() {
 
   const { data: cart, isLoading: isCartLoading } = useGetCart(api);
   const { data: user, isLoading: isUserLoading } = useProfile(api);
-  // const { showError } = useNotificationStore();
 
-  const [earnedPoints, setEarnedPoints] = useState(0);
   const [address, setAddress] = useState("");
   const [hasEditedAddress, setHasEditedAddress] = useState(false);
   const [saveAsDefault, setSaveAsDefault] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("DELIVERY");
   const [usePoints, setUsePoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const items = cart?.items ?? [];
   const userPoints = user?.zenPoints ?? 0;
@@ -96,43 +91,6 @@ export default function CartPage() {
     setHasEditedAddress(true);
   };
 
-  // const handleCheckout = async (payload: CheckoutPayload) => {
-  //   if (isSubmitting) return;
-
-  //   try {
-  //     setIsSubmitting(true);
-
-  //     // Backend tự tính lại giá và xác thực điểm Zen.
-  //     const response = await api.post("/orders/checkout", {
-  //       orderType: payload.orderType,
-  //       address:
-  //         payload.orderType === "DELIVERY"
-  //           ? payload.address.trim()
-  //           : undefined,
-  //       pointsUsed: payload.pointsUsed,
-  //     });
-
-  //     const order = response.data;
-
-  //     setEarnedPoints(order.earnedPoints ?? 0);
-  //     setShowSuccessModal(true);
-
-  //     // Đồng bộ lại cart và profile sau khi đặt hàng.
-  //     await Promise.all([
-  //       queryClient.invalidateQueries({ queryKey: ["cart"] }),
-  //       queryClient.invalidateQueries({ queryKey: ["profile"] }),
-  //     ]);
-  //   } catch (error: any) {
-  //     const message =
-  //       error?.response?.data?.message ??
-  //       "Không thể đặt hàng. Vui lòng thử lại.";
-
-  //     showError(message);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
   if (isUserLoading || isCartLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
@@ -154,11 +112,11 @@ export default function CartPage() {
   // }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background mt-10">
       {/* Header */}
-      <View className="flex-row items-center border-b border-border bg-card px-4 py-4">
+      <View className="flex-row items-center border-b border-border bg-card px-4 py-4 ">
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.push("/")}
           className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-neutral-100"
           accessibilityRole="button"
           accessibilityLabel="Quay lại"
@@ -217,8 +175,7 @@ export default function CartPage() {
               usePoints={usePoints}
               pointsToUse={pointsToUse}
               saveAsDefault={saveAsDefault}
-              setEarnedPoints={setEarnedPoints}
-              // onCheckout={handleCheckout}
+            // onCheckout={handleCheckout}
             />
           </View>
         ) : (
@@ -247,46 +204,7 @@ export default function CartPage() {
       </ScrollView>
 
       {/* Success modal */}
-      <Modal
-        visible={showSuccessModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowSuccessModal(false)}
-      >
-        <View className="flex-1 items-center justify-center bg-black/60 px-6">
-          <View className="w-full max-w-sm items-center rounded-2xl bg-card p-6">
-            <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Text className="text-4xl text-primary">✓</Text>
-            </View>
 
-            <Text className="text-center text-2xl font-black text-primary">
-              Đặt hàng thành công!
-            </Text>
-
-            <Text className="mt-3 text-center text-sm text-muted-foreground">
-              Đơn hàng của bạn đã được tiếp nhận.
-            </Text>
-
-            <View className="mt-5 w-full flex-row items-center justify-center rounded-xl border border-orange-200 bg-orange-50 p-4">
-              <Text className="text-center text-sm font-bold text-orange-800">
-                ✨ Bạn nhận được +{earnedPoints} điểm Chiba!
-              </Text>
-            </View>
-
-            <Pressable
-              onPress={() => {
-                setShowSuccessModal(false);
-                router.replace("/");
-              }}
-              className="mt-6 w-full items-center rounded-xl bg-primary px-5 py-3"
-            >
-              <Text className="font-bold text-white">
-                Đồng ý & Tiếp tục
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }

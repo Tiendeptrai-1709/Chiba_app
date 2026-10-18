@@ -131,19 +131,12 @@ enum OrderType {
 }
 
 enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  READY
-  DELIVERING
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  UNPAID
-  PAID
-  REFUNDED
+  PENDING // Chờ xác nhận
+  PREPARING // Đang chuẩn bị
+  READY // Sẵn sàng nhận tại cửa hàng
+  DELIVERING // Đang vận chuyển
+  COMPLETED // Đơn hàng đã hoàn thành
+  CANCELLED // Đơn hàng đã bị hủy
 }
 
 model Order {
@@ -153,9 +146,8 @@ model Order {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  orderType     OrderType
-  status        OrderStatus   @default(PENDING)
-  paymentStatus PaymentStatus @default(UNPAID)
+  orderType OrderType
+  status    OrderStatus @default(PENDING)
 
   // Snapshot địa chỉ tại thời điểm đặt hàng
   deliveryAddress String?
@@ -183,6 +175,7 @@ model Order {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@map("orders")
 }
 
 model OrderItem {
@@ -208,6 +201,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+  @@map("orders_items")
 }
 
 model OrderItemTopping {
@@ -227,4 +221,5 @@ model OrderItemTopping {
 
   @@index([orderItemId])
   @@index([toppingId])
+  @@map("orders_items_toppings")
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, Sparkles } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import ProductModal from './ProductModal';
 import { Product, Topping, ProductCategory, useGetAllProduct, useAddCartItems, useNotificationStore } from '@chiba/api-client';
 import { api } from '@/lib/axios';
@@ -23,7 +23,6 @@ export const ProductMenuList = () => {
 
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("ALL");
   const [searchQuery, setSearchQuery] = useState('');
-  const [addedItemName, setAddedItemName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedToppings, setSelectedToppings] = useState<Topping[]>([]);
   const [drinkQuantity, setDrinkQuantity] = useState(1);
@@ -49,11 +48,7 @@ export const ProductMenuList = () => {
 
       return matchSearch && matchCategory;
     });
-  }, [
-    PRODUCTS,
-    searchQuery,
-    activeCategory,
-  ]);
+  }, [PRODUCTS, searchQuery,activeCategory]);
 
   /*
    * Available toppings

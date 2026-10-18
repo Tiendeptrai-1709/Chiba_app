@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useProfile } from "@chiba/api-client";
 import { api } from "@/lib/axios";
@@ -7,28 +7,28 @@ import Header from "@/components/layouts/Header";
 import ProductMenuList from "@/components/products/ProductMenuList";
 
 export default function HomeScreen() {
-  const { data: user, isLoading } = useProfile(api);
+  const { data: user, isLoading: isUserLoading } = useProfile(api);
+
   const router = useRouter();
 
   useEffect(() => {
-    if (!user && !isLoading) {
-      router.replace("/login");
+    if (!user && !isUserLoading) {
+      router.push('/login');
     }
-  }, [user, isLoading,router]);
+  }, [user, isUserLoading, router]);
 
-  if (isLoading) {
+
+  if (isUserLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="small" color="#1E4620" />
-        <Text className="mt-3 text-xs font-semibold text-muted-foreground">
-          Đang tải hương vị...
-        </Text>
+      <View className="flex flex-col items-center justify-center min-h-screen">
+        <View className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></View>
+        <Text className="text-xs text-muted-foreground mt-3 font-semibold">Đang tải hương vị...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-background pb-20">
+    <View className="flex-1 bg-background pt-10 pb-20">
       {/* Header */}
       <Header user={user} />
 

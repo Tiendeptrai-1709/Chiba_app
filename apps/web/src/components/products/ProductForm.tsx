@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { ImagePlus } from 'lucide-react';
-import { Notification } from '../reuse-components/Notication';
 import { Button } from '../ui/button';
 
 

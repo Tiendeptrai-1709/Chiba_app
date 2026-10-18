@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { FlatList, Image, Pressable, Text, TextInput, View } from 'react-native';
-import { Plus, Search, Sparkles } from 'lucide-react-native';
+import { Plus, Search } from 'lucide-react-native';
 
 import { Product, ProductCategory, Topping, useAddCartItems, useGetAllProduct, useNotificationStore } from '@chiba/api-client';
 import { api } from '@/lib/axios';

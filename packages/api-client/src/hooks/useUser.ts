@@ -15,6 +15,20 @@ export const useProfile = (axiosInstance:AxiosInstance) => {
   });
 };
 
+export const useGetAllCustomers = (axiosInstance:AxiosInstance) =>{
+  const { accessToken } = useAuthStore();
+
+  return useQuery({
+    queryKey:["customers"],
+    queryFn:async() =>{
+      const {data} = await axiosInstance.get("/users/customers");
+      console.log("get: ", data)
+      return data;
+    },
+    enabled: !!accessToken,
+  })
+}
+
 export const useDeleteProfile = (axiosInstance:AxiosInstance) => {
 
   const clearAccessToken = useAuthStore((s) => s.clearAccessToken);

@@ -18,40 +18,19 @@ import {
 } from "react-native";
 
 export const CartItemsList = () => {
-  const {
-    data: carts,
-    isLoading,
-    isError,
-  } = useGetCart(api);
-
-  const {
-    mutate: updateItem,
-  } = useUpdateItem(api);
-
-  const {
-    mutate: removeItem,
-    isPending: isRemoving,
-  } = useRemoveItem(api);
-
-  const {
-    mutate: clearCart,
-    isPending: isClearing,
-  } = useClearCart(api);
+  const { data: carts, isLoading, isError, } = useGetCart(api);
+  const { mutate: updateItem } = useUpdateItem(api);
+  const { mutate: removeItem, isPending: isRemoving } = useRemoveItem(api);
+  const { mutate: clearCart, isPending: isClearing, } = useClearCart(api);
 
   const [isOpen, setIsOpen] = useState(false);
 
   const items = carts?.items ?? [];
 
-  const handleUpdateItem = (
-    itemId: string,
-    quantity: number
-  ) => {
+  const handleUpdateItem = (itemId: string,quantity: number) => {
     if (quantity < 1) return;
 
-    updateItem({
-      itemId,
-      quantity,
-    });
+    updateItem({itemId,quantity,});
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -116,11 +95,8 @@ export const CartItemsList = () => {
           0
         );
 
-        const itemUnitPrice =
-          item.product.price + toppingsPrice;
-
-        const itemTotalPrice =
-          itemUnitPrice * item.quantity;
+        const itemUnitPrice = item.product.price + toppingsPrice;
+        const itemTotalPrice = itemUnitPrice * item.quantity;
 
         return (
           <View
@@ -170,15 +146,14 @@ export const CartItemsList = () => {
                     item.quantity - 1
                   )
                 }
-                disabled={item.quantity <= 1 }
+                disabled={item.quantity <= 1}
                 className="h-8 w-7 items-center justify-center"
               >
                 <Text
-                  className={`text-lg font-bold ${
-                    item.quantity <= 1
-                      ? "text-gray-300"
-                      : "text-gray-800"
-                  }`}
+                  className={`text-lg font-bold ${item.quantity <= 1
+                    ? "text-gray-300"
+                    : "text-gray-800"
+                    }`}
                 >
                   −
                 </Text>
@@ -274,9 +249,8 @@ export const CartItemsList = () => {
                 <Pressable
                   onPress={handleConfirmClearCart}
                   disabled={isClearing}
-                  className={`flex-1 flex-row items-center justify-center rounded-xl bg-red-600 py-3 ${
-                    isClearing ? "opacity-60" : ""
-                  }`}
+                  className={`flex-1 flex-row items-center justify-center rounded-xl bg-red-600 py-3 ${isClearing ? "opacity-60" : ""
+                    }`}
                 >
                   {isClearing ? (
                     <ActivityIndicator color="#ffffff" />

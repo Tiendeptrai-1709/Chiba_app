@@ -2,7 +2,7 @@
 // import { Coffee, Trash2 } from 'lucide-react'
 import { api } from '@/lib/axios'
 import { useClearCart, useGetCart, useRemoveItem, useUpdateItem } from '@chiba/api-client'
-import { CartItem, Product } from '@chiba/api-client/src/types'
+import { CartItem } from '@chiba/api-client/src/types'
 import { Coffee, Trash2, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Button } from '../ui/button'
@@ -143,10 +143,10 @@ export const CartItemsList = () => {
                     <div className="space-y-4 border-t border-border bg-[#FAF7F5] p-5">
                         <p className=''>Bạn có chắc muốn xóa toàn bộ sản phẩm</p>
                         <div className="flex items-center justify-around w-full space-x-2">
-                            <Button onClick={() => setIsOpen(false)} className="w-[50%]">
+                            <Button onClick={() => setIsOpen(false)} className="h-[35px] w-[50%]">
                                 Không
                             </Button>
-                            <Button onClick={() => clearCart()} className="w-[50%]">
+                            <Button onClick={() => clearCart()} className="h-[35px] w-[50%] bg-destructive">
                                 Đồng ý
                             </Button>
                         </div>

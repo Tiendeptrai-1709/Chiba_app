@@ -2,16 +2,17 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, Pressable } from "react-native";
 import { Link } from "expo-router";
 import { MapPin, ShoppingCart } from "lucide-react-native";
+import { useGetCart, User } from "@chiba/api-client";
+import { api } from "@/lib/axios";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface HeaderProps {
-  user: {
-    fullName?: string;
-  } | null;
+  user: User | null;
 }
 
 export default function Header({ user }: HeaderProps) {
-  const totalItems = 0;
+  const { data: cart, isPending: isCartLoading } = useGetCart(api);
+  console.log("cart: ", cart)
   const [selectedStore, setSelectedStore] = useState("Chọn cửa hàng");
 
   useEffect(() => {
@@ -63,10 +64,10 @@ export default function Header({ user }: HeaderProps) {
             <Link href="/cart" asChild>
               <Pressable className="relative w-10 h-10 rounded-full bg-white/10 items-center justify-center">
                 <ShoppingCart size={20} color="white" />
-                {totalItems > 0 && (
+                {(!isCartLoading && cart.items.length) > 0 && (
                   <View className="absolute right-0 top-0 w-5 h-5 rounded-full bg-accent items-center justify-center border-2 border-primary">
                     <Text className="text-[10px] font-bold text-white">
-                      {totalItems}
+                      {cart.items.length}
                     </Text>
                   </View>
                 )}

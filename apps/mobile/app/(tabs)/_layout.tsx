@@ -1,14 +1,14 @@
 import { Tabs } from "expo-router";
-import { Home, MapPin, User } from "lucide-react-native";
+import { Home, MapPin, ReceiptText, User } from "lucide-react-native";
 
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown:false,
-        tabBarActiveTintColor:"#1E4620",
-        tabBarInactiveTintColor:"#6B5E53",
+        headerShown: false,
+        tabBarActiveTintColor: "#1E4620",
+        tabBarInactiveTintColor: "#6B5E53",
       }}
     >
       <Tabs.Screen
@@ -26,6 +26,15 @@ export default function TabLayout() {
           title: "Cửa hàng",
           tabBarIcon: ({ color }) => (
             <MapPin color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
+        name="order"
+        options={{
+          title: "Đơn hàng",
+          tabBarIcon: ({ color }) => (
+            <ReceiptText color={color} />
           )
         }}
       />

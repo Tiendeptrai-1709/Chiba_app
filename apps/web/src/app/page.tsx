@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import Link from 'next/link';
-import { Home, MapPin, ShoppingBag, User } from 'lucide-react';
+import { Home, MapPin, ReceiptText, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGetCart, useProfile } from '@chiba/api-client';
 import { api } from '@/lib/axios';
@@ -65,14 +65,14 @@ export default function Page() {
           <span className="text-[10px] font-medium">Cửa Hàng</span>
         </Link>
 
-        <Link href="/cart" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary relative transition-all duration-200">
-          <ShoppingBag className="w-5.5 h-5.5" />
+        <Link href="/order" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary relative transition-all duration-200">
+          <ReceiptText className="w-5.5 h-5.5" />
           {cart.items.length > 0 && (
             <span className="absolute -top-1 -right-2 bg-accent text-[9px] font-bold text-white h-5 w-5 flex items-center justify-center rounded-full border border-white">
               {cart.items.length}
             </span>
           )}
-          <span className="text-[10px] font-medium">Giỏ Hàng</span>
+          <span className="text-[10px] font-medium">Đơn Hàng</span>
         </Link>
 
         <Link href="/profile" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-all duration-200">

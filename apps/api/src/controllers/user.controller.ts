@@ -12,6 +12,9 @@ import { UserSevice } from "../services/user.service";
 import { JwtAuthGuard } from "src/guards/jwt-auth.guard";
 import { Request, Response } from "express";
 import { DeleteProfileDto } from "src/dto/auth.dto";
+import { RolesGuard } from "src/guards/role.guard";
+import { Roles } from "src/decorators/roles.decorator";
+import { Role } from "src/generated/prisma";
 
 
 @Controller("users")
@@ -25,10 +28,11 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  findAllUser() {
-    return this.userService.findAllUser();
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Get("customers")
+  getAllCustomers() {
+    return this.userService.getAllCustomers();
   }
 
   @UseGuards(JwtAuthGuard)

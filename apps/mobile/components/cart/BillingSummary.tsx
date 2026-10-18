@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import {
+    useCheckout,
     useGetCart,
     useNotificationStore,
     useProfile,
@@ -16,6 +17,7 @@ import {
 
 import { api } from "@/lib/axios";
 import { calculateCartTotals } from "@chiba/api-client/src/lib/cart-pricing";
+import { useRouter } from "expo-router";
 
 type OrderType = "DELIVERY" | "PICKUP";
 
@@ -34,9 +36,7 @@ interface BillingSummaryProps {
     usePoints: boolean;
     pointsToUse: number;
     saveAsDefault: boolean;
-    setEarnedPoints: (points: number) => void;
     //   onCheckout: (data: CheckoutPayload) => Promise<void>;
-    isSubmitting?: boolean;
 }
 
 const formatCurrency = (amount: number) =>
@@ -48,14 +48,15 @@ export const BillingSummary = ({
     usePoints,
     pointsToUse,
     saveAsDefault,
-    setEarnedPoints,
     //   onCheckout,
-    isSubmitting = false,
 }: BillingSummaryProps) => {
     const { data: cart, isLoading: isCartLoading } = useGetCart(api);
     const { data: user } = useProfile(api);
     const { mutate: updateProfile } = useUpdateProfile(api)
-    const { showError } = useNotificationStore();
+    const { mutate: checkout, isPending: isCheckoutLoading } = useCheckout(api);
+    const { showSuccess,showError } = useNotificationStore();
+
+    const router = useRouter();
 
     const items = cart?.items;
 
@@ -78,102 +79,44 @@ export const BillingSummary = ({
     );
 
     const handleCheckout = async () => {
-        /**
-         * 1. Kiểm tra cart
-         */
         if (items.length === 0) {
             showError("Giỏ hàng trống");
             return;
         }
 
-        /**
-         * 2. Kiểm tra login
-         */
         if (!user) {
             showError("Bạn cần đăng nhập để thực hiện đặt hàng");
             return;
         }
 
-        /**
-         * 3. Delivery bắt buộc có address
-         */
         if (orderType === "DELIVERY" && !address.trim()) {
-            showError(
-                "Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍"
-            );
+            showError("Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍");
             return;
         }
 
-        /**
-         * 4. Kiểm tra points
-         */
-        if (usePoints) {
-            if (!Number.isInteger(pointsToUse) || pointsToUse <= 0) {
-                showError("Số điểm sử dụng không hợp lệ");
-                return;
-            }
-
-            if (pointsToUse > (user?.zenPoints ?? 0)) {
-                showError("Bạn không đủ điểm để sử dụng");
-                return;
-            }
-
-            if (pointsToUse > maxPointsAllowed) {
-                showError("Số điểm sử dụng vượt quá giới hạn giảm giá");
-                return;
-            }
+        const validPointsToUse = usePoints ? pointsToUse : 0;
+        if (validPointsToUse < 0 || !Number.isInteger(validPointsToUse)) {
+            showError("Số điểm sử dụng không hợp lệ");
+            return;
+        }
+        if (validPointsToUse > (user.zenPoints ?? 0)) {
+            showError("Bạn không đủ điểm để sử dụng");
+            return;
+        }
+        if (validPointsToUse > maxPointsAllowed) {
+            showError("Số điểm sử dụng vượt quá giới hạn giảm giá");
+            return;
         }
 
         try {
-            /**
-             * 5. Nếu user chọn lưu địa chỉ mặc định
-             */
             if (saveAsDefault && orderType === "DELIVERY") {
                 await updateProfile({ address: address.trim() });
             }
 
-            /**
-             * 6. Gọi Order API
-             *
-             * BillingSummary không tự tạo order.
-             *
-             * Component cha sẽ quyết định:
-             * POST /orders
-             *
-             * và backend sẽ lấy cart hiện tại để tạo order.
-             */
-            // await onCheckout({
-            //     orderType,
-            //     address:
-            //         orderType === "DELIVERY"
-            //             ? address.trim()
-            //             : "Đến nhận tại cửa hàng 🏠",
-            //     pointsUsed: usePoints ? validPointsToUse : 0,
-            //     discountAmount,
-            //     shippingFee,
-            //     finalPrice,
-            // });
+            const payload = { orderType, ...(orderType === "DELIVERY" ? { deliveryAddress: address.trim() } : {}), pointsUsed: validPointsToUse };
 
-            /**
-             * 7. Trừ điểm
-             *
-             * Chỉ thực hiện sau khi Order API thành công.
-             */
-
-            /**
-             * 8. Cộng điểm
-             */
-            setEarnedPoints(earnedPoints);
-
-            // if (earnedPoints > 0) {
-            //     await updateUserPoints(
-            //         user.id,
-            //         earnedPoints,
-            //         "EARNED_ORDER",
-            //         `Tích điểm từ đơn hàng (+${earnedPoints} điểm)`
-            //     );
-            // }
-
+            await checkout(payload);
+            showSuccess("Đặt hàng thành công")
         } catch (error: unknown) {
             const message =
                 error instanceof Error
@@ -278,29 +221,21 @@ export const BillingSummary = ({
             {/* CHECKOUT */}
             <Pressable
                 onPress={handleCheckout}
-                disabled={isSubmitting || items.length === 0}
-                accessibilityRole="button"
-                accessibilityState={{
-                    disabled: isSubmitting || items.length === 0,
-                    busy: isSubmitting,
-                }}
-                className={`min-h-14 flex-row items-center justify-center rounded-xl bg-primary px-4 py-4 ${isSubmitting || items.length === 0
-                        ? "opacity-50"
-                        : "active:opacity-80"
-                    }`}
+                disabled={isCartLoading || items.length === 0}
+                className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-6 rounded-xl shadow-premium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-98"
             >
-                {isSubmitting ? (
-                    <>
-                        <ActivityIndicator color="#FFFFFF" />
-                        <Text className="ml-2 font-bold text-white">
-                            Đang xử lý đặt hàng...
-                        </Text>
-                    </>
-                ) : (
-                    <Text className="font-bold text-white">
-                        ✓ Đặt hàng ngay
-                    </Text>
-                )}
+                {isCheckoutLoading
+                    ? "Đang xử lý đặt hàng..."
+                    : "✓ Đặt Hàng Ngay"}
+                {/* ✓ Đặt Hàng Ngay */}
+            </Pressable>
+
+            {/* CONTINUE SHOPPING */}
+            <Pressable
+                onPress={() => router.push("/")}
+                className="w-full bg-neutral-50 hover:bg-neutral-100 border border-border text-foreground font-bold py-6 rounded-xl transition flex items-center justify-center gap-2"
+            >
+                Quay lại mua thêm nước
             </Pressable>
 
             {/* SAVE ADDRESS INFO */}

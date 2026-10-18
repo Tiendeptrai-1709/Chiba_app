@@ -8,8 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { Product, Topping, useAddCartItems, useNotificationStore } from "@chiba/api-client";
-import { api } from "@/lib/axios";
+import { Product, Topping } from "@chiba/api-client";
 import { Button } from "../ui/button";
 
 interface ProductModalProps {

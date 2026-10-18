@@ -8,6 +8,7 @@ import { AppService } from "src/services/app.service";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ProductModule } from "./product.module";
 import { CartModule } from "./cart.module";
+import { OrderModule } from "./order.module";
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { CartModule } from "./cart.module";
     UserModule,
     AuthModule,
     ProductModule,
-    CartModule
+    CartModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

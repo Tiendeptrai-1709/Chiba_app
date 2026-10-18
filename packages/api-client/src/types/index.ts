@@ -64,50 +64,56 @@ export interface Cart {
 // ORDER
 // =========================
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+export type OrderStatus =
+  | "PENDING"
+  | "PREPARING"
+  | "READY"
+  | "DELIVERING"
+  | "COMPLETED"
+  | "CANCELLED";
 
-export type OrderType = "DELIVERY" | "STORE";
+export type OrderType = "DELIVERY" | "PICKUP";
 
 export interface OrderItem {
   id: string;
-
-  productId: string;
-
-  name: string;
-
-  price: number;
-
+  productId: string | null;
+  productName: string;
+  productImage: string | null;
+  unitPrice: number;
   quantity: number;
+  lineTotal: number;
+  toppings: OrderItemTopping[];
+}
 
-  imageUrl?: string | null;
-
-  selectedToppings?: Topping[];
+export interface OrderItemTopping {
+  id: string;
+  toppingId: string | null;
+  toppingName: string;
+  unitPrice: number;
 }
 
 export interface Order {
   id: string;
-
+  orderCode: string;
   userId: string;
-
-  storeId?: string | null;
-
-  storeName?: string | null;
-
-  address?: string | null;
-
-  items: OrderItem[];
-
-  totalPrice: number;
-
-  totalItems: number;
-
-  status: OrderStatus;
-
   orderType: OrderType;
-
-  pointsUsed?: number;
-
-  discountAmount?: number;
+  status: OrderStatus;
+  paymentStatus: "UNPAID" | "PAID" | "REFUNDED";
+  deliveryAddress: string | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  subtotal: number;
+  pointsUsed: number;
+  discountAmount: number;
+  shippingFee: number;
+  totalAmount: number;
+  earnedPoints: number;
+  note: string | null;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  cancelledAt: string | null;
 }
 
 // =========================

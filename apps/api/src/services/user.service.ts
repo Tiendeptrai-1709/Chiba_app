@@ -1,6 +1,6 @@
-
 import { Injectable } from "@nestjs/common";
 import { DeleteProfileDto } from "src/dto/auth.dto";
+import { Role } from "src/generated/prisma";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -25,8 +25,11 @@ export class UserSevice {
     });
   }
 
-  async findAllUser() {
+  async getAllCustomers() {
     return this.prisma.user.findMany({
+      where: {
+        role: Role.CUSTOMER,
+      },
       select: {
         id: true,
         email: true,
@@ -38,6 +41,9 @@ export class UserSevice {
         role: true,
         isSuspended: true,
         createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   }
@@ -54,7 +60,8 @@ export class UserSevice {
           deletedAt: new Date(),
         },
       });
-    } if(deleteProfileDto.typeDel == "HARD") {
+    }
+    if (deleteProfileDto.typeDel == "HARD") {
       return this.prisma.user.delete({ where: { id: userId } });
     }
   }

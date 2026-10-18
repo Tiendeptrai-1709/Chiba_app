@@ -12,7 +12,7 @@ import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
 import { PointActionModal } from '@/components/reuse-components/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
-import { useProfile, User } from '@chiba/api-client';
+import { useGetAllCustomers, useProfile, User } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 
@@ -28,7 +28,9 @@ export interface MockOrder {
 
 const AdminDashboard = () => {
   const { data: user, isLoading } = useProfile(api)
+  const { data: customer } = useGetAllCustomers(api)
   const { showSuccess, showError } = useNotificationStore()
+console.log("123: ", customer)
   const router = useRouter();
 
   // Navigation tab state
@@ -46,7 +48,7 @@ const AdminDashboard = () => {
   const [mockOrders, setMockOrders] = useState<MockOrder[]>([]);
 
   // Loyalty Points Admin States
-  const [allCustomers] = useState<User[]>([]);
+  const [allCustomers, setAllCustomers] = useState<User[]>([]);
 
   const [pointAction, setPointAction] = useState<{
     customer: User;
@@ -78,56 +80,56 @@ const AdminDashboard = () => {
 
   // // Refresh customer list from simulated DB
   const refreshCustomers = () => {
-    // if (getAllUsers) {
-    //   setAllCustomers(getAllUsers().filter(u => u.role === 'CUSTOMER'));
-    // }
+    if (customer) {
+      setAllCustomers(customer.filter((u:any) => u.role === 'CUSTOMER'));
+    }
   };
 
   // Load actual orders from localStorage (or seed mock ones if none exist)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedOrders = localStorage.getItem('zen_fb_orders');
-      if (storedOrders) {
-        try {
-          setMockOrders(JSON.parse(storedOrders));
-        } catch (e) {
-          console.error('Failed to parse stored orders', e);
-        }
-      } else {
-        // Seed initial orders to make the dashboard feel alive instantly
-        const defaultOrders: MockOrder[] = [
-          {
-            id: 'DH001',
-            userId: 'user_1',
-            customerName: 'Nguyễn Văn A',
-            address: '123 Đường Điện Biên Phủ, Quận Bình Thạnh, TP. HCM',
-            items: '2x Trà Thạch Sen Bùi Thơm (Trân Châu Hoàng Kim), 1x Bánh Mì Que Pate Xá Xíu',
-            total: 127000,
-            status: 'PENDING'
-          },
-          {
-            id: 'DH002',
-            customerName: 'Lê Thị B',
-            address: '456 Đường Lê Lợi, Quận 1, TP. HCM',
-            items: '1x Trà Thanh Đào Highlands (Thạch Đào Giòn Sần Sật), 1x Bánh Tiramisu Highlands Mềm',
-            total: 88000,
-            status: 'CONFIRMED'
-          },
-          {
-            id: 'DH003',
-            customerName: 'Trần Văn C',
-            address: '789 Đường Nguyễn Huệ, Quận 1, TP. HCM',
-            items: '2x Phin Sữa Đá Đậm Đà',
-            total: 70000,
-            status: 'PENDING'
-          }
-        ];
-        localStorage.setItem('zen_fb_orders', JSON.stringify(defaultOrders));
-        setMockOrders(defaultOrders);
-      }
-      // refreshCustomers();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const storedOrders = localStorage.getItem('zen_fb_orders');
+  //     if (storedOrders) {
+  //       try {
+  //         setMockOrders(JSON.parse(storedOrders));
+  //       } catch (e) {
+  //         console.error('Failed to parse stored orders', e);
+  //       }
+  //     } else {
+  //       // Seed initial orders to make the dashboard feel alive instantly
+  //       const defaultOrders: MockOrder[] = [
+  //         {
+  //           id: 'DH001',
+  //           userId: 'user_1',
+  //           customerName: 'Nguyễn Văn A',
+  //           address: '123 Đường Điện Biên Phủ, Quận Bình Thạnh, TP. HCM',
+  //           items: '2x Trà Thạch Sen Bùi Thơm (Trân Châu Hoàng Kim), 1x Bánh Mì Que Pate Xá Xíu',
+  //           total: 127000,
+  //           status: 'PENDING'
+  //         },
+  //         {
+  //           id: 'DH002',
+  //           customerName: 'Lê Thị B',
+  //           address: '456 Đường Lê Lợi, Quận 1, TP. HCM',
+  //           items: '1x Trà Thanh Đào Highlands (Thạch Đào Giòn Sần Sật), 1x Bánh Tiramisu Highlands Mềm',
+  //           total: 88000,
+  //           status: 'CONFIRMED'
+  //         },
+  //         {
+  //           id: 'DH003',
+  //           customerName: 'Trần Văn C',
+  //           address: '789 Đường Nguyễn Huệ, Quận 1, TP. HCM',
+  //           items: '2x Phin Sữa Đá Đậm Đà',
+  //           total: 70000,
+  //           status: 'PENDING'
+  //         }
+  //       ];
+  //       localStorage.setItem('zen_fb_orders', JSON.stringify(defaultOrders));
+  //       setMockOrders(defaultOrders);
+  //     }
+  //     // refreshCustomers();
+  //   }
+  // }, []);
 
   if (isLoading || !user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
     return (
