@@ -48,6 +48,32 @@ export const useGetOrders = (axiosInstance: AxiosInstance) => {
   });
 };
 
+export const useGetUserOrder = (axiosInstance: AxiosInstance) => {
+  const { accessToken } = useAuthStore();
+
+  return useQuery({
+    queryKey: ["admin", "orders"],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get("/order/admin");
+      return data;
+    },
+    enabled: !!accessToken,
+  });
+};
+
+export const useGetAllOrders = (axiosInstance: AxiosInstance) => {
+  const { accessToken } = useAuthStore();
+
+  return useQuery({
+    queryKey: ["all-orders"],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get("/order/admin/all");
+      return data;
+    },
+    enabled: !!accessToken,
+  });
+};
+
 export const useUpdateOrderStatus = (axiosInstance: AxiosInstance) => {
   const queryClient = useQueryClient();
 

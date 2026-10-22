@@ -68,7 +68,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, userRole, onViewDet
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-premium">
             {/* ================= HEADER ================= */}
             <div className="flex-col items-center justify-between space-y-4 border-b border-border px-5 py-4">
-                <div className={`w-full text-center text-lg font-bold border-b-2 ${status?.className || ""}`}>
+                <div className={`w-full text-center text-lg font-bold border-b-2 ${status?.className}`}>
                     <span>
                         {status?.label}
                     </span>

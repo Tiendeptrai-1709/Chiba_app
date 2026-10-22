@@ -11,7 +11,7 @@ import {
 import { ArrowLeft, Sparkles } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
-import { useProfile } from "@chiba/api-client";
+import { useGetAllCustomers, useGetAllOrders, useGetUserById, useNotificationStore, useProfile, User, useUpdateOrderStatus } from "@chiba/api-client";
 import { api } from "@/lib/axios";
 
 import HeaderTabRole from "@/components/dashboard/HeaderTabRole";
@@ -20,6 +20,7 @@ import TransactionHistory from "@/components/dashboard/TransactionHistory";
 import CustomerManager from "@/components/dashboard/CustomerManager";
 import OrderFulfillment from "@/components/dashboard/OrderFulfillments";
 import SystemOverview from "@/components/dashboard/SystemOverview";
+import { PointActionModal } from "@/components/dashboard/PointActionModal";
 
 export interface MockOrder {
   id: string;
@@ -34,12 +35,40 @@ export interface MockOrder {
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: user, isLoading } = useProfile(api);
+  const { data: allCustomers } = useGetAllCustomers(api)
+  const { data: allOrders } = useGetAllOrders(api)
+  const { mutateAsync: getUserById } = useGetUserById(api)
+  const { mutate: updateStatusOrder, isPending: isUpdateStatus } = useUpdateOrderStatus(api)
+  const { showError } = useNotificationStore()
+
 
   const isAdmin = user?.role === "ADMIN";
+  const [openPointModal, setOpenPointModal] = useState(false);
   const [activeTab, setActiveTab] = useState("");
-  const [mockOrders, setMockOrders] = useState<MockOrder[]>([]);
-  const [allCustomers] = useState([]);
-  // const [pointAction, setPointAction] = useState<{customer: any, type:string} | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const handleSelectUser = async (id: string) => {
+    try {
+      const user = await getUserById(id);
+
+      setSelectedUser(user);
+      setOpenPointModal(true);
+    } catch (error) {
+      console.error("Lỗi lấy thông tin người dùng:", error);
+    }
+  };
+
+  const onUpdateStatus = async (orderId: string, newStatus: string) => {
+    try {
+      await updateStatusOrder({ orderId, newStatus });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Không thể cập nhật trạng thái đơn hàng.";
+      showError(message)
+    }
+  }
 
   useEffect(() => {
     if (user) {
@@ -49,13 +78,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!isLoading) {
-      if (user?.role !== "ADMIN" && user?.role !== "STAFF") {
-        router.replace("/");
+      if (user?.role !== 'ADMIN' && user?.role !== 'STAFF') {
+        router.push('/');
       }
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user) {
+  if (isLoading || !user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color="#1E4620" />
@@ -64,7 +93,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-card">
       {/* HEADER */}
       <View className="bg-card border-b border-border px-5 py-4 flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
@@ -80,9 +109,8 @@ export default function AdminDashboard() {
         </View>
 
         <View
-          className={`px-3 py-1 rounded-full ${
-            isAdmin ? "bg-primary/10" : "bg-accent/10"
-          }`}
+          className={`px-3 py-1 rounded-full ${isAdmin ? "bg-primary/10" : "bg-accent/10"
+            }`}
         >
           <Text className="text-xs font-bold">{user.role}</Text>
         </View>
@@ -97,13 +125,12 @@ export default function AdminDashboard() {
             isAdmin={isAdmin}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            refreshCustomers={() => {}}
           />
         )}
 
         {isAdmin && activeTab === "SYSTEM" && (
           <SystemOverview
-            mockOrders={mockOrders}
+            allOrders={allOrders}
             allCustomers={allCustomers}
             user={user}
           />
@@ -111,12 +138,9 @@ export default function AdminDashboard() {
 
         {activeTab === "CUSTOMERS" && (
           <CustomerManager
-            mockOrders={mockOrders}
             allCustomers={allCustomers}
             isAdmin={isAdmin}
-            // onTriggerAction={(customer, type) =>
-            //   setPointAction({ customer, type })
-            // }
+            handleSelectUser={handleSelectUser}
           />
         )}
 
@@ -124,8 +148,9 @@ export default function AdminDashboard() {
 
         {!isAdmin && activeTab === "ORDERS" && (
           <OrderFulfillment
-            mockOrders={mockOrders}
-            setMockOrders={setMockOrders}
+            allOrders={allOrders}
+            onUpdateStatus={onUpdateStatus}
+            isUpdateStatus={isUpdateStatus}
           />
         )}
 
@@ -145,16 +170,11 @@ export default function AdminDashboard() {
         </View>
       </ScrollView>
 
-      {/* {pointAction && (
-        <PointActionModal
-          action={pointAction}
-          onClose={() => setPointAction(null)}
-          onSetNotification={(type, msg) => {
-            if (type === "success") showSuccess(msg);
-            else showError(msg);
-          }}
-        />
-      )} */}
+      <PointActionModal
+        openPointModal={openPointModal}
+        setOpenPointModal={setOpenPointModal}
+        selectedUser={selectedUser}
+      />
     </View>
   );
 }

@@ -225,8 +225,56 @@ export class OrderService {
     return orders;
   }
 
+  // =================================
+  // 3. Lấy tất cả order của users (ADMIN)
+  // =================================
+  async getUserOrders() {
+    return this.prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            customerCode: true,
+          },
+        },
+        items: {
+          include: {
+            toppings: true,
+          },
+        },
+      },
+    });
+  }
+
+  // ==================================
+  // 4. Lấy tất cả đơn hàng để quản lý
+  // ==================================
+  async getAllOrders() {
+    return this.prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            customerCode: true,
+          },
+        },
+        items: {
+          include: {
+            toppings: true,
+          },
+        },
+      },
+    });
+  }
+
   // ====================================
-  // 3. Update status order (ADMIN)
+  // 5. Update status order (ADMIN)
   // ====================================
   async updateStatusOrder(
     orderId: string,
@@ -235,16 +283,16 @@ export class OrderService {
   ) {
     return this.prisma.$transaction(async (tx) => {
       // 1.kiểm tra admin
-      console.log("service: ", newStatus);
-      const admin = await tx.user.findUnique({
-        where: { id: adminId },
-        select: { role: true },
-      });
-      if (!admin || admin.role !== "ADMIN") {
-        throw new ForbiddenException(
-          "Bạn không có quyền cập nhật trạng thái đơn hàng",
-        );
-      }
+      // console.log("service: ", newStatus);
+      // const admin = await tx.user.findUnique({
+      //   where: { id: adminId },
+      //   select: { role: true },
+      // });
+      // if (!admin || admin.role !== "ADMIN") {
+      //   throw new ForbiddenException(
+      //     "Bạn không có quyền cập nhật trạng thái đơn hàng",
+      //   );
+      // }
 
       // 2. Lấy đơn hàng hiện tại
       const order = await tx.order.findUnique({
@@ -329,7 +377,7 @@ export class OrderService {
   }
 
   // =========================
-  // 4. Lấy order theo id
+  // 6. Lấy order theo id
   // =========================
   async getOrderById(orderId: string, userId: string) {
     const order = await this.prisma.order.findFirst({
@@ -351,6 +399,9 @@ export class OrderService {
     return order;
   }
 
+  // ===========================
+  // 7. Hủy đơn hàng
+  // ===========================
   async cancelOrder(userId: string, orderId: string) {
     const order = await this.prisma.order.findFirst({
       where: {
@@ -371,6 +422,5 @@ export class OrderService {
         cancelledAt: new Date(),
       },
     });
-
   }
 }

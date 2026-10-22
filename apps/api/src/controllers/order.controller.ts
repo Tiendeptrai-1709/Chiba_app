@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -10,7 +9,10 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { Request } from "express";
+import { Roles } from "src/decorators/roles.decorator";
 import { CreateOrderDto, UpdateStatusOrderDto } from "src/dto/order.dto";
+import { Role } from "src/generated/prisma";
+import { RolesGuard } from "src/guards/role.guard";
 import { JwtAuthGuard } from "src/guards/jwt-auth.guard";
 import { OrderService } from "src/services/order.service";
 
@@ -26,12 +28,28 @@ export class OrderController {
     return this.orderService.checkout(userId, createOrderDto);
   }
 
-  @Get()
+  @Get("")
   getOrders(@Req() req: Request) {
     const userId = req.user.userId;
     return this.orderService.getOrders(userId);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Get("admin")
+  getUserOrders() {
+    return this.orderService.getUserOrders();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Get("admin/all")
+  getAllOrders() {
+    return this.orderService.getAllOrders();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
   @Patch(":id")
   updateStatusOrder(
     @Param("id") orderId: string,
@@ -43,14 +61,14 @@ export class OrderController {
   }
 
   @Get(":id")
-  getOrderById(@Param("id") orderId:string, @Req() req:Request){
+  getOrderById(@Param("id") orderId: string, @Req() req: Request) {
     const userId = req.user.userId;
     return this.orderService.getOrderById(orderId, userId);
   }
 
   @Patch(":id/cancel")
-  cancelOrder(@Param("id") orderId:string, @Req() req:Request ){
+  cancelOrder(@Param("id") orderId: string, @Req() req: Request) {
     const userId = req.user.userId;
-    return this.orderService.cancelOrder(userId, orderId)
+    return this.orderService.cancelOrder(userId, orderId);
   }
 }

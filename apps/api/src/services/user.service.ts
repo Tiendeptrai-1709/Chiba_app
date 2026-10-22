@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { DeleteProfileDto } from "src/dto/auth.dto";
 import { Role } from "src/generated/prisma";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -21,6 +21,29 @@ export class UserSevice {
         role: true,
         isSuspended: true,
         createdAt: true,
+      },
+    });
+  }
+
+  async getUserById(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException("Không tìm thấy người dùng");
+    }
+
+    return user;
+  }
+
+  async updateUserPoint(id:string, zenPoints:number){
+    return this.prisma.user.update({
+      where: {
+        id,
+      },
+      data:{
+        zenPoints
       },
     });
   }

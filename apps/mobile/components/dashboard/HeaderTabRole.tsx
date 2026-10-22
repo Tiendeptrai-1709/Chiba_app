@@ -4,15 +4,13 @@ import { View, Text, Pressable } from "react-native";
 interface Props {
   isAdmin: boolean;
   activeTab: string;
-  setActiveTab: (v: string) => void;
-  refreshCustomers: () => void;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function HeaderTabRole({
   isAdmin,
   activeTab,
   setActiveTab,
-  refreshCustomers,
 }: Props) {
   const tabs = isAdmin
     ? [
@@ -37,7 +35,7 @@ export default function HeaderTabRole({
             onPress={() => {
               setActiveTab(tab.id);
               if (tab.id === "CUSTOMERS") {
-                refreshCustomers();
+                // refreshCustomers();
               }
             }}
             className={`flex-1 py-2 rounded-lg items-center justify-center active:opacity-70 ${

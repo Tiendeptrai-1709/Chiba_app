@@ -1,14 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
-import { Mail, UserPlus } from "lucide-react-native";
-import { useNotificationStore } from "@chiba/api-client/src/stores/useNotificationStore";
+import React from "react";
+import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { User } from "@chiba/api-client";
+import { Order, User } from "@chiba/api-client";
 
 
 interface Props {
-  mockOrders: any[];
-  allCustomers: any[];
+  allOrders:Order[];
+  allCustomers: User[];
   user: User;
 }
 
@@ -30,30 +28,11 @@ const StatCard = ({ icon, title, value, colorBg, colorText }: StatCardProps) => 
   );
 };
 
-const SystemOverview = ({ mockOrders, allCustomers, user }: Props) => {
-  const { showSuccess, showError } = useNotificationStore();
-  const [emailInput, setEmailInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
+const SystemOverview = ({ allOrders, allCustomers, user }: Props) => {
   const router = useRouter()
 
-  const handleInviteSubmit = () => {
-    const email = emailInput.trim();
-    if (!email) return;
-
-    setSubmitting(true);
-    try {
-      showSuccess(`Đã gửi lời mời Staff tới ${email}`);
-      setEmailInput("");
-    } catch (err) {
-      showError(`Có lỗi xảy ra ${err}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const totalRevenue = (
-    mockOrders.reduce((sum, o) => sum + (o.total || 0), 0) / 1000
+    allOrders?.reduce((sum, o) => sum + (o.totalAmount || 0), 0) / 1000
   ).toFixed(1);
 
   return (
@@ -65,7 +44,7 @@ const SystemOverview = ({ mockOrders, allCustomers, user }: Props) => {
 
       {/* Grid Stats */}
       <View className="flex-row flex-wrap gap-3">
-        <StatCard icon="📋" title="Đơn hàng" value={mockOrders.length} colorBg="bg-gradient-to-br from-blue-50 to-blue-100/70 border border-blue-200" colorText="text-blue" />
+        <StatCard icon="📋" title="Đơn hàng" value={allOrders?.length} colorBg="bg-gradient-to-br from-blue-50 to-blue-100/70 border border-blue-200" colorText="text-blue" />
         <StatCard icon="💰" title="Doanh thu" value={`${totalRevenue}k`} colorBg="bg-gradient-to-br from-green-50 to-green-100/70 border border-green-200" colorText="text-green" />
 
         <View className="w-[48%] bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 rounded-xl p-4 flex-row items-center justify-between mt-1">
@@ -89,11 +68,11 @@ const SystemOverview = ({ mockOrders, allCustomers, user }: Props) => {
           </View>
         </View>
 
-        <StatCard icon="👥" title="Khách hàng" value={allCustomers.length} colorBg="bg-gradient-to-br from-orange-50 to-orange-100/70 border border-orange-200" colorText="text-orange" />
+        <StatCard icon="👥" title="Khách hàng" value={allCustomers?.length} colorBg="bg-gradient-to-br from-orange-50 to-orange-100/70 border border-orange-200" colorText="text-orange" />
       </View>
 
       {/* Invite Staff Section */}
-      <View className="bg-card rounded-2xl p-5 border border-border gap-3">
+      {/* <View className="bg-card rounded-2xl p-5 border border-border gap-3">
         <View className="flex-row gap-2 items-center">
           <UserPlus size={18} />
           <Text className="font-bold text-sm text-foreground">
@@ -129,7 +108,7 @@ const SystemOverview = ({ mockOrders, allCustomers, user }: Props) => {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };

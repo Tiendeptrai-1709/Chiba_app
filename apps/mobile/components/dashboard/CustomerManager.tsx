@@ -1,142 +1,125 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { View, Text, TextInput, Pressable, FlatList } from "react-native";
-import { Search, Coins } from "lucide-react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { User } from "@chiba/api-client";
-
+import { Coins, Search, User2 } from "lucide-react-native";
 
 interface CustomerManagerProps {
-  mockOrders: any[];
-  allCustomers: User[];
-  isAdmin: boolean;
-  // onTriggerAction: (customer: User, type: "REDEEM" | "ADJUST") => void;
+    allCustomers: User[];
+    isAdmin: boolean;
+    handleSelectUser: (id: string) => void;
 }
 
-export default function CustomerManager({
-  mockOrders,
-  allCustomers,
-  isAdmin,
-  // onTriggerAction,
-}: CustomerManagerProps) {
-  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+const CustomerManager = ({
+    allCustomers,
+    isAdmin,
+    handleSelectUser,
+}: CustomerManagerProps) => {
+    const [customerSearchQuery, setCustomerSearchQuery] = useState("");
 
-  const filteredCustomers = useMemo(() => {
-    const query = customerSearchQuery.toLowerCase().trim();
-    if (!query) return allCustomers;
+    const filteredCustomers = allCustomers.filter((c) => {
+        const query = customerSearchQuery.toLowerCase().trim();
+        if (!query) return true;
+        return (
+            c.fullName.toLowerCase().includes(query) ||
+            (c.phone && c.phone.includes(query)) ||
+            c.customerCode.toLowerCase().includes(query) ||
+            c.email.toLowerCase().includes(query)
+        );
+    });
 
-    return allCustomers.filter(
-      (c) =>
-        c.fullName?.toLowerCase().includes(query) ||
-        c.phone?.includes(query) ||
-        c.customerCode?.toLowerCase().includes(query) ||
-        c.email?.toLowerCase().includes(query)
+    return (
+        <View className="space-y-4">
+            {/* Header */}
+            <View className="border-b border-border/60 pb-2">
+                <Text className="text-sm font-bold text-foreground uppercase tracking-wider">
+                    👥 Quản lý điểm & đổi thưởng khách hàng
+                </Text>
+                <Text className="text-[10px] text-muted-foreground mt-1">
+                    Tìm kiếm khách hàng bằng tên, SĐT, hoặc mã khách hàng để thực hiện đổi quà tại quầy hoặc CRUD điểm.
+                </Text>
+            </View>
+
+            {/* Search Box */}
+            <View className="relative justify-center">
+                <Search size={16} color="#6b7280" className="absolute left-3.5 z-10" />
+                <TextInput
+                    placeholder="Tìm khách hàng theo Tên, Số điện thoại hoặc Mã..."
+                    placeholderTextColor="#9ca3af"
+                    value={customerSearchQuery}
+                    onChangeText={setCustomerSearchQuery}
+                    className="w-full pl-10 pr-4 py-3 bg-neutral-50/50 border border-border rounded-xl text-xs font-semibold text-foreground shadow-sm"
+                />
+            </View>
+
+            {/* Customer List */}
+            <ScrollView className="max-h-[500px]" contentContainerStyle={{ gap: 12 }}>
+                {filteredCustomers.map((cust) => (
+                    <View
+                        key={cust.id}
+                        className="p-4 bg-card border border-border rounded-2xl flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                        <View className="flex-row items-center gap-3 flex-1">
+                            <View className="w-16 h-16 bg-neutral-200 border-2 border-white rounded-full items-center justify-center overflow-hidden">
+                                <User2 size={24} color="#6b7280" />
+                            </View>
+
+                            <View className="space-y-0.5 flex-1">
+                                <View className="flex-row items-center gap-2 flex-wrap">
+                                    <Text className="text-xs font-bold text-foreground">
+                                        {cust.fullName}
+                                    </Text>
+                                    <View className="px-1.5 py-0.5 rounded bg-primary/5 border border-primary/10">
+                                        <Text className="text-[9.5px] font-black text-primary tracking-widest">
+                                            {cust.customerCode}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                <Text className="text-[10px] text-muted-foreground font-medium">
+                                    {cust.email} | SĐT: {cust.phone || "Chưa cập nhật"}
+                                </Text>
+
+                                <View className="flex-row gap-4 pt-1">
+                                    <View className="flex-row items-center gap-1 bg-orange-50 border border-orange-100/50 px-2 py-0.5 rounded">
+                                        <Coins size={14} color="#f97316" />
+                                        <Text className="text-[10px] font-bold text-accent">
+                                            Điểm: <Text className="font-black">{cust.zenPoints || 0}</Text>
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Actions */}
+                        {isAdmin && (
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => {
+                                  console.log("first", cust.id)
+                                  handleSelectUser(cust.id)}}
+                                className="self-end sm:self-center px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 items-center justify-center"
+                            >
+                                <Text className="text-[10px] font-black text-primary">
+                                    ✏️ Điều chỉnh điểm
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                ))}
+
+                {filteredCustomers.length === 0 && (
+                    <View className="text-center py-10 bg-neutral-50 rounded-2xl border border-dashed border-border/80 items-center justify-center">
+                        <Text className="text-xs text-muted-foreground font-bold">
+                            Không tìm thấy khách hàng nào
+                        </Text>
+                        <Text className="text-[10px] text-muted-foreground/60 mt-0.5">
+                            Vui lòng kiểm tra lại từ khóa tìm kiếm
+                        </Text>
+                    </View>
+                )}
+            </ScrollView>
+        </View>
     );
-  }, [allCustomers, customerSearchQuery]);
+};
 
-  const getCompletedOrdersCount = useCallback(
-    (cust: User) => {
-      return mockOrders.filter(
-        (o) =>
-          (o.userId === cust.id || o.customerName === cust.fullName) &&
-          o.status === "COMPLETED"
-      ).length;
-    },
-    [mockOrders]
-  );
-
-  return (
-    <View className="gap-4">
-      {/* Header Info */}
-      <View className="border-b border-border pb-3">
-        <Text className="text-sm font-bold uppercase">
-          👥 Quản lý điểm & đổi thưởng
-        </Text>
-        <Text className="text-xs text-muted-foreground mt-1">
-          Tìm kiếm khách hàng bằng tên, SĐT hoặc mã khách hàng
-        </Text>
-      </View>
-
-      {/* Search Input */}
-      <View className="relative justify-center">
-        <Search
-          size={16}
-          color="#999"
-          className="absolute left-3 z-10"
-        />
-        <TextInput
-          value={customerSearchQuery}
-          onChangeText={setCustomerSearchQuery}
-          placeholder="Tìm khách hàng..."
-          className="h-12 pl-10 pr-4 bg-neutral-50 border border-border rounded-xl text-xs"
-        />
-      </View>
-
-      {/* List */}
-      <FlatList
-        data={filteredCustomers}
-        keyExtractor={(item) => item.id}
-        scrollEnabled={false}
-        contentContainerStyle={{ gap: 12 }}
-        renderItem={({ item: cust }) => (
-          <View className="bg-card border border-border rounded-2xl p-4 gap-3">
-            <View className="flex-row gap-3">
-              <View className="w-10 h-10 rounded-full bg-accent/20 items-center justify-center">
-                <Text className="font-bold">{cust.fullName?.[0] || "?"}</Text>
-              </View>
-
-              <View className="flex-1">
-                <View className="flex-row items-center gap-2">
-                  <Text className="font-bold text-sm">{cust.fullName}</Text>
-                  <Text className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded font-medium">
-                    {cust.customerCode}
-                  </Text>
-                </View>
-
-                <Text className="text-xs text-muted-foreground mt-1">
-                  {cust.email}
-                </Text>
-                <Text className="text-xs text-muted-foreground">
-                  SĐT: {cust.phone || "Chưa cập nhật"}
-                </Text>
-
-                <View className="flex-row items-center gap-3 mt-2">
-                  <View className="flex-row items-center bg-orange-50 px-2 py-1 rounded">
-                    <Coins size={14} color="#D87D4A" />
-                    <Text className="text-xs ml-1 font-semibold">
-                      {cust.zenPoints || 0}
-                    </Text>
-                  </View>
-                  <Text className="text-xs text-muted-foreground">
-                    🛍️ {getCompletedOrdersCount(cust)} đơn
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Actions */}
-            <View className="flex-row gap-2 pt-1 border-t border-border/50">
-              <Pressable
-                // onPress={() => onTriggerAction(cust, "REDEEM")}
-                className="flex-1 bg-accent/10 p-2.5 rounded-xl active:opacity-70"
-              >
-                <Text className="text-xs text-center font-bold">
-                  🎁 Đổi quà
-                </Text>
-              </Pressable>
-
-              {isAdmin && (
-                <Pressable
-                  // onPress={() => onTriggerAction(cust, "ADJUST")}
-                  className="flex-1 bg-primary/10 p-2.5 rounded-xl active:opacity-70"
-                >
-                  <Text className="text-xs text-center font-bold">
-                    ✏️ Điều chỉnh
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-        )}
-      />
-    </View>
-  );
-}
+export default CustomerManager;

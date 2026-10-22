@@ -10,9 +10,9 @@ import OrderFulfillment from '@/components/dashboard/OrderFulfillment';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
-import { PointActionModal } from '@/components/reuse-components/PointActionModal';
+import { PointActionModal } from '@/components/dashboard/PointActionModal';
 import HeaderTabRole from '@/components/dashboard/HeaderTabRole';
-import { useGetAllCustomers, useProfile, User } from '@chiba/api-client';
+import { useGetAllCustomers, useGetAllOrders, useGetUserById, useProfile, User, useUpdateOrderStatus } from '@chiba/api-client';
 import { api } from '@/lib/axios';
 import { useNotificationStore } from '@chiba/api-client/src/stores/useNotificationStore';
 
@@ -28,9 +28,14 @@ export interface MockOrder {
 
 const AdminDashboard = () => {
   const { data: user, isLoading } = useProfile(api)
-  const { data: customer } = useGetAllCustomers(api)
+  const { data: allCustomers } = useGetAllCustomers(api)
+  const { mutateAsync: getUserById } = useGetUserById(api)
+  const {mutate: updateStatusOrder, isPending: isUpdateStatus} = useUpdateOrderStatus(api)
+  const { data: allOrders } = useGetAllOrders(api)
   const { showSuccess, showError } = useNotificationStore()
-console.log("123: ", customer)
+
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [openPointModal, setOpenPointModal] = useState(false);
   const router = useRouter();
 
   // Navigation tab state
@@ -44,16 +49,29 @@ console.log("123: ", customer)
     }
   }, [user]);
 
-  // Simulated Order list
-  const [mockOrders, setMockOrders] = useState<MockOrder[]>([]);
-
   // Loyalty Points Admin States
-  const [allCustomers, setAllCustomers] = useState<User[]>([]);
+  const handleSelectUser = async (id: string) => {
+    try {
+      const user = await getUserById(id);
 
-  const [pointAction, setPointAction] = useState<{
-    customer: User;
-    type: "REDEEM" | "ADJUST"
-  } | null>(null)
+      setSelectedUser(user);
+      setOpenPointModal(true);
+    } catch (error) {
+      console.error("Lỗi lấy thông tin người dùng:", error);
+    }
+  };
+
+  const onUpdateStatus = async (orderId: string, newStatus: string) => {
+    try {
+      await updateStatusOrder({ orderId, newStatus });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Không thể cập nhật trạng thái đơn hàng.";
+      showError(message)
+    }
+  }
 
   const handleNotification = (type: 'success' | 'error', msg: string) => {
     if (type === 'success') {
@@ -65,10 +83,6 @@ console.log("123: ", customer)
     }
   };
 
-  const handleOnClose = () => {
-    setPointAction(null);
-  }
-
   // Guard routing for admin and staff
   useEffect(() => {
     if (!isLoading) {
@@ -77,59 +91,6 @@ console.log("123: ", customer)
       }
     }
   }, [user, isLoading, router]);
-
-  // // Refresh customer list from simulated DB
-  const refreshCustomers = () => {
-    if (customer) {
-      setAllCustomers(customer.filter((u:any) => u.role === 'CUSTOMER'));
-    }
-  };
-
-  // Load actual orders from localStorage (or seed mock ones if none exist)
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const storedOrders = localStorage.getItem('zen_fb_orders');
-  //     if (storedOrders) {
-  //       try {
-  //         setMockOrders(JSON.parse(storedOrders));
-  //       } catch (e) {
-  //         console.error('Failed to parse stored orders', e);
-  //       }
-  //     } else {
-  //       // Seed initial orders to make the dashboard feel alive instantly
-  //       const defaultOrders: MockOrder[] = [
-  //         {
-  //           id: 'DH001',
-  //           userId: 'user_1',
-  //           customerName: 'Nguyễn Văn A',
-  //           address: '123 Đường Điện Biên Phủ, Quận Bình Thạnh, TP. HCM',
-  //           items: '2x Trà Thạch Sen Bùi Thơm (Trân Châu Hoàng Kim), 1x Bánh Mì Que Pate Xá Xíu',
-  //           total: 127000,
-  //           status: 'PENDING'
-  //         },
-  //         {
-  //           id: 'DH002',
-  //           customerName: 'Lê Thị B',
-  //           address: '456 Đường Lê Lợi, Quận 1, TP. HCM',
-  //           items: '1x Trà Thanh Đào Highlands (Thạch Đào Giòn Sần Sật), 1x Bánh Tiramisu Highlands Mềm',
-  //           total: 88000,
-  //           status: 'CONFIRMED'
-  //         },
-  //         {
-  //           id: 'DH003',
-  //           customerName: 'Trần Văn C',
-  //           address: '789 Đường Nguyễn Huệ, Quận 1, TP. HCM',
-  //           items: '2x Phin Sữa Đá Đậm Đà',
-  //           total: 70000,
-  //           status: 'PENDING'
-  //         }
-  //       ];
-  //       localStorage.setItem('zen_fb_orders', JSON.stringify(defaultOrders));
-  //       setMockOrders(defaultOrders);
-  //     }
-  //     // refreshCustomers();
-  //   }
-  // }, []);
 
   if (isLoading || !user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
     return (
@@ -140,7 +101,7 @@ console.log("123: ", customer)
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 bg-card border-b border-border shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -167,7 +128,6 @@ console.log("123: ", customer)
             isAdmin={isAdmin}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            refreshCustomers={refreshCustomers}
           />
         )}
 
@@ -178,7 +138,7 @@ console.log("123: ", customer)
             ======================================================== */}
         {isAdmin && activeTab === 'SYSTEM' && (
           <SystemOverview
-            mockOrders={mockOrders}
+            allOrders={allOrders}
             allCustomers={allCustomers}
             onSetNotification={handleNotification}
             user={user}
@@ -190,12 +150,9 @@ console.log("123: ", customer)
             ======================================================== */}
         {activeTab === 'CUSTOMERS' && (
           <CustomerManager
-            mockOrders={mockOrders}
             allCustomers={allCustomers}
             isAdmin={isAdmin}
-            onTriggerAction={(customer, type) => {
-              setPointAction({ customer, type })
-            }}
+            handleSelectUser={handleSelectUser}
           />
         )}
 
@@ -209,8 +166,10 @@ console.log("123: ", customer)
             ======================================================== */}
         {!isAdmin && activeTab === 'ORDERS' && (
           <OrderFulfillment
-            mockOrders={mockOrders}
-            setMockOrders={setMockOrders} />)}
+            allOrders={allOrders}
+            onUpdateStatus={onUpdateStatus}
+            isUpdateStatus={isUpdateStatus}
+          />)}
 
         {/* ========================================================
             TAB: PRODUCT STOCK CONTROLLER (STAFF ONLY)
@@ -218,7 +177,7 @@ console.log("123: ", customer)
         {!isAdmin && activeTab === 'STOCKS' && <StockController />}
 
         {/* Demo Info Box */}
-        <div className="p-4 bg-[#FAF7F2] border border-border rounded-xl flex gap-3">
+        <div className=" p-4 bg-[#FAF7F2] border border-border rounded-xl flex gap-3">
           <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5 animate-pulse" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-foreground">Vai Trò Hệ Thống:</p>
@@ -234,12 +193,13 @@ console.log("123: ", customer)
       {/* ========================================================
           MODAL: REDEEM OR ADJUST POINTS FOR SELECTED CUSTOMER
           ======================================================== */}
-      {pointAction && (
-        <PointActionModal
-          action={pointAction}
-          onClose={handleOnClose}
-          onSetNotification={handleNotification} />
-      )}
+
+      <PointActionModal
+        openPointModal={openPointModal}
+        setOpenPointModal={setOpenPointModal}
+        selectedUser={selectedUser}
+      />
+
     </div>
   );
 }

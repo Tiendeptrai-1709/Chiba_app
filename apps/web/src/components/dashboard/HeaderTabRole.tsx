@@ -4,10 +4,9 @@ interface HeaderTabRoleProps {
     isAdmin: boolean;
     activeTab: string;
     setActiveTab: React.Dispatch<React.SetStateAction<string>>;
-    refreshCustomers: () => void;
 }
 
-const HeaderTabRole = ({ isAdmin, activeTab, setActiveTab, refreshCustomers }: HeaderTabRoleProps) => {
+const HeaderTabRole = ({ isAdmin, activeTab, setActiveTab }: HeaderTabRoleProps) => {
     const tabs = isAdmin
         ? [
             { id: "SYSTEM", label: "📊 Hệ thống" },
@@ -29,9 +28,9 @@ const HeaderTabRole = ({ isAdmin, activeTab, setActiveTab, refreshCustomers }: H
                             key={tab.id}
                             onClick={() => {
                                 setActiveTab(tab.id);
-                                if (tab.id === "CUSTOMERS") {
-                                    refreshCustomers();
-                                }
+                                // if (tab.id === "CUSTOMERS") {
+                                //     refreshCustomers();
+                                // }
                             }}
                             className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 ${isActive ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
                                 }`}

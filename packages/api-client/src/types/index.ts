@@ -96,9 +96,9 @@ export interface Order {
   id: string;
   orderCode: string;
   userId: string;
+  user:User;
   orderType: OrderType;
   status: OrderStatus;
-  paymentStatus: "UNPAID" | "PAID" | "REFUNDED";
   deliveryAddress: string | null;
   customerName: string | null;
   customerPhone: string | null;

@@ -1,15 +1,14 @@
 
 import { User } from '@chiba/api-client';
-import { Coins, Search } from 'lucide-react';
+import { Coins, Search, User2 } from 'lucide-react';
 import React, { useState } from 'react'
 
 interface CustomerManagerProps {
-    mockOrders: any[];
     allCustomers: User[];
     isAdmin: boolean;
-    onTriggerAction: (customer: User, type: 'REDEEM' | 'ADJUST') => void;
+    handleSelectUser: (id:string) => void;
 }
-const CustomerManager = ({ mockOrders, allCustomers, isAdmin, onTriggerAction }: CustomerManagerProps) => {
+const CustomerManager = ({ allCustomers, isAdmin, handleSelectUser }: CustomerManagerProps) => {
     const [customerSearchQuery, setCustomerSearchQuery] = useState('');
 
     const filteredCustomers = allCustomers.filter(c => {
@@ -23,9 +22,6 @@ const CustomerManager = ({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
         );
     });
 
-    const getCompletedOrdersCount = (cust: User) => {
-        return mockOrders.filter(o => (o.userId === cust.id || o.customerName === cust.fullName) && o.status === 'COMPLETED').length;
-    };
     return (
         <>
             {/* ========================================================
@@ -54,12 +50,12 @@ const CustomerManager = ({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
                 </div>
 
                 {/* Customer List */}
-                <div className="space-y-3">
+                <div className="max-h-[500px] overflow-y-auto space-y-3">
                     {filteredCustomers.map(cust => (
                         <div key={cust.id} className="p-4 bg-card border border-border rounded-2xl shadow-sm hover:border-primary/20 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-accent/10 text-accent-foreground font-black flex items-center justify-center rounded-full text-xs">
-                                    {cust.fullName[0].toUpperCase()}
+                                <div className="w-20 h-20 bg-neutral-200 border-4 border-white shadow-premium rounded-full flex items-center justify-center text-neutral-500 overflow-hidden mb-4">
+                                    <User2 />
                                 </div>
                                 <div className="space-y-0.5">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -71,11 +67,8 @@ const CustomerManager = ({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
                                     <p className="text-[10px] text-muted-foreground font-medium">{cust.email} | SĐT: {cust.phone || 'Chưa cập nhật'}</p>
 
                                     <div className="flex gap-4 pt-1">
-                                        <span className="text-[10px] font-bold text-accent-foreground bg-orange-50 border border-orange-100/50 px-2 py-0.5 rounded flex items-center gap-1">
-                                            <Coins className="w-3.5 h-3.5 text-accent" /> Điểm: <strong className="font-black text-sm">{cust.zenPoints || 0}</strong>
-                                        </span>
-                                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
-                                            🛍️ Đã mua: <strong className="text-foreground">{getCompletedOrdersCount(cust)} đơn hàng</strong>
+                                        <span className="text-[10px] font-bold text-accent bg-orange-50 border border-orange-100/50 px-2 py-0.5 rounded flex items-center gap-1 ">
+                                            <Coins className="w-3.5 h-3.5" /> Điểm: <strong className="font-black ">{cust.zenPoints || 0}</strong>
                                         </span>
                                     </div>
                                 </div>
@@ -83,15 +76,9 @@ const CustomerManager = ({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
 
                             {/* Actions */}
                             <div className="flex gap-2 self-end sm:self-center">
-                                <button
-                                    onClick={() => onTriggerAction(cust, "REDEEM")}
-                                    className="text-[10px] font-black text-accent bg-accent/10 hover:bg-accent/20 border border-accent/20 px-3 py-2 rounded-xl active:scale-95 transition"
-                                >
-                                    🎁 Đổi quà tại quầy
-                                </button>
                                 {isAdmin && (
                                     <button
-                                        onClick={() => onTriggerAction(cust, "ADJUST")}
+                                        onClick={() => handleSelectUser(cust.id)}
                                         className="text-[10px] font-black text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 px-3 py-2 rounded-xl active:scale-95 transition"
                                     >
                                         ✏️ Điều chỉnh điểm

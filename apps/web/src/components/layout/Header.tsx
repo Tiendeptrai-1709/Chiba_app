@@ -45,9 +45,9 @@ export const Header = ({ user }: HeaderProps) => {
             {/* Cart Button */}
             <Link href="/cart" className="relative p-2.5 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full transition-all duration-200">
               <ShoppingCart className="w-5 h-5 text-white" />
-              {cart.items.length > 0 && (
+              {cart?.items.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white ring-2 ring-primary animate-bounce">
-                  {cart.items.length}
+                  {cart?.items.length}
                 </span>
               )}
             </Link>

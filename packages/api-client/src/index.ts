@@ -3,6 +3,8 @@ export { useAuthStore } from "./stores/useAuthStore";
 export { useNotificationStore } from "./stores/useNotificationStore";
 export {
   useProfile,
+  useUpdateUserPoint,
+  useGetUserById,
   useGetAllCustomers,
   useDeleteProfile,
   useUpdateProfile,
@@ -20,6 +22,22 @@ export {
   useRemoveItem,
   useClearCart,
 } from "./hooks/useCart";
-export { useCheckout, useGetOrders, useUpdateOrderStatus, useGetOrderById, useCancelOrder } from "./hooks/useOrder";
-export type { Product, ProductCategory, Topping, User, Store, Order, OrderStatus } from "./types";
+export {
+  useCheckout,
+  useGetOrders,
+  useUpdateOrderStatus,
+  useGetOrderById,
+  useCancelOrder,
+  useGetUserOrder,
+  useGetAllOrders,
+} from "./hooks/useOrder";
+export type {
+  Product,
+  ProductCategory,
+  Topping,
+  User,
+  Store,
+  Order,
+  OrderStatus,
+} from "./types";
 export { useLogin, useRegister } from "./hooks/useAuth";

@@ -3,7 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
+  Post,
   Req,
   Res,
   UseGuards,
@@ -15,7 +17,6 @@ import { DeleteProfileDto } from "src/dto/auth.dto";
 import { RolesGuard } from "src/guards/role.guard";
 import { Roles } from "src/decorators/roles.decorator";
 import { Role } from "src/generated/prisma";
-
 
 @Controller("users")
 export class UserController {
@@ -30,6 +31,22 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.STAFF)
+  @Post("/update")
+  async updateUserPoint(@Body() payload:{id: string, zenPoints:number}) {
+    // console.log("id123",typeof(id))
+    return this.userService.updateUserPoint(payload.id, payload.zenPoints);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Post("")
+  async getUserById(@Body("id") id: string) {
+    // console.log("id123",typeof(id))
+    return this.userService.getUserById(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get("customers")
   getAllCustomers() {
     return this.userService.getAllCustomers();
@@ -39,7 +56,7 @@ export class UserController {
   @Delete("profile")
   async deleteProfile(
     @Req() req: Request,
-    @Body() dto:DeleteProfileDto,
+    @Body() dto: DeleteProfileDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { userId } = req.user;
@@ -51,12 +68,8 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Patch("profile")
-  async updateProfile(
-    @Req() req: Request,
-    @Body() data: any,
-  ) {
+  async updateProfile(@Req() req: Request, @Body() data: any) {
     const { userId } = req.user;
     return this.userService.updateProfile(userId, data);
   }
-
-} 
+}

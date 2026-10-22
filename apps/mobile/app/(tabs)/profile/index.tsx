@@ -40,9 +40,6 @@ export default function ProfileScreen() {
   const [editName, setEditName] = useState(false);
   const [editPhone, setEditPhone] = useState(false);
 
-  const [history] = useState<any[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-
   useEffect(() => {
     if (user) {
       setInputName(user.fullName ?? "");
@@ -210,49 +207,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Lịch sử điểm tích lũy */}
-        <View className="mt-5 bg-card border border-border rounded-2xl overflow-hidden shadow-sm p-5 space-y-4">
-          {/* Points History Toggle */}
-          <Pressable
-            onPress={() => setShowHistory(!showHistory)}
-            className="w-full flex-row items-center justify-between font-bold text-sm text-foreground focus:outline-none"
-          >
-            <View className="flex-row items-center">
-              <Star size={20} color="#D87D4A" />
-              <Text className="ml-2 font-bold text-foreground">
-                Lịch sử điểm Chiba
-              </Text>
-            </View>
-            <Text className="text-primary font-bold">
-              {showHistory ? "Thu gọn" : "Xem chi tiết"}
-            </Text>
-          </Pressable>
 
-          {showHistory && (
-            <View className="pt-3 border-t border-dashed border-border/60 space-y-3 max-h-60 overflow-y-auto pr-1 animate-fade-in">
-              {history.length > 0 ? (
-                history.map((tx) => {
-                  const isPositive = tx.points >= 0;
-                  return (
-                    <View key={tx.id} className="flex justify-between items-start py-2.5 border-b border-border/40 last:border-b-0 gap-3">
-                      <View className="space-y-0.5 min-w-0">
-                        <Text className="text-xs font-bold text-foreground truncate">{tx.description}</Text>
-                        <Text className="text-[9px] text-muted-foreground">
-                          Số dư: {tx.pointsBefore || 0} ➔ {tx.pointsAfter || 0} | {new Date(tx.createdAt).toLocaleString('vi-VN')}
-                        </Text>
-                      </View>
-                      <Text className={`text-xs font-black shrink-0 px-2 py-0.5 rounded ${isPositive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-destructive'
-                        }`}>
-                        {isPositive ? '+' : ''}{tx.points}
-                      </Text>
-                    </View>
-                  );
-                })
-              ) : (
-                <Text className="text-xs text-muted-foreground text-center py-4">Bạn chưa thực hiện giao dịch tích điểm nào.</Text>
-              )}
-            </View>
-          )}
-        </View>
 
         {/* Admin Section if Admin role */}
         {(user?.role === "ADMIN" || user?.role === "STAFF") && (
