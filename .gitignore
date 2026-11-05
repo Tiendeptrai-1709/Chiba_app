@@ -8,3 +8,6 @@ build
 .env
 .env.local
 .DS_Store
+
+# Bộ nhớ tạm của TypeScript (tự sinh khi build)
+*.tsbuildinfo
