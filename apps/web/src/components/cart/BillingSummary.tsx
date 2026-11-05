@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Coins, MapPin } from 'lucide-react';
 import { getSelectedStore, SelectedStore } from '@/lib/selectedStore';
+import { cartStockProblems } from '@/lib/stock';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
@@ -48,18 +49,13 @@ function BillingSummary({
   const shippingFee = orderType === 'DELIVERY' && totalPrice < FREE_SHIP_THRESHOLD ? SHIPPING_FEE : 0;
   const finalPrice = totalPrice - discountAmount + shippingFee;
 
-  const hasUnavailable =
-    loaded &&
-    items.some(
-      (i) =>
-        getById(i.productId)?.isAvailable !== true ||
-        i.selectedToppings?.some((t) => getById(t.id)?.isAvailable !== true),
-    );
+  // Có món đã hết hoặc giỏ đang đặt nhiều hơn số còn lại
+  const hasUnavailable = loaded && cartStockProblems(items, getById).length > 0;
 
   const handleCheckout = async () => {
     if (!user) return showError('Bạn cần đăng nhập để đặt hàng');
     if (items.length === 0) return showError('Giỏ hàng trống');
-    if (hasUnavailable) return showError('Giỏ hàng có món tạm hết, vui lòng xóa món đó trước khi đặt');
+    if (hasUnavailable) return showError('Giỏ hàng có món đã hết hoặc vượt số lượng còn lại, vui lòng sửa trước khi đặt');
     if (orderType === 'DELIVERY' && !address.trim()) {
       return showError('Vui lòng cung cấp địa chỉ nhận hàng để shop tiến hành giao hàng 📍');
     }
@@ -154,7 +150,7 @@ function BillingSummary({
         disabled={loading || hasUnavailable}
         className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-premium transition disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]"
       >
-        {loading ? 'Đang gửi đơn...' : hasUnavailable ? 'Có món tạm hết trong giỏ' : '✓ Đặt Hàng Ngay'}
+        {loading ? 'Đang gửi đơn...' : hasUnavailable ? 'Giỏ có món vượt số lượng còn lại' : '✓ Đặt Hàng Ngay'}
       </button>
 
       <Link

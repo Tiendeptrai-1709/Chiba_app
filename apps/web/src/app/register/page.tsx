@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { isStaffMember } from '@/types';
 import Link from 'next/link';
 import { User, Mail, Lock, ArrowLeft, UserPlus } from 'lucide-react';
 
@@ -36,7 +37,7 @@ export default function RegisterPage() {
       await register(email, password, fullName);
       // Email được Admin mời sẽ thành nhân viên → vào bảng điều khiển
       const role = useAuthStore.getState().user?.role;
-      router.push(role === 'ADMIN' || role === 'STAFF' ? '/admin/dashboard' : '/home');
+      router.push(isStaffMember(role) ? '/admin/dashboard' : '/home');
     } catch (err: any) {
       setError(err?.message || 'Đăng ký thất bại. Email có thể đã tồn tại.');
     } finally {

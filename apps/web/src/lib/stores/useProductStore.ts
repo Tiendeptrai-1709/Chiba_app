@@ -9,7 +9,8 @@ interface ProductState {
   error: string | null;
   fetchProducts: (force?: boolean) => Promise<void>;
   getById: (id: string) => Product | undefined;
-  setAvailability: (id: string, isAvailable: boolean) => Promise<void>;
+  // Nhân viên đặt số lượng còn bán được (0 = hết hàng)
+  setStock: (id: string, stock: number) => Promise<void>;
   uploadImage: (id: string, file: File) => Promise<void>;
   removeImage: (id: string) => Promise<void>;
   // Admin
@@ -22,6 +23,7 @@ export interface ProductInput {
   name: string;
   price: number;
   category: ProductCategory;
+  stock?: number; // chỉ dùng khi thêm món mới
 }
 
 // Menu dùng chung cho trang khách, giỏ hàng và dashboard.
@@ -50,8 +52,8 @@ export const useProductStore = create<ProductState>((set, get) => {
 
     getById: (id) => get().products.find((p) => p.id === id),
 
-    setAvailability: async (id, isAvailable) => {
-      replace(await apiRequest<Product>(`/products/${id}/availability`, { method: 'PATCH', body: { isAvailable } }));
+    setStock: async (id, stock) => {
+      replace(await apiRequest<Product>(`/products/${id}/stock`, { method: 'PATCH', body: { stock } }));
     },
 
     uploadImage: async (id, file) => {

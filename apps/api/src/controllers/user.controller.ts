@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
   NotFoundException,
   Param,
   Patch,
@@ -12,7 +13,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { Role } from "../generated/prisma";
-import { CreateUserDto } from "../dto/create-user.dto";
+import { ChangeRoleDto, CreateUserDto } from "../dto/create-user.dto";
 import { UpdateProfileDto } from "../dto/update-profile.dto";
 import { CurrentUser } from "../decorators/current-user.decorator";
 import { Roles } from "../decorators/roles.decorator";
@@ -65,7 +66,17 @@ export class UserController {
 
   @Post()
   @Roles(Role.ADMIN)
-  create(@Body() dto: CreateUserDto) {
+  create(@CurrentUser() actor: AuthUser, @Body() dto: CreateUserDto) {
+    if (dto.role === Role.ADMIN && actor.role !== Role.OWNER) {
+      throw new ForbiddenException("Chỉ OWNER được tạo tài khoản Admin");
+    }
     return this.userService.createUser(dto);
+  }
+
+  // Chỉ OWNER: thăng cấp / hạ cấp Khách hàng ↔ Nhân viên ↔ Admin
+  @Patch(":id/role")
+  @Roles(Role.OWNER)
+  changeRole(@CurrentUser() owner: AuthUser, @Param("id") id: string, @Body() dto: ChangeRoleDto) {
+    return this.userService.changeRole(owner.id, id, dto.role);
   }
 }

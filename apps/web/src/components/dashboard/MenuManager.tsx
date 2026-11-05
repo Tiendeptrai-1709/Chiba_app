@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ImagePlus, Pencil, Plus, RefreshCw, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useProductStore } from '@/lib/stores/useProductStore';
 import ProductFormModal from './ProductFormModal';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
-import { Product, ProductCategory } from '@/types';
+import { LOW_STOCK, Product, ProductCategory } from '@/types';
 import ProductImage from '@/components/products/ProductImage';
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
@@ -17,6 +17,71 @@ const CATEGORY_ORDER: ProductCategory[] = ['MON_NUOC', 'BANH', 'TOPPING'];
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
 
+// Ô nhập số lượng còn bán được. Bấm "Cập nhật" để lưu số mới (đặt lại, không cộng dồn).
+function StockEditor({ product, busy, onSave }: { product: Product; busy: boolean; onSave: (stock: number) => void }) {
+  const [draft, setDraft] = useState(String(product.stock));
+
+  // Đồng bộ khi số lượng đổi từ nơi khác (khách đặt, tải lại menu)
+  useEffect(() => setDraft(String(product.stock)), [product.stock]);
+
+  const value = parseInt(draft, 10);
+  const valid = Number.isInteger(value) && value >= 0 && value <= 100_000;
+  const changed = valid && value !== product.stock;
+  const tone =
+    product.stock === 0
+      ? 'bg-destructive/10 text-destructive'
+      : product.stock <= LOW_STOCK
+        ? 'bg-amber-100 text-amber-800'
+        : 'bg-primary/10 text-primary';
+
+  return (
+    <form
+      className="shrink-0 flex flex-col items-end gap-1.5 w-[7.5rem]"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (changed) onSave(value);
+      }}
+    >
+      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tone}`}>
+        {product.stock === 0 ? 'Hết hàng' : product.stock <= LOW_STOCK ? `Sắp hết · ${product.stock}` : `Còn ${product.stock}`}
+      </span>
+      <div className="flex items-center gap-1">
+        <label htmlFor={`stock-${product.id}`} className="sr-only">
+          Số lượng {product.name}
+        </label>
+        <input
+          id={`stock-${product.id}`}
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={100000}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          disabled={busy}
+          className="w-16 text-center text-sm font-bold tabular-nums border border-border rounded-lg py-1.5 bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        <button
+          type="submit"
+          disabled={busy || !changed}
+          className="text-[10px] font-bold text-white bg-primary px-2 py-2 rounded-lg disabled:opacity-40"
+        >
+          Lưu
+        </button>
+      </div>
+      {product.stock > 0 && (
+        <button
+          type="button"
+          onClick={() => onSave(0)}
+          disabled={busy}
+          className="text-[10px] font-semibold text-destructive underline underline-offset-2"
+        >
+          Báo hết hàng
+        </button>
+      )}
+    </form>
+  );
+}
+
 interface MenuManagerProps {
   // Admin: thêm/sửa/xóa món và ảnh. Nhân viên: chỉ bật/tắt còn hàng.
   canEditImages: boolean;
@@ -27,7 +92,7 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
     products,
     loading,
     fetchProducts,
-    setAvailability,
+    setStock,
     uploadImage,
     removeImage,
     createProduct,
@@ -77,10 +142,11 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
       <div className="border-b border-border pb-3 flex items-start justify-between gap-3">
         <div>
           <h3 className="font-bold text-sm uppercase tracking-wider text-foreground">
-            {canEditImages ? '🍹 Quản lý món & ảnh' : '🛒 Tình trạng món'}
+            {canEditImages ? '🍹 Quản lý món & kho' : '🛒 Kho món'}
           </h3>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Tắt “Còn hàng” khi hết nguyên liệu — khách sẽ thấy “Tạm hết” và không đặt được.
+            Nhập số phần còn làm được rồi bấm “Lưu”. Mỗi phần khách đặt tự trừ 1, đơn bị hủy được cộng lại; về 0 thì khách
+            thấy “Tạm hết”.
             {canEditImages && ' Ảnh nên vuông (khoảng 600×600), tối đa 3MB.'}
           </p>
         </div>
@@ -127,7 +193,8 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
         return (
           <section key={category} className="space-y-2.5">
             <h4 className="text-xs font-black text-muted-foreground uppercase tracking-wider">
-              {CATEGORY_LABELS[category]} ({list.filter((p) => !p.isAvailable).length} tạm hết)
+              {CATEGORY_LABELS[category]} · {list.filter((p) => p.stock === 0).length} hết ·{' '}
+              {list.filter((p) => p.stock > 0 && p.stock <= LOW_STOCK).length} sắp hết
             </h4>
             {list.map((product) => {
               const busy = busyId === product.id;
@@ -187,32 +254,17 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() =>
+                  <StockEditor
+                    product={product}
+                    busy={busy}
+                    onSave={(stock) =>
                       run(
                         product.id,
-                        () => setAvailability(product.id, !product.isAvailable),
-                        product.isAvailable ? `"${product.name}" đã chuyển sang Tạm hết` : `"${product.name}" đã có hàng trở lại`,
+                        () => setStock(product.id, stock),
+                        stock === 0 ? `"${product.name}" đã chuyển sang Hết hàng` : `"${product.name}": còn ${stock} phần`,
                       )
                     }
-                    disabled={busy}
-                    aria-pressed={product.isAvailable}
-                    className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-95 ${
-                      product.isAvailable
-                        ? 'bg-primary/10 text-primary border-primary/20'
-                        : 'bg-destructive/10 text-destructive border-destructive/20'
-                    }`}
-                  >
-                    {product.isAvailable ? (
-                      <>
-                        <ToggleRight className="w-5 h-5" /> Còn hàng
-                      </>
-                    ) : (
-                      <>
-                        <ToggleLeft className="w-5 h-5" /> Tạm hết
-                      </>
-                    )}
-                  </button>
+                  />
                 </div>
               );
             })}

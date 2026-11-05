@@ -10,7 +10,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// OWNER: chủ quán — mọi quyền của ADMIN + đổi vai trò người dùng.
+// Chỉ đặt OWNER trực tiếp trong database (không có API nào phong OWNER).
 enum Role {
+  OWNER
   ADMIN
   STAFF
   CUSTOMER
@@ -97,8 +100,8 @@ model Product {
   category    ProductCategory
   // Đường dẫn ảnh do server lưu, ví dụ "/uploads/products/p1-1730000000.webp"
   imageUrl    String?
-  // false = "Tạm hết": khách không đặt được
-  isAvailable Boolean         @default(true)
+  // Số lượng còn bán được. Mỗi phần khách đặt trừ 1, hủy đơn cộng lại; về 0 = "Tạm hết".
+  stock       Int             @default(0)
   sortOrder   Int             @default(0)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt

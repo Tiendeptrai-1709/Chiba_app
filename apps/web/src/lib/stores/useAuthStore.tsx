@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PointTransaction, User } from '@/types';
+import { isManager, PointTransaction, User } from '@/types';
 import { apiRequest, AuthTokens, setSessionExpiredHandler, tokenStore } from '@/lib/api/client';
 
 interface AuthResponse extends AuthTokens {
@@ -137,7 +137,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
     fetchAllUsers: async () => {
       const users = await apiRequest<User[]>('/users');
       set({ allUsers: users, activeStaffList: users.filter((u) => u.role === 'STAFF') });
-      if (get().user?.role === 'ADMIN') get().fetchInvites().catch(() => {});
+      if (isManager(get().user?.role)) get().fetchInvites().catch(() => {});
       return users;
     },
 

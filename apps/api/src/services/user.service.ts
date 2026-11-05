@@ -1,4 +1,11 @@
-import { ConflictException, Injectable, InternalServerErrorException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
 import { hash } from "bcryptjs";
 import { randomInt } from "crypto";
 import { Prisma, Role } from "../generated/prisma";
@@ -91,6 +98,16 @@ export class UserService {
       where: { customerCode: customerCode.trim().toUpperCase() },
       select: publicUserSelect,
     });
+  }
+
+  // OWNER đổi vai trò khách / nhân viên / admin. Không đổi được OWNER và không tự đổi mình.
+  async changeRole(actorId: string, targetId: string, role: Role): Promise<PublicUser> {
+    if (role === Role.OWNER) throw new ForbiddenException("Không thể phong OWNER qua ứng dụng");
+    if (actorId === targetId) throw new BadRequestException("Không thể tự đổi vai trò của chính mình");
+    const target = await this.prisma.user.findUnique({ where: { id: targetId }, select: { role: true } });
+    if (!target) throw new NotFoundException("Không tìm thấy người dùng");
+    if (target.role === Role.OWNER) throw new ForbiddenException("Không thể đổi vai trò của OWNER");
+    return this.prisma.user.update({ where: { id: targetId }, data: { role }, select: publicUserSelect });
   }
 
   updateProfile(id: string, data: { fullName?: string; phone?: string; address?: string }) {

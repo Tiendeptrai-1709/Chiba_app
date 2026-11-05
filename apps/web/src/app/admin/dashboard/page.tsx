@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import { Order, User } from '@/types';
+import { isManager, isStaffMember, Order, ROLE_LABELS, User } from '@/types';
 import { apiRequest } from '@/lib/api/client';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
@@ -12,6 +12,7 @@ import { useProductStore } from '@/lib/stores/useProductStore';
 import OrderFulfillment from '@/components/dashboard/OrderFulfillment';
 import MenuManager from '@/components/dashboard/MenuManager';
 import QrScanPanel from '@/components/dashboard/QrScanPanel';
+import RoleManager from '@/components/dashboard/RoleManager';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
@@ -23,13 +24,15 @@ import PageLoader from '@/components/ui/PageLoader';
 const ORDER_POLL_MS = 15_000;
 
 export default function AdminDashboard() {
-  const { user, isAuthenticated, loading, fetchAllUsers } = useAuthStore();
+  const { user, isAuthenticated, loading, fetchAllUsers, allUsers } = useAuthStore();
   const { showError, showSuccess } = useNotificationStore();
   const fetchProducts = useProductStore((s) => s.fetchProducts);
   const router = useRouter();
 
-  const isAdmin = user?.role === 'ADMIN';
-  const isStaffOrAdmin = user?.role === 'ADMIN' || user?.role === 'STAFF';
+  // OWNER có mọi quyền của ADMIN
+  const isAdmin = isManager(user?.role);
+  const isOwner = user?.role === 'OWNER';
+  const isStaffOrAdmin = isStaffMember(user?.role);
   const [activeTab, setActiveTab] = useState<DashboardTab | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -37,7 +40,7 @@ export default function AdminDashboard() {
   const [pointAction, setPointAction] = useState<{ customer: User; type: 'REDEEM' | 'ADJUST' } | null>(null);
 
   useEffect(() => {
-    if (user && !activeTab) setActiveTab(defaultTab(user.role === 'ADMIN'));
+    if (user && !activeTab) setActiveTab(defaultTab(user.role));
   }, [user, activeTab]);
 
   // Chỉ ADMIN / STAFF được vào
@@ -81,7 +84,7 @@ export default function AdminDashboard() {
 
   const changeTab = (tab: DashboardTab) => {
     setActiveTab(tab);
-    if (tab === 'CUSTOMERS') refreshCustomers();
+    if (tab === 'CUSTOMERS' || tab === 'TEAM') refreshCustomers();
     if (tab === 'ORDERS') refreshOrders();
   };
 
@@ -101,11 +104,11 @@ export default function AdminDashboard() {
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <h1 className="text-lg font-bold text-foreground">📊 Bảng điều khiển {isAdmin ? 'Admin' : 'Nhân viên'}</h1>
+            <h1 className="text-lg font-bold text-foreground">📊 Bảng điều khiển {ROLE_LABELS[user.role]}</h1>
           </div>
           <span
             className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-              isAdmin ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-strong'
+              isOwner ? 'bg-amber-100 text-amber-800' : isAdmin ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-strong'
             }`}
           >
             {user.role}
@@ -114,7 +117,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-2xl mx-auto px-5 py-6 space-y-6 w-full flex-grow">
-        <HeaderTabRole isAdmin={isAdmin} activeTab={activeTab} setActiveTab={changeTab} badges={{ ORDERS: pendingCount }} />
+        <HeaderTabRole role={user.role} activeTab={activeTab} setActiveTab={changeTab} badges={{ ORDERS: pendingCount }} />
 
         <Validation />
 
@@ -136,7 +139,11 @@ export default function AdminDashboard() {
 
         {activeTab === 'MENU' && <MenuManager canEditImages={isAdmin} />}
 
-        {!isAdmin && activeTab === 'SCAN' && <QrScanPanel />}
+        {activeTab === 'SCAN' && <QrScanPanel />}
+
+        {isOwner && activeTab === 'TEAM' && (
+          <RoleManager users={allUsers} currentUserId={user.id} onChanged={refreshCustomers} />
+        )}
 
         {activeTab === 'CUSTOMERS' && (
           <CustomerManager
@@ -154,9 +161,11 @@ export default function AdminDashboard() {
           <div className="space-y-1">
             <p className="text-xs font-bold text-foreground">Vai trò hệ thống:</p>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              {isAdmin
-                ? 'Admin: xem thống kê, xử lý đơn, quản lý món & ảnh, điều chỉnh điểm và xem nhật ký điểm.'
-                : 'Nhân viên: xử lý đơn hàng, báo hết món, quét QR tích điểm và đổi quà tại quầy cho khách.'}
+              {isOwner
+                ? 'Chủ quán: mọi quyền của Admin, thêm quyền thăng cấp / hạ cấp Nhân viên và Admin.'
+                : isAdmin
+                  ? 'Admin: làm mọi việc của nhân viên, cộng thêm thống kê, sửa menu & ảnh, điều chỉnh điểm và xem nhật ký điểm.'
+                  : 'Nhân viên: xử lý đơn hàng, cập nhật số lượng món, quét QR tích điểm và đổi quà tại quầy cho khách.'}
             </p>
           </div>
         </div>

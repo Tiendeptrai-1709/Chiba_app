@@ -1,4 +1,17 @@
-export type UserRole = 'CUSTOMER' | 'STAFF' | 'ADMIN';
+// OWNER (chủ quán) = mọi quyền của ADMIN + đổi vai trò người dùng. Chỉ đặt OWNER trong database.
+export type UserRole = 'CUSTOMER' | 'STAFF' | 'ADMIN' | 'OWNER';
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  CUSTOMER: 'Khách hàng',
+  STAFF: 'Nhân viên',
+  ADMIN: 'Admin',
+  OWNER: 'Chủ quán',
+};
+
+// ADMIN hoặc OWNER
+export const isManager = (role?: UserRole | null) => role === 'ADMIN' || role === 'OWNER';
+// Nhân sự cửa hàng (vào được bảng điều khiển)
+export const isStaffMember = (role?: UserRole | null) => role === 'STAFF' || isManager(role);
 
 export interface User {
   id: string;
@@ -30,9 +43,13 @@ export interface Product {
   price: number;
   category: ProductCategory;
   imageUrl?: string | null;
-  isAvailable: boolean;
+  stock: number; // số phần còn bán được
+  isAvailable: boolean; // = stock > 0 (server tính sẵn)
   sortOrder?: number;
 }
+
+// Từ ngưỡng này trở xuống thì báo "Sắp hết"
+export const LOW_STOCK = 5;
 
 // ----- Tùy chọn đồ uống -----
 

@@ -10,6 +10,9 @@ export const UPLOAD_ROOT = process.env.UPLOAD_DIR ?? join(__dirname, "..", "uplo
 const PRODUCT_DIR = join(UPLOAD_ROOT, "products");
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // 3MB
 
+// Trả kèm isAvailable (= còn hàng) để giao diện dùng thẳng; không lưu riêng trong DB.
+export const toProductView = <T extends { stock: number }>(p: T) => ({ ...p, isAvailable: p.stock > 0 });
+
 // Nhận diện định dạng bằng "magic bytes" thay vì tin vào đuôi file / mimetype client gửi.
 function detectImageExt(buf: Buffer): "jpg" | "png" | "webp" | null {
   if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
@@ -26,8 +29,9 @@ function detectImageExt(buf: Buffer): "jpg" | "png" | "webp" | null {
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
-    return this.prisma.product.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
+  async findAll() {
+    const products = await this.prisma.product.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
+    return products.map(toProductView);
   }
 
   async create(dto: CreateProductDto) {
@@ -38,21 +42,22 @@ export class ProductService {
       orderBy: { sortOrder: "desc" },
       select: { sortOrder: true },
     });
-    return this.prisma.product.create({
+    const created = await this.prisma.product.create({
       data: {
         name: dto.name,
         price: dto.price,
         category: dto.category,
-        isAvailable: dto.isAvailable ?? true,
+        stock: dto.stock ?? 0,
         sortOrder: (last?.sortOrder ?? 0) + 1,
       },
     });
+    return toProductView(created);
   }
 
   async update(id: string, dto: UpdateProductDto) {
     await this.ensureExists(id);
     if (dto.name) await this.ensureNameFree(dto.name, id);
-    return this.prisma.product.update({ where: { id }, data: dto });
+    return toProductView(await this.prisma.product.update({ where: { id }, data: dto }));
   }
 
   // Đơn cũ lưu sẵn tên + giá món nên xóa món không làm hỏng lịch sử đơn.
@@ -62,9 +67,10 @@ export class ProductService {
     await this.removeFile(product.imageUrl);
   }
 
-  async setAvailability(id: string, isAvailable: boolean) {
+  // Nhân viên nhập số lượng còn bán được (đặt lại tuyệt đối, không cộng dồn)
+  async setStock(id: string, stock: number) {
     await this.ensureExists(id);
-    return this.prisma.product.update({ where: { id }, data: { isAvailable } });
+    return toProductView(await this.prisma.product.update({ where: { id }, data: { stock } }));
   }
 
   async setImage(id: string, file: Express.Multer.File | undefined) {
@@ -84,14 +90,14 @@ export class ProductService {
       data: { imageUrl: `/uploads/products/${filename}` },
     });
     await this.removeFile(product.imageUrl);
-    return updated;
+    return toProductView(updated);
   }
 
   async removeImage(id: string) {
     const product = await this.ensureExists(id);
     const updated = await this.prisma.product.update({ where: { id }, data: { imageUrl: null } });
     await this.removeFile(product.imageUrl);
-    return updated;
+    return toProductView(updated);
   }
 
   private async ensureExists(id: string) {

@@ -54,15 +54,20 @@ async function login(name, userAgent = "e2e") {
   return r.body;
 }
 
-let customer, staff, admin;
+let customer, staff, admin, owner;
+let originalStock = [];
 
 before(async () => {
   const health = await fetch(`${API}/health`).catch(() => null);
-  assert.ok(health?.ok, `API chưa chạy tại ${API} — hãy bật server trước (npm run dev)`);
+  assert.ok(health?.ok, `API chưa chạy tại ${API} — hãy bật server trước (npm run start:local)`);
   await db.connect();
+  // Lưu tồn kho thật để trả lại sau khi test, và đặt số lớn để test không làm hết hàng
+  originalStock = (await db.query("SELECT id, stock FROM products")).rows;
+  await db.query("UPDATE products SET stock = 1000");
   customer = await createUser("customer");
   staff = await createUser("staff", "STAFF");
   admin = await createUser("admin", "ADMIN");
+  owner = await createUser("owner", "OWNER");
 });
 
 after(async () => {
@@ -70,8 +75,10 @@ after(async () => {
   await db.query(`DELETE FROM orders WHERE "userId" IN (SELECT id FROM users WHERE email LIKE 'e2e\\_%@test.local')`);
   await db.query(`DELETE FROM users WHERE email LIKE 'e2e\\_%@test.local'`);
   await db.query(`DELETE FROM staff_invites WHERE email LIKE 'e2e\\_%@test.local'`);
-  await db.query(`UPDATE products SET "isAvailable" = true WHERE id IN ('p7')`);
   await db.query(`DELETE FROM products WHERE name LIKE 'E2E %'`);
+  for (const { id, stock } of originalStock) {
+    await db.query("UPDATE products SET stock = $1 WHERE id = $2", [stock, id]);
+  }
   await db.end();
 });
 
@@ -235,12 +242,50 @@ describe("Đơn hàng, tạm hết món & điểm", () => {
     assert.equal((await bad({ items: [{ productId: "b1", quantity: 1, toppingIds: ["t1"] }] })).status, 400);
   });
 
-  test("nhân viên báo hết món → khách không đặt được", async () => {
-    assert.equal((await call("PATCH", "/products/p7/availability", { token: customer.accessToken, body: { isAvailable: false } })).status, 403);
-    assert.equal((await call("PATCH", "/products/p7/availability", { token: staff.accessToken, body: { isAvailable: false } })).status, 200);
-    const r = await call("POST", "/orders", { token: customer.accessToken, body: order });
-    assert.equal(r.status, 409);
-    await call("PATCH", "/products/p7/availability", { token: staff.accessToken, body: { isAvailable: true } });
+  test("nhân viên đặt số lượng = 0 → khách không đặt được", async () => {
+    const setStock = (stock, token = staff.accessToken) => call("PATCH", "/products/p7/stock", { token, body: { stock } });
+    assert.equal((await setStock(0, customer.accessToken)).status, 403);
+    assert.equal((await setStock(-1)).status, 400);
+    const r0 = await setStock(0);
+    assert.equal(r0.status, 200);
+    assert.equal(r0.body.isAvailable, false);
+    const menu = await call("GET", "/products");
+    assert.equal(menu.body.find((p) => p.id === "p7").isAvailable, false);
+    assert.equal((await call("POST", "/orders", { token: customer.accessToken, body: order })).status, 409);
+    await setStock(1000);
+  });
+
+  test("đặt món trừ kho (cả topping theo số ly), không đặt quá số còn lại, hủy đơn trả lại kho", async () => {
+    const stockOf = async (id) => (await db.query("SELECT stock FROM products WHERE id = $1", [id])).rows[0].stock;
+    await call("PATCH", "/products/p7/stock", { token: staff.accessToken, body: { stock: 3 } });
+    await call("PATCH", "/products/t3/stock", { token: staff.accessToken, body: { stock: 10 } });
+    const base = { orderType: "STORE", paymentMethod: "CASH" };
+    const drink = (quantity) => ({ productId: "p7", quantity, toppingIds: ["t3"], sugar: 100, ice: "NORMAL" });
+
+    const a = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, items: [drink(2)] } });
+    assert.equal(a.status, 201);
+    assert.equal(await stockOf("p7"), 1, "trà sữa: 3 - 2");
+    assert.equal(await stockOf("t3"), 8, "topping: 10 - 2 ly");
+
+    const tooMany = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, items: [drink(2)] } });
+    assert.equal(tooMany.status, 409);
+    assert.match(tooMany.body.message, /chỉ còn 1/);
+    // Cùng món ở 2 dòng giỏ được cộng dồn
+    const split = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, items: [drink(1), { ...drink(1), sugar: 50 }] } });
+    assert.equal(split.status, 409);
+    assert.equal(await stockOf("p7"), 1, "đơn bị từ chối không trừ kho");
+
+    const last = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, items: [drink(1)] } });
+    assert.equal(last.status, 201);
+    const menu = await call("GET", "/products");
+    assert.equal(menu.body.find((p) => p.id === "p7").isAvailable, false, "về 0 → hết hàng");
+
+    await call("POST", `/orders/${a.body.id}/cancel`, { token: customer.accessToken });
+    assert.equal(await stockOf("p7"), 2, "khách hủy → trả lại 2");
+    assert.equal(await stockOf("t3"), 9, "topping trả lại 2");
+    await call("PATCH", `/orders/${last.body.id}/status`, { token: staff.accessToken, body: { status: "CANCELLED" } });
+    assert.equal(await stockOf("p7"), 3, "nhân viên hủy → trả lại 1");
+    await db.query("UPDATE products SET stock = 1000 WHERE id IN ('p7','t3')");
   });
 
   test("đơn giao: Chờ → Pha chế → Đang giao → Hoàn thành, cộng điểm một lần", async () => {
@@ -367,7 +412,11 @@ describe("Admin quản lý món", () => {
     assert.equal((await call("POST", "/products", { token: staff.accessToken, body })).status, 403);
     const created = await call("POST", "/products", { token: admin.accessToken, body });
     assert.equal(created.status, 201, JSON.stringify(created.body));
-    assert.equal(created.body.isAvailable, true);
+    assert.equal(created.body.stock, 0);
+    assert.equal(created.body.isAvailable, false, "món mới chưa nhập số lượng = hết hàng");
+    const withStock = await call("POST", "/products", { token: admin.accessToken, body: { ...body, name: `${body.name} 2`, stock: 20 } });
+    assert.equal(withStock.body.isAvailable, true);
+    assert.equal((await call("DELETE", `/products/${withStock.body.id}`, { token: admin.accessToken })).status, 204);
     assert.equal((await call("POST", "/products", { token: admin.accessToken, body: { ...body, name: body.name.toUpperCase() } })).status, 409);
     assert.equal((await call("POST", "/products", { token: admin.accessToken, body: { ...body, name: "X", price: -1 } })).status, 400);
 
@@ -379,6 +428,66 @@ describe("Admin quản lý món", () => {
     assert.equal((await call("DELETE", `/products/${created.body.id}`, { token: staff.accessToken })).status, 403);
     assert.equal((await call("DELETE", `/products/${created.body.id}`, { token: admin.accessToken })).status, 204);
     assert.equal((await call("PATCH", `/products/${created.body.id}`, { token: admin.accessToken, body: { price: 1 } })).status, 404);
+  });
+});
+
+describe("Chủ quán (OWNER) & phân quyền", () => {
+  const changeRole = (id, role, token) => call("PATCH", `/users/${id}/role`, { token, body: { role } });
+
+  test("OWNER có mọi quyền của ADMIN", async () => {
+    assert.equal((await call("GET", "/points", { token: owner.accessToken })).status, 200);
+    assert.equal((await call("GET", "/staff-invites", { token: owner.accessToken })).status, 200);
+    assert.equal((await call("PATCH", "/products/b5/stock", { token: owner.accessToken, body: { stock: 1000 } })).status, 200);
+  });
+
+  test("admin cũng quét QR tích điểm được", async () => {
+    const r = await call("POST", "/points/store-earn", {
+      token: admin.accessToken,
+      body: { customerCode: customer.user.customerCode, billAmount: 20000 },
+    });
+    assert.equal(r.status, 201);
+    await call("POST", "/points/adjust", {
+      token: admin.accessToken,
+      body: { userId: customer.user.id, points: -2, type: "ADMIN_ADJUST", description: "Trả lại sau test" },
+    });
+  });
+
+  test("chỉ OWNER thăng cấp: khách → nhân viên → admin → hạ về khách", async () => {
+    const target = await createUser("promote");
+    const id = target.user.id;
+    assert.equal((await changeRole(id, "STAFF", admin.accessToken)).status, 403, "admin không được");
+    assert.equal((await changeRole(id, "STAFF", staff.accessToken)).status, 403, "nhân viên không được");
+
+    const s = await changeRole(id, "STAFF", owner.accessToken);
+    assert.equal(s.status, 200);
+    assert.equal(s.body.role, "STAFF");
+    // Quyền mới có hiệu lực ngay, không cần đăng nhập lại
+    assert.equal((await call("GET", "/orders", { token: target.accessToken })).status, 200);
+
+    assert.equal((await changeRole(id, "ADMIN", owner.accessToken)).body.role, "ADMIN");
+    assert.equal((await call("GET", "/points", { token: target.accessToken })).status, 200);
+
+    assert.equal((await changeRole(id, "CUSTOMER", owner.accessToken)).body.role, "CUSTOMER");
+    assert.equal((await call("GET", "/orders", { token: target.accessToken })).status, 403);
+  });
+
+  test("không phong OWNER, không đổi OWNER, không tự đổi mình", async () => {
+    const target = await createUser("nope");
+    assert.equal((await changeRole(target.user.id, "OWNER", owner.accessToken)).status, 400);
+    assert.equal((await changeRole(owner.user.id, "CUSTOMER", owner.accessToken)).status, 400, "tự đổi mình");
+    await createUser("owner2", "OWNER");
+    const owner2 = await db.query("SELECT id FROM users WHERE email = $1", [email("owner2")]);
+    assert.equal((await changeRole(owner2.rows[0].id, "CUSTOMER", owner.accessToken)).status, 403, "đổi OWNER khác");
+  });
+
+  test("admin không tự tạo được tài khoản Admin; OWNER thì được", async () => {
+    const body = (name) => ({ email: email(name), password: PASSWORD, fullName: name, role: "ADMIN" });
+    assert.equal((await call("POST", "/users", { token: admin.accessToken, body: body("byadmin") })).status, 403);
+    assert.equal((await call("POST", "/users", { token: owner.accessToken, body: body("byowner") })).status, 201);
+    assert.equal(
+      (await call("POST", "/users", { token: owner.accessToken, body: { ...body("x"), role: "OWNER" } })).status,
+      400,
+    );
   });
 });
 

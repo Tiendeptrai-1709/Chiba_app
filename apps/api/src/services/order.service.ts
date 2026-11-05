@@ -8,6 +8,7 @@ import { randomInt } from "crypto";
 import { OrderStatus, OrderType, Prisma, ProductCategory } from "../generated/prisma";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { PrismaService } from "../prisma/prisma.service";
+import { isStaffMember } from "../utils/roles";
 import {
   MAX_DISCOUNT_RATIO,
   PointsService,
@@ -42,6 +43,17 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   COMPLETED: "Hoàn thành",
   CANCELLED: "Đã hủy",
 };
+
+// Số phần cần trừ kho cho từng món: mỗi ly/phần trừ 1, mỗi topping trừ 1 theo số ly.
+export function stockNeeded(items: Pick<OrderItemSnapshot, "productId" | "quantity" | "toppings">[]) {
+  const needed = new Map<string, number>();
+  const add = (id: string, qty: number) => needed.set(id, (needed.get(id) ?? 0) + qty);
+  for (const item of items) {
+    add(item.productId, item.quantity);
+    for (const t of item.toppings ?? []) add(t.id, item.quantity);
+  }
+  return needed;
+}
 
 export interface OrderItemSnapshot {
   productId: string;
@@ -89,7 +101,7 @@ export class OrderService {
     const items: OrderItemSnapshot[] = dto.items.map((item) => {
       const product = byId.get(item.productId);
       if (!product) throw new BadRequestException("Có món không còn trong menu, vui lòng tải lại trang");
-      if (!product.isAvailable) throw new ConflictException(`"${product.name}" đang tạm hết, vui lòng bỏ khỏi giỏ`);
+      if (product.stock <= 0) throw new ConflictException(`"${product.name}" đang tạm hết, vui lòng bỏ khỏi giỏ`);
 
       const isDrink = product.category === ProductCategory.MON_NUOC;
       const toppingIds = [...new Set(item.toppingIds ?? [])];
@@ -98,7 +110,7 @@ export class OrderService {
       const toppings = toppingIds.map((tid) => {
         const t = byId.get(tid);
         if (!t || t.category !== ProductCategory.TOPPING) throw new BadRequestException("Topping không hợp lệ");
-        if (!t.isAvailable) throw new ConflictException(`Topping "${t.name}" đang tạm hết`);
+        if (t.stock <= 0) throw new ConflictException(`Topping "${t.name}" đang tạm hết`);
         return { id: t.id, name: t.name, price: t.price };
       });
 
@@ -115,6 +127,15 @@ export class OrderService {
       };
     });
 
+    // ----- Kiểm tra đủ số lượng (gộp cùng món ở nhiều dòng + topping theo số ly) -----
+    const needed = stockNeeded(items);
+    for (const [productId, qty] of needed) {
+      const p = byId.get(productId)!;
+      if (p.stock < qty) {
+        throw new ConflictException(`"${p.name}" chỉ còn ${p.stock} phần, bạn đang đặt ${qty}. Vui lòng giảm số lượng.`);
+      }
+    }
+
     const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
     const shippingFee =
       dto.orderType === OrderType.DELIVERY && subtotal < FREE_SHIP_THRESHOLD ? SHIPPING_FEE : 0;
@@ -130,10 +151,21 @@ export class OrderService {
     const total = subtotal - discountAmount + shippingFee;
     const pointsEarned = pointsForAmount(subtotal - discountAmount);
 
-    // ----- Lưu đơn + trừ điểm trong cùng transaction -----
+    // ----- Trừ kho + lưu đơn + trừ điểm trong cùng transaction -----
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
         return await this.prisma.$transaction(async (tx) => {
+          // Trừ có điều kiện (stock >= số cần): hai khách đặt cùng lúc phần cuối cùng thì chỉ một người được.
+          for (const [productId, qty] of needed) {
+            const { count } = await tx.product.updateMany({
+              where: { id: productId, stock: { gte: qty } },
+              data: { stock: { decrement: qty } },
+            });
+            if (count === 0) {
+              const name = byId.get(productId)?.name ?? "Món";
+              throw new ConflictException(`"${name}" vừa hết hoặc không còn đủ số lượng, vui lòng tải lại giỏ hàng`);
+            }
+          }
           const order = await tx.order.create({
             data: {
               code: this.generateCode(),
@@ -199,7 +231,7 @@ export class OrderService {
       where: { id: orderId },
       include: { user: { select: { customerCode: true, email: true } } },
     });
-    const isStaff = viewer.role === "ADMIN" || viewer.role === "STAFF";
+    const isStaff = isStaffMember(viewer.role);
     if (!order || (!isStaff && order.userId !== viewer.id)) {
       throw new NotFoundException("Không tìm thấy đơn hàng");
     }
@@ -250,6 +282,13 @@ export class OrderService {
           orderId: order.id,
           createdById: staffId,
         });
+      }
+      // Hủy đơn → trả lại số lượng vào kho (bỏ qua món đã bị xóa khỏi menu)
+      if (status === OrderStatus.CANCELLED) {
+        const items = order.items as unknown as OrderItemSnapshot[];
+        for (const [productId, qty] of stockNeeded(items)) {
+          await tx.product.updateMany({ where: { id: productId }, data: { stock: { increment: qty } } });
+        }
       }
       if (order.userId && status === OrderStatus.CANCELLED && order.pointsUsed > 0) {
         await this.points.applyInTx(tx, {

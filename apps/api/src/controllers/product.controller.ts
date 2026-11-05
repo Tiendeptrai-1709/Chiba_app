@@ -14,18 +14,13 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { memoryStorage } from "multer";
-import { IsBoolean } from "class-validator";
+
 import { Role } from "../generated/prisma";
-import { CreateProductDto, UpdateProductDto } from "../dto/product.dto";
+import { CreateProductDto, SetStockDto, UpdateProductDto } from "../dto/product.dto";
 import { Roles } from "../decorators/roles.decorator";
 import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { RolesGuard } from "../guards/roles.guard";
 import { MAX_IMAGE_BYTES, ProductService } from "../services/product.service";
-
-class AvailabilityDto {
-  @IsBoolean()
-  isAvailable: boolean;
-}
 
 @Controller("products")
 export class ProductController {
@@ -60,12 +55,12 @@ export class ProductController {
     await this.products.remove(id);
   }
 
-  // Nhân viên báo hết / còn món
-  @Patch(":id/availability")
+  // Nhân viên cập nhật số lượng còn bán được (0 = hết hàng)
+  @Patch(":id/stock")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.STAFF, Role.ADMIN)
-  setAvailability(@Param("id") id: string, @Body() dto: AvailabilityDto) {
-    return this.products.setAvailability(id, dto.isAvailable);
+  setStock(@Param("id") id: string, @Body() dto: SetStockDto) {
+    return this.products.setStock(id, dto.stock);
   }
 
   // Admin upload ảnh minh họa (form-data, field "image")

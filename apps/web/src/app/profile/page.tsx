@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import CustomerNav from '@/components/layout/CustomerNav';
+import { isManager, isStaffMember, ROLE_LABELS } from '@/types';
 
 export default function ProfilePage() {
   const { user, isAuthenticated, logout, updateProfileName, loading, fetchPointHistory, refreshUser } = useAuthStore();
@@ -97,9 +98,9 @@ export default function ProfilePage() {
           </div>
           <h2 className="text-2xl font-black text-foreground tracking-tight">{user.fullName}</h2>
           <p className="text-xs text-muted-foreground mt-1 font-medium">{user.email}</p>
-          {user.role === 'ADMIN' && (
+          {isManager(user.role) && (
             <div className="mt-3 inline-flex items-center gap-1 bg-primary text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-              <ShieldCheck className="w-3 h-3" /> Quản trị viên
+              <ShieldCheck className="w-3 h-3" /> {ROLE_LABELS[user.role]}
             </div>
           )}
         </div>
@@ -186,13 +187,13 @@ export default function ProfilePage() {
         </div>
 
         {/* Admin Section if Admin role */}
-        {(user.role === "ADMIN" || user.role === "STAFF") && (
+        {isStaffMember(user.role) && (
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wider text-primary border-b border-border pb-2">
               ⚙️ Tính năng Quản trị
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {user.role === "ADMIN" ? (
+              {isManager(user.role) ? (
                 <>
                   <Link
                     href="/admin/dashboard"

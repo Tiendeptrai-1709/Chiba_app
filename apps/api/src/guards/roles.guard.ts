@@ -5,6 +5,7 @@ import { ROLES_KEY } from "../decorators/roles.decorator";
 import { AuthUser } from "../types/jwt-payload";
 
 // Dùng SAU JwtAuthGuard: @UseGuards(JwtAuthGuard, RolesGuard)
+// OWNER được coi như ADMIN: route nào cho ADMIN thì OWNER cũng vào được.
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -17,9 +18,10 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
     const user = context.switchToHttp().getRequest<{ user?: AuthUser }>().user;
-    if (!user || !requiredRoles.includes(user.role)) {
-      throw new ForbiddenException("Bạn không có quyền thực hiện thao tác này");
-    }
+    const allowed =
+      !!user &&
+      (requiredRoles.includes(user.role) || (user.role === Role.OWNER && requiredRoles.includes(Role.ADMIN)));
+    if (!allowed) throw new ForbiddenException("Bạn không có quyền thực hiện thao tác này");
     return true;
   }
 }

@@ -8,6 +8,7 @@ import { RolesGuard } from "../guards/roles.guard";
 import { PrismaService } from "../prisma/prisma.service";
 import { PointsService, pointsForAmount } from "../services/points.service";
 import type { AuthUser } from "../types/jwt-payload";
+import { isManager } from "../utils/roles";
 
 @Controller("points")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -55,7 +56,7 @@ export class PointsController {
   @Post("adjust")
   @Roles(Role.STAFF, Role.ADMIN)
   adjust(@CurrentUser() staff: AuthUser, @Body() dto: AdjustPointsDto) {
-    if (dto.type === "ADMIN_ADJUST" && staff.role !== Role.ADMIN) {
+    if (dto.type === "ADMIN_ADJUST" && !isManager(staff.role)) {
       throw new ForbiddenException("Chỉ Admin được điều chỉnh điểm tự do");
     }
     if (dto.type === "REDEEMED_STORE" && dto.points > 0) {

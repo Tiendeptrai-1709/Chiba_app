@@ -23,19 +23,24 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Product
   const [name, setName] = useState(product?.name ?? '');
   const [price, setPrice] = useState(product ? String(product.price) : '');
   const [category, setCategory] = useState<ProductCategory>(product?.category ?? 'MON_NUOC');
+  const [stock, setStock] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const priceValue = parseInt(price.replace(/\D/g, ''), 10);
+  const stockValue = stock.trim() === '' ? 0 : parseInt(stock, 10);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return setError('Vui lòng nhập tên món');
     if (!Number.isFinite(priceValue)) return setError('Vui lòng nhập giá');
+    if (!product && (!Number.isInteger(stockValue) || stockValue < 0)) return setError('Số lượng phải là số không âm');
     setSaving(true);
     setError(null);
     try {
-      await onSubmit({ name: name.trim(), price: priceValue, category });
+      await onSubmit(
+        product ? { name: name.trim(), price: priceValue, category } : { name: name.trim(), price: priceValue, category, stock: stockValue },
+      );
       onClose();
     } catch (err: any) {
       setError(err?.message ?? 'Không lưu được món');
@@ -79,6 +84,24 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Product
               className="w-full border border-border p-3 rounded-xl text-sm font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+
+          {!product && (
+            <div className="space-y-1">
+              <label htmlFor="product-stock" className="text-[11px] font-bold text-muted-foreground uppercase">
+                Số lượng ban đầu
+              </label>
+              <input
+                id="product-stock"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="Để trống = 0 (Hết hàng)"
+                className="w-full border border-border p-3 rounded-xl text-sm font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Danh mục</span>

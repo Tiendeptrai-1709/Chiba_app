@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Minus, Plus, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 import { useProductStore } from '@/lib/stores/useProductStore';
-import { ICE_LABELS, ICE_LEVELS, IceLevel, Product, SUGAR_LEVELS, SugarLevel, sugarLabel } from '@/types';
+import { ICE_LABELS, ICE_LEVELS, IceLevel, LOW_STOCK, Product, SUGAR_LEVELS, SugarLevel, sugarLabel } from '@/types';
 import Portal from '@/components/ui/Portal';
 import ProductImage from './ProductImage';
 
@@ -90,6 +90,12 @@ export function useProductPicker() {
   };
 
   const total = selected ? (selected.price + toppings.reduce((sum, t) => sum + t.price, 0)) * quantity : 0;
+  // Không cho chọn quá số còn lại của món và của topping đã chọn (server vẫn kiểm tra lại khi đặt)
+  const maxQty = selected ? Math.min(50, selected.stock, ...toppings.map((t) => t.stock)) : 1;
+
+  useEffect(() => {
+    if (quantity > maxQty) setQuantity(Math.max(1, maxQty));
+  }, [quantity, maxQty]);
 
   const overlay = (
     <Portal>
@@ -213,6 +219,9 @@ export function useProductPicker() {
                 {sugarLabel(sugar)} · {ICE_LABELS[ice]}
                 {toppings.length > 0 && ` · ${toppings.map((t) => t.name).join(', ')}`}
               </p>
+              {maxQty <= LOW_STOCK && (
+                <p className="text-xs font-semibold text-amber-800">Chỉ còn {maxQty} phần có thể đặt</p>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-foreground">Số lượng</span>
                 <div className="flex items-center gap-3 bg-background rounded-full p-1">
@@ -226,9 +235,10 @@ export function useProductPicker() {
                   </button>
                   <span className="w-6 text-center font-black text-foreground">{quantity}</span>
                   <button
-                    onClick={() => setQuantity((q) => Math.min(50, q + 1))}
+                    onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
                     aria-label="Tăng số lượng"
-                    className="w-9 h-9 rounded-full bg-card flex items-center justify-center shadow-sm active:scale-90 transition"
+                    disabled={quantity >= maxQty}
+                    className="w-9 h-9 rounded-full bg-card flex items-center justify-center shadow-sm active:scale-90 transition disabled:opacity-40"
                   >
                     <Plus className="w-4 h-4" />
                   </button>

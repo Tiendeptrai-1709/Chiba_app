@@ -54,6 +54,7 @@ export type PointTransaction = $Result.DefaultSelection<Prisma.$PointTransaction
  */
 export namespace $Enums {
   export const Role: {
+  OWNER: 'OWNER',
   ADMIN: 'ADMIN',
   STAFF: 'STAFF',
   CUSTOMER: 'CUSTOMER'
@@ -6085,11 +6086,13 @@ export namespace Prisma {
 
   export type ProductAvgAggregateOutputType = {
     price: number | null
+    stock: number | null
     sortOrder: number | null
   }
 
   export type ProductSumAggregateOutputType = {
     price: number | null
+    stock: number | null
     sortOrder: number | null
   }
 
@@ -6099,7 +6102,7 @@ export namespace Prisma {
     price: number | null
     category: $Enums.ProductCategory | null
     imageUrl: string | null
-    isAvailable: boolean | null
+    stock: number | null
     sortOrder: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6111,7 +6114,7 @@ export namespace Prisma {
     price: number | null
     category: $Enums.ProductCategory | null
     imageUrl: string | null
-    isAvailable: boolean | null
+    stock: number | null
     sortOrder: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6123,7 +6126,7 @@ export namespace Prisma {
     price: number
     category: number
     imageUrl: number
-    isAvailable: number
+    stock: number
     sortOrder: number
     createdAt: number
     updatedAt: number
@@ -6133,11 +6136,13 @@ export namespace Prisma {
 
   export type ProductAvgAggregateInputType = {
     price?: true
+    stock?: true
     sortOrder?: true
   }
 
   export type ProductSumAggregateInputType = {
     price?: true
+    stock?: true
     sortOrder?: true
   }
 
@@ -6147,7 +6152,7 @@ export namespace Prisma {
     price?: true
     category?: true
     imageUrl?: true
-    isAvailable?: true
+    stock?: true
     sortOrder?: true
     createdAt?: true
     updatedAt?: true
@@ -6159,7 +6164,7 @@ export namespace Prisma {
     price?: true
     category?: true
     imageUrl?: true
-    isAvailable?: true
+    stock?: true
     sortOrder?: true
     createdAt?: true
     updatedAt?: true
@@ -6171,7 +6176,7 @@ export namespace Prisma {
     price?: true
     category?: true
     imageUrl?: true
-    isAvailable?: true
+    stock?: true
     sortOrder?: true
     createdAt?: true
     updatedAt?: true
@@ -6270,7 +6275,7 @@ export namespace Prisma {
     price: number
     category: $Enums.ProductCategory
     imageUrl: string | null
-    isAvailable: boolean
+    stock: number
     sortOrder: number
     createdAt: Date
     updatedAt: Date
@@ -6301,7 +6306,7 @@ export namespace Prisma {
     price?: boolean
     category?: boolean
     imageUrl?: boolean
-    isAvailable?: boolean
+    stock?: boolean
     sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6313,7 +6318,7 @@ export namespace Prisma {
     price?: boolean
     category?: boolean
     imageUrl?: boolean
-    isAvailable?: boolean
+    stock?: boolean
     sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6325,7 +6330,7 @@ export namespace Prisma {
     price?: boolean
     category?: boolean
     imageUrl?: boolean
-    isAvailable?: boolean
+    stock?: boolean
     sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6337,13 +6342,13 @@ export namespace Prisma {
     price?: boolean
     category?: boolean
     imageUrl?: boolean
-    isAvailable?: boolean
+    stock?: boolean
     sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "price" | "category" | "imageUrl" | "isAvailable" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "price" | "category" | "imageUrl" | "stock" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 
   export type $ProductPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Product"
@@ -6354,7 +6359,7 @@ export namespace Prisma {
       price: number
       category: $Enums.ProductCategory
       imageUrl: string | null
-      isAvailable: boolean
+      stock: number
       sortOrder: number
       createdAt: Date
       updatedAt: Date
@@ -6786,7 +6791,7 @@ export namespace Prisma {
     readonly price: FieldRef<"Product", 'Int'>
     readonly category: FieldRef<"Product", 'ProductCategory'>
     readonly imageUrl: FieldRef<"Product", 'String'>
-    readonly isAvailable: FieldRef<"Product", 'Boolean'>
+    readonly stock: FieldRef<"Product", 'Int'>
     readonly sortOrder: FieldRef<"Product", 'Int'>
     readonly createdAt: FieldRef<"Product", 'DateTime'>
     readonly updatedAt: FieldRef<"Product", 'DateTime'>
@@ -9800,7 +9805,7 @@ export namespace Prisma {
     price: 'price',
     category: 'category',
     imageUrl: 'imageUrl',
-    isAvailable: 'isAvailable',
+    stock: 'stock',
     sortOrder: 'sortOrder',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -10359,7 +10364,7 @@ export namespace Prisma {
     price?: IntFilter<"Product"> | number
     category?: EnumProductCategoryFilter<"Product"> | $Enums.ProductCategory
     imageUrl?: StringNullableFilter<"Product"> | string | null
-    isAvailable?: BoolFilter<"Product"> | boolean
+    stock?: IntFilter<"Product"> | number
     sortOrder?: IntFilter<"Product"> | number
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
@@ -10371,7 +10376,7 @@ export namespace Prisma {
     price?: SortOrder
     category?: SortOrder
     imageUrl?: SortOrderInput | SortOrder
-    isAvailable?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10386,7 +10391,7 @@ export namespace Prisma {
     price?: IntFilter<"Product"> | number
     category?: EnumProductCategoryFilter<"Product"> | $Enums.ProductCategory
     imageUrl?: StringNullableFilter<"Product"> | string | null
-    isAvailable?: BoolFilter<"Product"> | boolean
+    stock?: IntFilter<"Product"> | number
     sortOrder?: IntFilter<"Product"> | number
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
@@ -10398,7 +10403,7 @@ export namespace Prisma {
     price?: SortOrder
     category?: SortOrder
     imageUrl?: SortOrderInput | SortOrder
-    isAvailable?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10418,7 +10423,7 @@ export namespace Prisma {
     price?: IntWithAggregatesFilter<"Product"> | number
     category?: EnumProductCategoryWithAggregatesFilter<"Product"> | $Enums.ProductCategory
     imageUrl?: StringNullableWithAggregatesFilter<"Product"> | string | null
-    isAvailable?: BoolWithAggregatesFilter<"Product"> | boolean
+    stock?: IntWithAggregatesFilter<"Product"> | number
     sortOrder?: IntWithAggregatesFilter<"Product"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
@@ -10985,7 +10990,7 @@ export namespace Prisma {
     price: number
     category: $Enums.ProductCategory
     imageUrl?: string | null
-    isAvailable?: boolean
+    stock?: number
     sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10997,7 +11002,7 @@ export namespace Prisma {
     price: number
     category: $Enums.ProductCategory
     imageUrl?: string | null
-    isAvailable?: boolean
+    stock?: number
     sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11009,7 +11014,7 @@ export namespace Prisma {
     price?: IntFieldUpdateOperationsInput | number
     category?: EnumProductCategoryFieldUpdateOperationsInput | $Enums.ProductCategory
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    stock?: IntFieldUpdateOperationsInput | number
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11021,7 +11026,7 @@ export namespace Prisma {
     price?: IntFieldUpdateOperationsInput | number
     category?: EnumProductCategoryFieldUpdateOperationsInput | $Enums.ProductCategory
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    stock?: IntFieldUpdateOperationsInput | number
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11033,7 +11038,7 @@ export namespace Prisma {
     price: number
     category: $Enums.ProductCategory
     imageUrl?: string | null
-    isAvailable?: boolean
+    stock?: number
     sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11045,7 +11050,7 @@ export namespace Prisma {
     price?: IntFieldUpdateOperationsInput | number
     category?: EnumProductCategoryFieldUpdateOperationsInput | $Enums.ProductCategory
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    stock?: IntFieldUpdateOperationsInput | number
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11057,7 +11062,7 @@ export namespace Prisma {
     price?: IntFieldUpdateOperationsInput | number
     category?: EnumProductCategoryFieldUpdateOperationsInput | $Enums.ProductCategory
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    stock?: IntFieldUpdateOperationsInput | number
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11707,7 +11712,7 @@ export namespace Prisma {
     price?: SortOrder
     category?: SortOrder
     imageUrl?: SortOrder
-    isAvailable?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11715,6 +11720,7 @@ export namespace Prisma {
 
   export type ProductAvgOrderByAggregateInput = {
     price?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
   }
 
@@ -11724,7 +11730,7 @@ export namespace Prisma {
     price?: SortOrder
     category?: SortOrder
     imageUrl?: SortOrder
-    isAvailable?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11736,7 +11742,7 @@ export namespace Prisma {
     price?: SortOrder
     category?: SortOrder
     imageUrl?: SortOrder
-    isAvailable?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11744,6 +11750,7 @@ export namespace Prisma {
 
   export type ProductSumOrderByAggregateInput = {
     price?: SortOrder
+    stock?: SortOrder
     sortOrder?: SortOrder
   }
 

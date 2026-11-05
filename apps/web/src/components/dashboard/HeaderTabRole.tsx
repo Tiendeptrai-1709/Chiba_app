@@ -1,36 +1,46 @@
 import React from 'react';
+import { UserRole } from '@/types';
 
-export type DashboardTab = 'SYSTEM' | 'MENU' | 'CUSTOMERS' | 'HISTORY' | 'ORDERS' | 'SCAN';
+export type DashboardTab = 'SYSTEM' | 'MENU' | 'CUSTOMERS' | 'HISTORY' | 'ORDERS' | 'SCAN' | 'TEAM';
 
-const ADMIN_TABS: { key: DashboardTab; label: string }[] = [
-  { key: 'SYSTEM', label: '📊 Hệ thống' },
-  { key: 'ORDERS', label: '📦 Đơn hàng' },
-  { key: 'MENU', label: '🍹 Món & ảnh' },
-  { key: 'CUSTOMERS', label: '👥 Khách hàng' },
-  { key: 'HISTORY', label: '🧾 Lịch sử điểm' },
-];
+type TabDef = { key: DashboardTab; label: string };
 
-const STAFF_TABS: { key: DashboardTab; label: string }[] = [
+const STAFF_TABS: TabDef[] = [
   { key: 'ORDERS', label: '📦 Đơn hàng' },
   { key: 'SCAN', label: '📷 Quét QR' },
   { key: 'MENU', label: '🛒 Kho món' },
   { key: 'CUSTOMERS', label: '🎁 Khách đổi quà' },
 ];
 
-export const defaultTab = (isAdmin: boolean): DashboardTab => (isAdmin ? 'SYSTEM' : 'ORDERS');
+// Admin làm được mọi việc của nhân viên (kể cả quét QR) + quản trị
+const ADMIN_TABS: TabDef[] = [
+  { key: 'SYSTEM', label: '📊 Hệ thống' },
+  { key: 'ORDERS', label: '📦 Đơn hàng' },
+  { key: 'SCAN', label: '📷 Quét QR' },
+  { key: 'MENU', label: '🍹 Món & kho' },
+  { key: 'CUSTOMERS', label: '👥 Khách hàng' },
+  { key: 'HISTORY', label: '🧾 Lịch sử điểm' },
+];
+
+// Chủ quán = Admin + phân quyền
+const OWNER_TABS: TabDef[] = [...ADMIN_TABS, { key: 'TEAM', label: '👑 Phân quyền' }];
+
+export const tabsForRole = (role: UserRole): TabDef[] =>
+  role === 'OWNER' ? OWNER_TABS : role === 'ADMIN' ? ADMIN_TABS : STAFF_TABS;
+
+export const defaultTab = (role: UserRole): DashboardTab => (role === 'STAFF' ? 'ORDERS' : 'SYSTEM');
 
 interface HeaderTabRoleProps {
-  isAdmin: boolean;
+  role: UserRole;
   activeTab: DashboardTab;
   setActiveTab: (tab: DashboardTab) => void;
   badges?: Partial<Record<DashboardTab, number>>;
 }
 
-function HeaderTabRole({ isAdmin, activeTab, setActiveTab, badges = {} }: HeaderTabRoleProps) {
-  const tabs = isAdmin ? ADMIN_TABS : STAFF_TABS;
+function HeaderTabRole({ role, activeTab, setActiveTab, badges = {} }: HeaderTabRoleProps) {
   return (
     <div className="flex gap-1 bg-neutral-100 p-1 rounded-xl border border-border/80 shadow-inner overflow-x-auto scrollbar-none" role="tablist">
-      {tabs.map((tab) => {
+      {tabsForRole(role).map((tab) => {
         const active = activeTab === tab.key;
         const badge = badges[tab.key];
         return (

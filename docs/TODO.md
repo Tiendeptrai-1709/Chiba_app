@@ -22,8 +22,11 @@ Danh sách phần đã làm và phần còn thiếu, để khi làm tới thì b
 | Admin thêm / sửa / xóa món | `POST/PATCH/DELETE /products` | `MenuManager.tsx`, `ProductFormModal.tsx` |
 | Quên mật khẩu | `POST /auth/forgot-password`, `POST /auth/reset-password`, `services/mail.service.ts` (SMTP) | `app/forgot-password`, `app/reset-password` |
 | PWA (cài như app) | — | `app/manifest.ts`, `public/sw.js`, `public/icons/*` |
+| Vai trò Chủ quán (OWNER) | Role `OWNER` = mọi quyền ADMIN + `PATCH /users/:id/role` (đổi Khách ↔ Nhân viên ↔ Admin). Phong OWNER chỉ sửa trong database | Tab "👑 Phân quyền": `components/dashboard/RoleManager.tsx` |
+| Tồn kho theo số lượng | `products.stock`, `PATCH /products/:id/stock`; đặt món trừ kho (topping trừ theo số ly), hủy đơn cộng lại; về 0 = hết hàng | Tab "Kho món": `MenuManager.tsx` (ô số lượng + Lưu), `lib/stock.ts` |
+| Admin quét QR tích điểm | Như nhân viên | Tab "📷 Quét QR" có cả ở Admin/Chủ quán |
 | Health check | `GET /health` (kiểm tra cả database) | — |
-| Test tự động | `apps/api/test/e2e.test.mjs` — 29 bài test | — |
+| Test tự động | `apps/api/test/e2e.test.mjs` — 35 bài test | — |
 | CI | Lint + build + migrate + e2e test với PostgreSQL (`.github/workflows/backend-ci.yml`) | Lint + build (`frontend-ci.yml`) |
 
 ### Chạy test backend
@@ -87,5 +90,18 @@ Mật khẩu chung: `test123456`
 | `test_customer@chiba.com` | CUSTOMER | Mã KH `Z70040133`, có vài đơn test |
 | `test_staff@chiba.com` | STAFF | |
 | `test_admin@chiba.com` | ADMIN | |
+| `test_owner@chiba.com` | OWNER | Tạo để kiểm tra tab Phân quyền |
+
+### Đặt một tài khoản làm Chủ quán (OWNER)
+
+Mở Prisma Studio (`npm run studio --workspace=api` → http://localhost:5555) → bảng **users** → sửa cột `role`
+của tài khoản đó thành `OWNER` → Save. Hoặc chạy SQL:
+
+```sql
+UPDATE users SET role = 'OWNER' WHERE email = 'email-cua-ban@gmail.com';
+```
+
+Lưu ý khi nâng cấp lên bản có tồn kho: mọi món đang "còn hàng" được đặt tạm **100 phần** — nhân viên cần
+nhập lại số thật trong tab Kho món.
 
 Không dùng các tài khoản/mật khẩu này trên môi trường thật.

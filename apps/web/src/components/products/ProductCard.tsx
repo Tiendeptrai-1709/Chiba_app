@@ -1,6 +1,6 @@
 'use client';
 
-import { Product } from '@/types';
+import { LOW_STOCK, Product } from '@/types';
 import { Plus } from 'lucide-react';
 import ProductImage from './ProductImage';
 
@@ -28,10 +28,16 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
           className={`aspect-square rounded-[1.4rem] ${soldOut ? 'grayscale opacity-60' : ''}`}
           emojiClassName="text-6xl transition-transform duration-300 group-hover:scale-110"
         />
-        {soldOut && (
+        {soldOut ? (
           <span className="absolute inset-0 flex items-center justify-center">
             <span className="bg-foreground/80 text-white text-xs font-bold px-3 py-1.5 rounded-full">Tạm hết</span>
           </span>
+        ) : (
+          product.stock <= LOW_STOCK && (
+            <span className="absolute left-2 top-2 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              Chỉ còn {product.stock}
+            </span>
+          )
         )}
       </div>
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { isStaffMember } from '@/types';
 
 export default function LoginPage() {
   const { login, isAuthenticated, loading, user } = useAuthStore();
@@ -15,7 +16,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
+      if (isStaffMember(user?.role)) {
         router.push('/admin/dashboard');
       } else {
         router.push('/home');

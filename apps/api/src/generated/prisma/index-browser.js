@@ -170,7 +170,7 @@ exports.Prisma.ProductScalarFieldEnum = {
   price: 'price',
   category: 'category',
   imageUrl: 'imageUrl',
-  isAvailable: 'isAvailable',
+  stock: 'stock',
   sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -240,6 +240,7 @@ exports.Prisma.JsonNullValueFilter = {
   AnyNull: Prisma.AnyNull
 };
 exports.Role = exports.$Enums.Role = {
+  OWNER: 'OWNER',
   ADMIN: 'ADMIN',
   STAFF: 'STAFF',
   CUSTOMER: 'CUSTOMER'
