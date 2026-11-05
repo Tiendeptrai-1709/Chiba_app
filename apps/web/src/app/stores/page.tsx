@@ -1,47 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft, Check, MapPin, Phone, RefreshCw, Search } from 'lucide-react';
 import { Store } from '@/types';
-import { ArrowLeft, MapPin, Search } from 'lucide-react';
-
-const MOCK_STORES: Store[] = [
-  { id: 's1', name: 'Chiba Biên Hùng', address: 'Số 241 đường 30/4, p. Trung Dũng Biên Hoà - Đồng Nai', phone: '0251.3822.421', isActive: true },
-  { id: 's2', name: 'Chiba Ngô Quyền', address: 'Số 328 đường 30/4, p. Trung Dũng Biên Hoà - Đồng Nai', phone: '0251.3822.422', isActive: true },
-  { id: 's3', name: 'Chiba Quảng Trường', address: 'Số 384 đường Phạm Văn Thuận, p.Trung Dũng, Biên Hoà - Đồng Nai', phone: '0251.3822.423', isActive: true },
-  { id: 's4', name: 'Chiba Hố Nai', address: 'Số 63 đường Nguyễn Ái Quốc, p.Tân Biên Biên Hoà - Đồng Nai', phone: '0251.3822.424', isActive: true },
-  { id: 's5', name: 'Chiba Trảng Bom', address: 'Số 2469 Quốc Lộ 1A, Trảng Bom - Đồng Nai', phone: '0251.3822.425', isActive: true },
-  { id: 's6', name: 'Chiba Long Thành', address: 'Số 251 - 253 Lê Duẩn, tổ 32, khu Cầu Xéo Long Thành - Đồng Nai', phone: '0251.3822.426', isActive: true },
-  { id: 's7', name: 'Chiba Trảng Dài', address: 'Số 169 Nguyễn Ái Quốc, KP1 Biên Hòa - Đồng Nai', phone: '0251.3822.427', isActive: true },
-  { id: 's8', name: 'Chiba Long Khánh', address: 'Số 428C đường Hồ Thị Hương, p. Xuân An Long Khánh - Đồng Nai', phone: '0251.3822.428', isActive: true },
-  { id: 's9', name: 'Chiba Thích Quảng Đức', address: 'Số 254 đường Thích Quảng Đức, p. Chánh Nghĩa, Thủ Dầu Một - Bình Dương', phone: '0251.3822.429', isActive: true }
-];
+import { apiRequest } from '@/lib/api/client';
+import { getSelectedStore, saveSelectedStore } from '@/lib/selectedStore';
 
 export default function StoresPage() {
-  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setStores(await apiRequest<Store[]>('/stores', { auth: false }));
+    } catch (e: any) {
+      setError(e?.message ?? 'Không tải được danh sách cửa hàng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setSelectedId(getSelectedStore()?.id ?? null);
+    load();
+  }, []);
 
   const handleSelectStore = (store: Store) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('zen_selected_store', store.name);
-      localStorage.setItem('zen_selected_store_address', store.address);
-    }
+    saveSelectedStore(store);
     router.push('/order');
   };
 
-  const filteredStores = MOCK_STORES.filter(
-    (store) =>
-      store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.address.toLowerCase().includes(searchQuery.toLowerCase())
+  const q = searchQuery.toLowerCase().trim();
+  const filteredStores = stores.filter(
+    (s) => s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q),
   );
 
   return (
     <div className="min-h-screen bg-background pb-10">
-      {/* Premium Forest Green Header matching screenshot */}
-      <div className="sticky top-0 z-40 bg-[#1E4620] text-white shadow-md">
+      <div className="sticky top-0 z-40 bg-primary text-white shadow-md">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/order" className="p-2 hover:bg-white/10 active:scale-95 rounded-full transition-all">
+          <Link href="/order" aria-label="Quay lại đặt món" className="p-2 hover:bg-white/10 active:scale-95 rounded-full transition-all">
             <ArrowLeft className="w-5 h-5 text-white" />
           </Link>
           <h1 className="text-xl font-bold tracking-tight">Chọn cửa hàng</h1>
@@ -49,11 +55,10 @@ export default function StoresPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Search Input */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60" />
           <input
-            type="text"
+            type="search"
             placeholder="Tìm kiếm chi nhánh gần nhất..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -61,37 +66,49 @@ export default function StoresPage() {
           />
         </div>
 
-        {/* Stores List */}
-        <div className="space-y-1 bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-          {filteredStores.length > 0 ? (
-            filteredStores.map((store, index) => (
-              <button
-                key={store.id}
-                onClick={() => handleSelectStore(store)}
-                className={`w-full text-left p-5 hover:bg-neutral-50 active:bg-neutral-100 flex items-start gap-4 transition-all duration-150 ${
-                  index !== filteredStores.length - 1 ? 'border-b border-border' : ''
-                }`}
-              >
-                <div className="p-2 bg-primary/5 rounded-xl mt-0.5 text-primary shrink-0">
-                  <MapPin className="w-5 h-5 stroke-[2.5]" />
-                </div>
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <h3 className="font-bold text-foreground text-sm tracking-tight truncate">
-                    {store.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {store.address}
-                  </p>
-                </div>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+          {loading ? (
+            <div className="p-10 text-center text-sm text-muted-foreground">Đang tải danh sách cửa hàng...</div>
+          ) : error ? (
+            <div className="p-10 text-center space-y-3">
+              <p className="text-sm font-semibold text-foreground">{error}</p>
+              <button onClick={load} className="inline-flex items-center gap-2 bg-primary text-white text-sm font-bold px-4 py-2 rounded-full">
+                <RefreshCw className="w-4 h-4" /> Thử lại
               </button>
-            ))
+            </div>
+          ) : filteredStores.length > 0 ? (
+            filteredStores.map((store, index) => {
+              const selected = store.id === selectedId;
+              return (
+                <button
+                  key={store.id}
+                  onClick={() => handleSelectStore(store)}
+                  aria-pressed={selected}
+                  className={`w-full text-left p-5 hover:bg-neutral-50 active:bg-neutral-100 flex items-start gap-4 transition-all duration-150 ${
+                    index !== filteredStores.length - 1 ? 'border-b border-border' : ''
+                  } ${selected ? 'bg-primary/5' : ''}`}
+                >
+                  <div className="p-2 bg-primary/5 rounded-xl mt-0.5 text-primary shrink-0">
+                    <MapPin className="w-5 h-5 stroke-[2.5]" />
+                  </div>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <h3 className="font-bold text-foreground text-sm tracking-tight truncate">{store.name}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{store.address}</p>
+                    {store.phone && (
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> {store.phone}
+                      </p>
+                    )}
+                  </div>
+                  {selected && <Check className="w-5 h-5 text-primary shrink-0 mt-1" aria-label="Đang chọn" />}
+                </button>
+              );
+            })
           ) : (
             <div className="p-10 text-center text-muted-foreground">
               <p className="text-3xl mb-2">📍</p>
               <p className="font-semibold text-sm">Không tìm thấy chi nhánh nào</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                Vui lòng thử tìm kiếm bằng từ khóa khác.
-              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Vui lòng thử tìm kiếm bằng từ khóa khác.</p>
             </div>
           )}
         </div>

@@ -73,6 +73,12 @@ export class CreateOrderDto {
   @IsInt()
   @Min(0)
   pointsToUse?: number;
+
+  // Chi nhánh khách đã chọn (trang "Chọn cửa hàng")
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  storeId?: string;
 }
 
 export class UpdateOrderStatusDto {

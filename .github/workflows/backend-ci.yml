@@ -5,14 +5,38 @@ on:
     branches: [main, developer]
     paths:
       - "apps/api/**"
+      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches: [main, developer]
     paths:
       - "apps/api/**"
+      - ".github/workflows/backend-ci.yml"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chiba_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chiba_test?schema=public
+      # Secret chỉ dùng cho CI (database tạm, xóa sau khi chạy)
+      JWT_ACCESS_SECRET: ci-access-secret-not-for-production
+      JWT_REFRESH_SECRET: ci-refresh-secret-not-for-production
+      PORT: 3001
 
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +48,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies (root)
-        run: npm install
+        run: npm ci
 
       - name: Prisma Generate
         working-directory: apps/api
@@ -37,3 +61,23 @@ jobs:
       - name: Build
         working-directory: apps/api
         run: npm run build
+
+      - name: Migrate test database
+        working-directory: apps/api
+        run: npx prisma migrate deploy
+
+      - name: Start API
+        working-directory: apps/api
+        run: |
+          node dist/main > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/health && exit 0; sleep 1; done
+          cat api.log; exit 1
+
+      - name: E2E tests
+        working-directory: apps/api
+        run: npm test
+
+      - name: API log (khi lỗi)
+        if: failure()
+        working-directory: apps/api
+        run: cat api.log || true

@@ -1,56 +1,63 @@
 # Ghi chú việc cần làm — Chiba webapp
 
-Danh sách phần còn thiếu / đang làm tạm, để khi làm tới thì biết sửa ở đâu.
+Danh sách phần đã làm và phần còn thiếu, để khi làm tới thì biết sửa ở đâu.
 
 ---
 
-## ✅ Đã làm (05/11/2026)
+## ✅ Đã làm
+
+**Mọi tính năng frontend đang có đều chạy bằng backend thật** — không còn dữ liệu giả lưu trong trình duyệt
+(trừ giỏ hàng và chi nhánh đang chọn, vốn là lựa chọn riêng của từng máy).
 
 | Tính năng | Backend (`apps/api`) | Frontend (`apps/web/src`) |
 |---|---|---|
-| Menu từ database, ảnh món | `products` table, `services/product.service.ts`, `GET /products` | `lib/stores/useProductStore.ts`, `components/products/*` |
-| Báo **Tạm hết** món | `PATCH /products/:id/availability` (STAFF/ADMIN) | Tab "Kho món" / "Món & ảnh": `components/dashboard/MenuManager.tsx` |
-| Thêm ảnh cho món (Admin) | `POST/DELETE /products/:id/image`, file lưu ở `apps/api/uploads/products/` | `MenuManager.tsx` (nút Thêm/Đổi/Xóa ảnh) |
-| Độ ngọt & đá | Lưu trong `orders.items` (JSON) | `components/products/useProductPicker.tsx` |
-| Phương thức thanh toán | `orders.paymentMethod` (CASH / BANK_TRANSFER) | `components/cart/PaymentMethodSection.tsx`, `OrderSuccessModal.tsx` |
-| Đặt hàng thật | `POST /orders` — server tự tính giá, ship, giảm điểm; chặn món tạm hết | `components/cart/BillingSummary.tsx` |
-| Nhân viên xử lý đơn | `GET /orders`, `PATCH /orders/:id/status` — cộng điểm khi Hoàn thành, hoàn điểm khi Hủy | `components/dashboard/OrderFulfillment.tsx` (tự tải lại mỗi 15 giây) |
-| Quét QR tích điểm | `GET /users/by-code/:code`, `POST /points/store-earn`, `POST /points/adjust` | Tab "Quét QR": `components/dashboard/QrScanPanel.tsx` |
-| Lịch sử điểm thật | `point_transactions` table, `GET /points/me`, `GET /points` (ADMIN) | Hồ sơ khách, tab "Lịch sử điểm" của Admin |
+| Đăng nhập nhiều thiết bị | Bảng `sessions` — mỗi thiết bị một phiên, đăng xuất / khóa tài khoản có hiệu lực ngay | `lib/api/client.ts` (tự gia hạn token) |
+| Giới hạn đăng nhập sai, header bảo mật | `@nestjs/throttler` (`modules/throttle.config.ts`), `helmet` (`main.ts`) | — |
+| Chi nhánh cửa hàng | Bảng `stores`, `GET /stores`; đơn hàng lưu `storeId` + `storeName` | `app/stores/page.tsx`, `lib/selectedStore.ts` |
+| Mời nhân viên | Bảng `staff_invites`, `GET/POST/DELETE /staff-invites` (ADMIN); đăng ký bằng email được mời → STAFF | Tab "Hệ thống" của Admin |
+| Menu, ảnh món, tạm hết | `products`, `GET /products`, `PATCH /products/:id/availability`, `POST/DELETE /products/:id/image` | `components/dashboard/MenuManager.tsx`, `components/products/*` |
+| Độ ngọt, đá, thanh toán | `orders.items` (JSON), `orders.paymentMethod` | `useProductPicker.tsx`, `PaymentMethodSection.tsx` |
+| Đơn hàng & điểm | `POST /orders`, `PATCH /orders/:id/status`, `point_transactions`, `/points/*` | `BillingSummary.tsx`, `OrderFulfillment.tsx`, `QrScanPanel.tsx` |
+| Health check | `GET /health` (kiểm tra cả database) | — |
+| Test tự động | `apps/api/test/e2e.test.mjs` — 23 bài test | — |
+| CI | Lint + build + migrate + e2e test với PostgreSQL (`.github/workflows/backend-ci.yml`) | Lint + build (`frontend-ci.yml`) |
+
+### Chạy test backend
+
+```bash
+cd apps/api
+npm run dev      # terminal 1: bật API
+npm test         # terminal 2: chạy test (tự tạo và tự xóa dữ liệu test)
+```
 
 ---
 
-## 1. Thanh toán chuyển khoản
+## Còn lại — cần làm trước khi mở cho khách thật
 
-**Hiện trạng**
-- Khách chọn "Chuyển khoản" → sau khi đặt hiện mã **VietQR** (điền sẵn số tiền + nội dung = mã đơn).
-- **Cần cấu hình tài khoản nhận tiền** trong `apps/web/.env.local` (mẫu ở `apps/web/.env.example`):
-  `NEXT_PUBLIC_BANK_ID`, `NEXT_PUBLIC_BANK_ACCOUNT_NO`, `NEXT_PUBLIC_BANK_ACCOUNT_NAME`. Chưa cấu hình thì app hiện lời nhắc "cửa hàng sẽ liên hệ".
-- Ảnh QR do dịch vụ công khai `img.vietqr.io` tạo (`apps/web/src/lib/payment.ts`).
-- Nhân viên **tự kiểm tra** đã nhận tiền (theo nội dung = mã đơn) rồi mới bấm Xác nhận.
+1. **Đưa lên Internet**: chọn hosting cho web, API và PostgreSQL (có sao lưu tự động), tên miền + HTTPS.
+   Khi deploy: đặt biến môi trường theo `apps/api/.env.example`, chạy `npx prisma migrate deploy`,
+   đặt `CORS_ORIGIN` và `TRUST_PROXY` cho đúng.
+2. **Lưu ảnh món**: hiện lưu ổ đĩa (`apps/api/uploads/`). Khi deploy dùng ổ đĩa lưu lâu dài hoặc chuyển sang
+   Cloudflare R2 / S3 / Cloudinary — sửa trong `apps/api/src/services/product.service.ts`.
+3. **Quên mật khẩu / xác minh email**: cần dịch vụ gửi email (vd. Resend, SendGrid, Amazon SES).
+   Lưu ý: hiện **ai đăng ký trước bằng email được mời đều thành nhân viên** — nên thêm xác minh email
+   (gửi mã) trước khi dùng thật.
+4. **Tài khoản nhận chuyển khoản**: điền `apps/web/.env.local` (mẫu `apps/web/.env.example`) để bật VietQR.
 
-**Cần làm**
-- Thêm trạng thái thanh toán (`paymentStatus`: UNPAID/PAID) vào bảng `orders` + nút "Đã nhận tiền" cho nhân viên.
-- (Tùy chọn) Tự động xác nhận chuyển khoản qua webhook của dịch vụ đối soát ngân hàng (vd. Casso, SePay, PayOS) → endpoint mới ở backend.
-- (Tùy chọn) Ví điện tử MoMo/ZaloPay/VNPay: cần đăng ký tài khoản merchant với từng bên.
+## Còn lại — nên làm sau
 
-## 2. Quét QR — còn lại
-
-- Camera chỉ mở được trên **HTTPS** (hoặc `localhost`). Test trên điện thoại phải dùng link HTTPS (Cloudflare Tunnel).
-- Chưa test với camera thật trên điện thoại — đã test phần nhập mã thủ công + cộng điểm.
-- Admin hiện không có tab "Quét QR" (chỉ nhân viên). Muốn có thì thêm `SCAN` vào `ADMIN_TABS` trong `components/dashboard/HeaderTabRole.tsx`.
-
-## 3. Ảnh sản phẩm — còn lại
-
-- Ảnh đang lưu trên ổ đĩa server (`apps/api/uploads/`, đã thêm vào `.gitignore`). **Khi deploy** phải dùng ổ đĩa lưu lâu dài, hoặc chuyển sang dịch vụ lưu ảnh (Cloudinary, S3, Cloudflare R2) — sửa trong `apps/api/src/services/product.service.ts`.
-- Chưa có chức năng **thêm món mới / sửa tên, giá / xóa món** cho Admin (hiện chỉ đổi ảnh và còn/hết). Cần thêm `POST/PATCH/DELETE /products` và form trong `MenuManager.tsx`.
-- Ảnh nên vuông (khoảng 600×600), tối đa 3MB, định dạng JPG/PNG/WEBP.
-
-## 4. Việc khác
-
-- **Khách chưa xem được lịch sử đơn / trạng thái đơn** của mình. Backend đã có `GET /orders/me` → cần thêm trang "Đơn của tôi" (có thể dùng ô "Sắp ra mắt" ở trang chủ).
-- Danh sách **mời nhân viên** vẫn lưu tạm trong trình duyệt (`lib/mock/localData.ts`). Cách tạo nhân viên thật: Admin gọi `POST /users` với `role: "STAFF"`, hoặc đăng ký rồi đổi `role` trong Prisma Studio.
-- Danh sách **cửa hàng** (`app/stores/page.tsx`) vẫn là dữ liệu cứng; đơn hàng chưa gắn với cửa hàng.
+- **Refresh token trong cookie httpOnly** thay vì localStorage (an toàn hơn trước tấn công XSS).
+- **Trạng thái "đã nhận tiền"** cho đơn chuyển khoản (`paymentStatus`) + nút cho nhân viên; tự động đối soát qua
+  webhook ngân hàng (SePay, Casso, PayOS).
+- **Admin thêm món mới / sửa tên, giá / ẩn món** (cần cả API `POST/PATCH/DELETE /products` và form).
+- **Trang "Đơn của tôi"** cho khách (API `GET /orders/me` đã có).
+- **Thông báo đơn mới tức thì** (WebSocket) thay cho tải lại 15 giây.
+- **Báo cáo doanh thu theo ngày, món bán chạy** (theo giờ Việt Nam) tính ở backend; phân trang danh sách đơn.
+- **"Tạm hết" theo từng chi nhánh** (hiện báo hết là hết ở mọi chi nhánh).
+- **Theo dõi lỗi** (Sentry) và log tập trung.
+- Gom quy tắc dùng chung (điểm, phí ship) vào một chỗ cho cả web và API.
+- Dọn repo: bỏ `apps/api/src/generated/prisma` và `tsconfig.tsbuildinfo` khỏi git, xóa `prisma/dev.db`.
+- Camera quét QR: chưa thử trên điện thoại thật (chỉ chạy trên HTTPS hoặc localhost).
 
 ---
 
@@ -60,9 +67,8 @@ Mật khẩu chung: `test123456`
 
 | Email | Vai trò | Ghi chú |
 |---|---|---|
-| `test_customer@chiba.com` | CUSTOMER | Mã KH `Z70040133`, có 1 đơn test DH931771 (đã hoàn thành) |
+| `test_customer@chiba.com` | CUSTOMER | Mã KH `Z70040133`, có vài đơn test |
 | `test_staff@chiba.com` | STAFF | |
 | `test_admin@chiba.com` | ADMIN | |
-| `test_ui_flow@chiba.com` | CUSTOMER | Tạo khi test đăng nhập (nếu chưa xóa) |
 
 Không dùng các tài khoản/mật khẩu này trên môi trường thật.

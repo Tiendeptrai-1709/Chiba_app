@@ -6,8 +6,9 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main",
-    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "lint": "eslint src test",
+    "lint:fix": "eslint src test --fix",
+    "test": "node --test \"test/**/*.test.mjs\"",
     "studio": "prisma studio --port 5555 --browser none",
     "clean": "rm -rf dist node_modules"
   },
@@ -17,11 +18,13 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/throttler": "^6.4.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "helmet": "^8.1.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.22.0",
@@ -30,6 +33,7 @@
     "typescript": "5.7.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^10.2.3",
     "@swc/cli": "^0.8.1",
@@ -40,8 +44,11 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.20.0",
     "dotenv": "^17.4.2",
+    "eslint": "^9.39.5",
+    "globals": "^15.12.0",
     "prisma": "^7.8.0",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "typescript-eslint": "^8.46.0"
   }
 }

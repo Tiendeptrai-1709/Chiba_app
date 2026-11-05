@@ -105,6 +105,8 @@ export interface Order {
   userId: string | null;
   customerName: string;
   customerPhone: string;
+  storeId: string | null;
+  storeName: string | null;
   orderType: OrderType;
   address: string | null;
   paymentMethod: PaymentMethod;

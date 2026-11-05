@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { ArrowLeft, AlertTriangle, ShieldCheck, Check } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 
 export default function DeleteAccountPage() {
   const { deleteAccount, isAuthenticated, loading: authLoading } = useAuthStore();

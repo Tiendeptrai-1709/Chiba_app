@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck, Check } from 'lucide-react';
+import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import CustomerNav from '@/components/layout/CustomerNav';
 

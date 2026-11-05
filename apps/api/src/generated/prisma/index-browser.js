@@ -131,7 +131,33 @@ exports.Prisma.UserScalarFieldEnum = {
   zenPoints: 'zenPoints',
   role: 'role',
   isSuspended: 'isSuspended',
-  hashedRefreshToken: 'hashedRefreshToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  userAgent: 'userAgent',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  lastUsedAt: 'lastUsedAt'
+};
+
+exports.Prisma.StaffInviteScalarFieldEnum = {
+  email: 'email',
+  invitedById: 'invitedById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StoreScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  phone: 'phone',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -154,6 +180,8 @@ exports.Prisma.OrderScalarFieldEnum = {
   userId: 'userId',
   customerName: 'customerName',
   customerPhone: 'customerPhone',
+  storeId: 'storeId',
+  storeName: 'storeName',
   orderType: 'orderType',
   address: 'address',
   paymentMethod: 'paymentMethod',
@@ -246,6 +274,9 @@ exports.PointTransactionType = exports.$Enums.PointTransactionType = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Session: 'Session',
+  StaffInvite: 'StaffInvite',
+  Store: 'Store',
   Product: 'Product',
   Order: 'Order',
   PointTransaction: 'PointTransaction'

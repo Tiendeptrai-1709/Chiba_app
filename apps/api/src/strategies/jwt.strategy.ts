@@ -15,15 +15,22 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     });
   }
 
-  // Kiểm tra lại DB để token của user đã bị xóa/tạm ngưng không dùng được nữa.
+  // Kiểm tra phiên còn tồn tại: đăng xuất / bị khóa / bị xóa là token hết hiệu lực ngay,
+  // không phải chờ access token hết hạn.
   async validate(payload: JwtPayload): Promise<AuthUser> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, role: true, isSuspended: true },
+    if (!payload.sid) throw new UnauthorizedException("Phiên đăng nhập không hợp lệ");
+    const session = await this.prisma.session.findUnique({
+      where: { id: payload.sid },
+      select: {
+        userId: true,
+        expiresAt: true,
+        user: { select: { id: true, email: true, role: true, isSuspended: true } },
+      },
     });
-    if (!user || user.isSuspended) {
+    if (!session || session.userId !== payload.sub || session.expiresAt < new Date() || session.user.isSuspended) {
       throw new UnauthorizedException("Phiên đăng nhập không hợp lệ");
     }
-    return { id: user.id, email: user.email, role: user.role };
+    const { user } = session;
+    return { id: user.id, email: user.email, role: user.role, sessionId: payload.sid };
   }
 }

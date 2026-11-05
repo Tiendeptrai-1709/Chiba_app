@@ -8,6 +8,7 @@ import { useCart } from '@/lib/context/CartContext';
 import CustomerNav from '@/components/layout/CustomerNav';
 import PageLoader from '@/components/ui/PageLoader';
 import ProductList from '@/components/products/ProductList';
+import { getSelectedStore } from '@/lib/selectedStore';
 
 export default function OrderPage() {
   const { ready } = useRequireAuth();
@@ -15,9 +16,7 @@ export default function OrderPage() {
   const [storeName, setStoreName] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      setStoreName(localStorage.getItem('zen_selected_store'));
-    } catch {}
+    setStoreName(getSelectedStore()?.name ?? null);
   }, []);
 
   if (!ready) return <PageLoader />;

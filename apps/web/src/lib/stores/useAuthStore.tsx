@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { PointTransaction, User } from '@/types';
 import { apiRequest, AuthTokens, setSessionExpiredHandler, tokenStore } from '@/lib/api/client';
-import { getLocalInvites, saveLocalInvites } from '@/lib/mock/localData';
 
 interface AuthResponse extends AuthTokens {
   user: User;
@@ -38,7 +37,8 @@ interface AuthState {
   // Điểm thưởng (API thật): 'me' = của chính mình, 'all' = toàn hệ thống (ADMIN)
   fetchPointHistory: (scope: 'me' | 'all') => Promise<PointTransaction[]>;
 
-  // TẠM THỜI lưu cục bộ — chưa có API backend
+  // Lời mời nhân viên (API thật, ADMIN)
+  fetchInvites: () => Promise<void>;
   inviteStaff: (email: string) => Promise<void>;
   revokeInvitation: (email: string) => Promise<void>;
 }
@@ -67,7 +67,6 @@ export const useAuthStore = create<AuthState>((set, get) => {
     invitedStaffEmails: [],
 
     initAuth: async () => {
-      set({ invitedStaffEmails: getLocalInvites() });
       if (!tokenStore.getRefresh()) {
         set({ ...SIGNED_OUT, loading: false });
         return;
@@ -138,29 +137,29 @@ export const useAuthStore = create<AuthState>((set, get) => {
     fetchAllUsers: async () => {
       const users = await apiRequest<User[]>('/users');
       set({ allUsers: users, activeStaffList: users.filter((u) => u.role === 'STAFF') });
+      if (get().user?.role === 'ADMIN') get().fetchInvites().catch(() => {});
       return users;
     },
 
     getAllUsers: () => get().allUsers,
 
+    fetchInvites: async () => {
+      const invites = await apiRequest<{ email: string }[]>('/staff-invites');
+      set({ invitedStaffEmails: invites.map((i) => i.email) });
+    },
+
+    // Server kiểm tra trùng lời mời / email đã có tài khoản và trả lỗi tiếng Việt.
     inviteStaff: async (email) => {
       const normalized = email.toLowerCase().trim();
       if (!normalized) return;
-      const invites = getLocalInvites();
-      if (invites.includes(normalized)) throw new Error('Email này đã nằm trong danh sách được mời');
-      if (get().allUsers.some((u) => u.email === normalized)) {
-        throw new Error('Email này đã được đăng ký tài khoản trên hệ thống');
-      }
-      const next = [...invites, normalized];
-      saveLocalInvites(next);
-      set({ invitedStaffEmails: next });
+      await apiRequest('/staff-invites', { method: 'POST', body: { email: normalized } });
+      await get().fetchInvites();
     },
 
     revokeInvitation: async (email) => {
-      const normalized = email.toLowerCase().trim();
-      const next = getLocalInvites().filter((e) => e !== normalized);
-      saveLocalInvites(next);
-      set({ invitedStaffEmails: next });
+      const normalized = encodeURIComponent(email.toLowerCase().trim());
+      await apiRequest(`/staff-invites/${normalized}`, { method: 'DELETE' });
+      await get().fetchInvites();
     },
 
     refreshUser: async () => {

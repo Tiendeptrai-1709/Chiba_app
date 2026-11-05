@@ -15,7 +15,6 @@ interface SystemOverviewProps {
 function SystemOverview({
     orders,
     allCustomers,
-    onSetNotification
 }: SystemOverviewProps) {
     const {
         invitedStaffEmails,
@@ -54,7 +53,7 @@ function SystemOverview({
         try {
             await revokeInvitation(email);
             showSuccess(`Đã thu hồi lời mời dành cho ${email}`);
-        } catch (err: any) {
+        } catch {
             showError('Không thể thu hồi lời mời này');
         }
     };

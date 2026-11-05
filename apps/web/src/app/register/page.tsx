@@ -34,7 +34,9 @@ export default function RegisterPage() {
 
     try {
       await register(email, password, fullName);
-      router.push('/home');
+      // Email được Admin mời sẽ thành nhân viên → vào bảng điều khiển
+      const role = useAuthStore.getState().user?.role;
+      router.push(role === 'ADMIN' || role === 'STAFF' ? '/admin/dashboard' : '/home');
     } catch (err: any) {
       setError(err?.message || 'Đăng ký thất bại. Email có thể đã tồn tại.');
     } finally {

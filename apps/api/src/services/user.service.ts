@@ -4,7 +4,7 @@ import { randomInt } from "crypto";
 import { Prisma, Role } from "../generated/prisma";
 import { PrismaService } from "../prisma/prisma.service";
 
-// Các trường được phép trả ra ngoài — KHÔNG bao giờ có password / hashedRefreshToken.
+// Các trường được phép trả ra ngoài — KHÔNG bao giờ có password.
 export const publicUserSelect = {
   id: true,
   email: true,
@@ -97,12 +97,12 @@ export class UserService {
     return this.prisma.user.update({ where: { id }, data, select: publicUserSelect });
   }
 
-  // Tạm ngưng: giữ dữ liệu, thu hồi phiên đăng nhập.
+  // Tạm ngưng: giữ dữ liệu, đăng xuất khỏi mọi thiết bị.
   async suspend(id: string): Promise<void> {
-    await this.prisma.user.update({
-      where: { id },
-      data: { isSuspended: true, hashedRefreshToken: null },
-    });
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id }, data: { isSuspended: true } }),
+      this.prisma.session.deleteMany({ where: { userId: id } }),
+    ]);
   }
 
   async deleteUser(id: string): Promise<void> {

@@ -106,6 +106,7 @@ function OrderFulfillment({ orders, loading, onRefresh, onUpdated }: OrderFulfil
                   {order.customerName}
                   {order.customerPhone && <span className="font-medium text-muted-foreground"> · {order.customerPhone}</span>}
                 </p>
+                {order.storeName && <p className="font-semibold text-primary">🏪 {order.storeName}</p>}
                 <p className="text-muted-foreground font-semibold flex items-start gap-1.5">
                   {order.orderType === 'DELIVERY' ? (
                     <>

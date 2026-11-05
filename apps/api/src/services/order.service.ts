@@ -50,6 +50,16 @@ export class OrderService {
       select: { id: true, fullName: true, phone: true, zenPoints: true },
     });
 
+    // ----- Chi nhánh -----
+    let store: { id: string; name: string } | null = null;
+    if (dto.storeId) {
+      store = await this.prisma.store.findFirst({
+        where: { id: dto.storeId, isActive: true },
+        select: { id: true, name: true },
+      });
+      if (!store) throw new BadRequestException("Chi nhánh đã chọn không còn hoạt động, vui lòng chọn lại cửa hàng");
+    }
+
     // ----- Tính tiền từ giá trong DB (không tin giá client gửi lên) -----
     const ids = new Set<string>();
     for (const item of dto.items) {
@@ -113,6 +123,8 @@ export class OrderService {
               userId: user.id,
               customerName: user.fullName,
               customerPhone: user.phone,
+              storeId: store?.id,
+              storeName: store?.name,
               orderType: dto.orderType,
               address: dto.orderType === OrderType.DELIVERY ? dto.address : null,
               paymentMethod: dto.paymentMethod,

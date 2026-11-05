@@ -16,12 +16,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, "jwt-refresh"
     });
   }
 
-  // Trả kèm refresh token gốc để AuthService so khớp với hash lưu trong DB.
+  // Trả kèm refresh token gốc để AuthService so khớp với hash của phiên trong DB.
   validate(req: Request, payload: JwtPayload): RefreshUser {
     const refreshToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-    if (!refreshToken) {
-      throw new UnauthorizedException("Thiếu refresh token");
-    }
-    return { id: payload.sub, email: payload.email, role: payload.role, refreshToken };
+    if (!refreshToken || !payload.sid) throw new UnauthorizedException("Thiếu refresh token");
+    return { id: payload.sub, email: payload.email, role: payload.role, sessionId: payload.sid, refreshToken };
   }
 }

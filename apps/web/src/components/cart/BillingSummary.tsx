@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Coins } from 'lucide-react';
+import { Coins, MapPin } from 'lucide-react';
+import { getSelectedStore, SelectedStore } from '@/lib/selectedStore';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
@@ -39,6 +40,9 @@ function BillingSummary({
   const { showError } = useNotificationStore();
   const { getById, loaded, fetchProducts } = useProductStore();
   const [loading, setLoading] = useState(false);
+  const [store, setStore] = useState<SelectedStore | null>(null);
+
+  useEffect(() => setStore(getSelectedStore()), []);
 
   const discountAmount = usePoints ? pointsToUse * VND_PER_REDEEMED_POINT : 0;
   const shippingFee = orderType === 'DELIVERY' && totalPrice < FREE_SHIP_THRESHOLD ? SHIPPING_FEE : 0;
@@ -78,6 +82,7 @@ function BillingSummary({
           address: orderType === 'DELIVERY' ? address.trim() : undefined,
           paymentMethod,
           pointsToUse: usePoints ? pointsToUse : 0,
+          storeId: store?.id,
         },
       });
 
@@ -99,6 +104,18 @@ function BillingSummary({
   return (
     <div className="bg-card border border-border p-5 rounded-2xl space-y-4 shadow-sm">
       <div className="space-y-2 border-b border-border pb-4">
+        <div className="flex justify-between gap-3 text-xs text-muted-foreground font-medium">
+          <span className="flex items-center gap-1 shrink-0">
+            <MapPin className="w-3.5 h-3.5" /> Chi nhánh:
+          </span>
+          {store ? (
+            <span className="text-foreground font-bold text-right">{store.name}</span>
+          ) : (
+            <Link href="/stores" className="text-accent-strong font-bold underline underline-offset-2">
+              Chọn cửa hàng
+            </Link>
+          )}
+        </div>
         <div className="flex justify-between text-xs text-muted-foreground font-medium">
           <span>Tổng số món:</span>
           <span>{totalItems} cốc/phần</span>

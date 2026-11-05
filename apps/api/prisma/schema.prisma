@@ -27,13 +27,56 @@ model User {
   zenPoints          Int                @default(0)
   role               Role               @default(CUSTOMER)
   isSuspended        Boolean            @default(false)
-  hashedRefreshToken String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   orders             Order[]
   pointTransactions  PointTransaction[]
+  sessions           Session[]
 
   @@map("users")
+}
+
+// Mỗi lần đăng nhập trên một thiết bị là một phiên riêng, nên đăng nhập
+// điện thoại không làm máy tính bị đăng xuất.
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // SHA-256 của refresh token hiện tại (xoay vòng mỗi lần gia hạn)
+  tokenHash  String
+  userAgent  String   @default("")
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// Admin mời email làm nhân viên; người đăng ký bằng email này sẽ thành STAFF.
+model StaffInvite {
+  email       String   @id
+  invitedById String?
+  createdAt   DateTime @default(now())
+
+  @@map("staff_invites")
+}
+
+// ----- Chi nhánh -----
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  phone     String   @default("")
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@map("stores")
 }
 
 // ----- Sản phẩm -----
@@ -88,6 +131,10 @@ model Order {
   user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   customerName   String
   customerPhone  String        @default("")
+  storeId        String?
+  store          Store?        @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  // Tên chi nhánh tại thời điểm đặt (giữ lại nếu chi nhánh đổi tên/bị xóa)
+  storeName      String?
   orderType      OrderType
   address        String?
   paymentMethod  PaymentMethod
@@ -106,6 +153,7 @@ model Order {
 
   @@index([status, createdAt])
   @@index([userId, createdAt])
+  @@index([storeId, createdAt])
   @@map("orders")
 }
 
