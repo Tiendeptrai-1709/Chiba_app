@@ -7,13 +7,14 @@ import { ArrowLeft, Bike, Check, MapPin, Store, X } from 'lucide-react';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { apiRequest } from '@/lib/api/client';
+import { ORDER_FALLBACK_POLL_MS, useOrderEvents } from '@/lib/api/events';
 import { vietQrImageUrl } from '@/lib/payment';
 import CustomerNav from '@/components/layout/CustomerNav';
 import PageLoader from '@/components/ui/PageLoader';
 import OrderItems from '@/components/orders/OrderItems';
 import { isActiveOrder, Order, ORDER_STATUS_LABELS, ORDER_STATUS_TONE, orderSteps, PAYMENT_LABELS } from '@/types';
 
-const POLL_MS = 10_000;
+const POLL_MS = ORDER_FALLBACK_POLL_MS; // dự phòng — trạng thái đến tức thì qua useOrderEvents
 
 export default function OrderDetailPage() {
   const { ready } = useRequireAuth();
@@ -47,6 +48,11 @@ export default function OrderDetailPage() {
     return () => clearInterval(timer);
   }, [ready, active, load]);
 
+  // Cửa hàng đổi trạng thái / xác nhận thanh toán → cập nhật ngay
+  useOrderEvents('/orders/me/stream', ready && active, (e) => {
+    if (e.orderId === id) load();
+  });
+
   const cancel = async () => {
     setCancelling(true);
     try {
@@ -66,7 +72,9 @@ export default function OrderDetailPage() {
   const steps = order ? orderSteps(order.orderType) : [];
   const currentIdx = order ? steps.indexOf(order.status) : -1;
   const qrUrl =
-    order && order.paymentMethod === 'BANK_TRANSFER' && active ? vietQrImageUrl(order.total, order.code) : null;
+    order && order.paymentMethod === 'BANK_TRANSFER' && active && !order.paidAt
+      ? vietQrImageUrl(order.total, order.code)
+      : null;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -157,7 +165,19 @@ export default function OrderDetailPage() {
                   </>
                 )}
               </p>
-              <p>💳 {PAYMENT_LABELS[order.paymentMethod]}</p>
+              <p>
+                💳 {PAYMENT_LABELS[order.paymentMethod]}{' '}
+                {order.paidAt ? (
+                  <span className="text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-[11px] font-bold">Đã thanh toán</span>
+                ) : (
+                  order.paymentMethod === 'BANK_TRANSFER' &&
+                  active && (
+                    <span className="text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full text-[11px] font-bold">
+                      Chờ cửa hàng xác nhận
+                    </span>
+                  )
+                )}
+              </p>
               {qrUrl && (
                 <div className="pt-2 text-center space-y-2">
                   <p className="text-xs text-muted-foreground">Chưa chuyển khoản? Quét mã dưới đây (nội dung: {order.code})</p>

@@ -25,8 +25,12 @@ Danh sách phần đã làm và phần còn thiếu, để khi làm tới thì b
 | Vai trò Chủ quán (OWNER) | Role `OWNER` = mọi quyền ADMIN + `PATCH /users/:id/role` (đổi Khách ↔ Nhân viên ↔ Admin). Phong OWNER chỉ sửa trong database | Tab "👑 Phân quyền": `components/dashboard/RoleManager.tsx` |
 | Tồn kho theo số lượng | `products.stock`, `PATCH /products/:id/stock`; đặt món trừ kho (topping trừ theo số ly), hủy đơn cộng lại; về 0 = hết hàng | Tab "Kho món": `MenuManager.tsx` (ô số lượng + Lưu), `lib/stock.ts` |
 | Admin quét QR tích điểm | Như nhân viên | Tab "📷 Quét QR" có cả ở Admin/Chủ quán |
+| Đã nhận tiền (đơn chuyển khoản) | `orders.paidAt`, `PATCH /orders/:id/payment`; tiền mặt tự đánh dấu khi hoàn thành | Nút "✓ Đã nhận tiền" trong thẻ đơn; khách thấy "Đã thanh toán" |
+| Báo đơn tức thì | SSE: `GET /orders/stream` (nhân viên), `GET /orders/me/stream` (khách) — `services/order-events.service.ts` | `lib/api/events.ts`; dashboard kêu "ting" khi có đơn mới. Vẫn tự tải lại mỗi 20 giây để dự phòng |
+| Theo dõi lỗi (Sentry) | `src/instrument.ts` + `SentryGlobalFilter` — bật khi có `SENTRY_DSN`; không gửi token/mật khẩu | `instrumentation-client.ts`, `app/global-error.tsx` — bật khi có `NEXT_PUBLIC_SENTRY_DSN` |
+| Sẵn sàng deploy Railway | `apps/api/railway.json` (build, migrate, health check) | `apps/web/railway.json`, `API_INTERNAL_URL` — hướng dẫn: [DEPLOY.md](DEPLOY.md) |
 | Health check | `GET /health` (kiểm tra cả database) | — |
-| Test tự động | `apps/api/test/e2e.test.mjs` — 35 bài test | — |
+| Test tự động | `apps/api/test/e2e.test.mjs` — 38 bài test | — |
 | CI | Lint + build + migrate + e2e test với PostgreSQL (`.github/workflows/backend-ci.yml`) | Lint + build (`frontend-ci.yml`) |
 
 ### Chạy test backend
@@ -69,9 +73,12 @@ Chưa chuyển (vẫn nằm ở nhánh `developer` trên GitHub):
 - **Refresh token trong cookie httpOnly** thay vì localStorage (an toàn hơn trước tấn công XSS).
 - **Trạng thái "đã nhận tiền"** cho đơn chuyển khoản (`paymentStatus`) + nút cho nhân viên; tự động đối soát qua
   webhook ngân hàng (SePay, Casso, PayOS).
-- **Thông báo đơn mới / đổi trạng thái tức thì** (WebSocket hoặc push notification) thay cho tải lại 10–15 giây.
-- **Link PWA cố định**: link Cloudflare Tunnel tạm đổi mỗi lần chạy lại → phải cài lại app trên điện thoại.
-  Dùng tunnel có tên (tài khoản Cloudflare + tên miền) hoặc deploy để có địa chỉ cố định.
+- **Thông báo đẩy (push notification)** khi app đóng / màn hình tắt — hiện báo đơn tức thì chỉ chạy khi trang đang mở.
+- Báo đơn tức thì **không chạy qua link Cloudflare Quick Tunnel** (trycloudflare.com) — khi test qua link tạm, app
+  tự tải lại mỗi 20 giây. Trên Railway / tên miền thật thì chạy tức thì.
+- Báo đơn tức thì đang chạy trong bộ nhớ của 1 máy chủ API. Nếu sau này chạy nhiều máy chủ API cùng lúc → chuyển sang
+  Redis pub/sub (`services/order-events.service.ts`).
+- Sentry làm web tải nặng thêm ~85KB lần đầu. Muốn nhẹ hơn có thể chỉ nạp Sentry khi có DSN.
 - **Báo cáo doanh thu theo ngày, món bán chạy** (theo giờ Việt Nam) tính ở backend; phân trang danh sách đơn.
 - **"Tạm hết" theo từng chi nhánh** (hiện báo hết là hết ở mọi chi nhánh).
 - **Theo dõi lỗi** (Sentry) và log tập trung.

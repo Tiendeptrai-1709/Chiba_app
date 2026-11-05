@@ -187,6 +187,8 @@ exports.Prisma.OrderScalarFieldEnum = {
   orderType: 'orderType',
   address: 'address',
   paymentMethod: 'paymentMethod',
+  paidAt: 'paidAt',
+  paidConfirmedBy: 'paidConfirmedBy',
   items: 'items',
   subtotal: 'subtotal',
   shippingFee: 'shippingFee',

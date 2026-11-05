@@ -1,7 +1,7 @@
 // HTTP client gọi NestJS API qua rewrite `/api/*` trong next.config.ts.
 // Tự gắn access token và tự refresh một lần khi gặp 401.
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 const ACCESS_TOKEN_KEY = 'chiba_access_token';
 const REFRESH_TOKEN_KEY = 'chiba_refresh_token';
@@ -93,7 +93,7 @@ async function rawRequest(path: string, init: RequestInit, token: string | null)
 // Nhiều request cùng gặp 401 chỉ refresh một lần.
 let refreshPromise: Promise<boolean> | null = null;
 
-async function refreshTokens(): Promise<boolean> {
+export async function refreshTokens(): Promise<boolean> {
   const refreshToken = tokenStore.getRefresh();
   if (!refreshToken) return false;
 

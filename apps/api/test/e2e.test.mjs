@@ -406,6 +406,80 @@ describe("Ảnh sản phẩm", () => {
   });
 });
 
+describe("Thanh toán & báo đơn tức thì", () => {
+  const base = { items: [{ productId: "b3", quantity: 1 }], orderType: "STORE" };
+
+  test("xác nhận đã nhận tiền: chỉ nhân viên, bỏ xác nhận được; tiền mặt tự đánh dấu khi hoàn thành", async () => {
+    const transfer = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, paymentMethod: "BANK_TRANSFER" } });
+    assert.equal(transfer.body.paidAt, null);
+    const pay = (paid, token = staff.accessToken) =>
+      call("PATCH", `/orders/${transfer.body.id}/payment`, { token, body: { paid } });
+    assert.equal((await pay(true, customer.accessToken)).status, 403);
+    const ok = await pay(true);
+    assert.equal(ok.status, 200);
+    assert.ok(ok.body.paidAt);
+    assert.equal((await pay(false)).body.paidAt, null, "bỏ xác nhận khi bấm nhầm");
+
+    const cash = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, paymentMethod: "CASH" } });
+    const step = (status) => call("PATCH", `/orders/${cash.body.id}/status`, { token: staff.accessToken, body: { status } });
+    await step("PREPARING");
+    await step("READY");
+    const done = await step("COMPLETED");
+    assert.ok(done.body.paidAt, "đơn tiền mặt hoàn thành = đã thu tiền");
+
+    await call("PATCH", `/orders/${transfer.body.id}/status`, { token: staff.accessToken, body: { status: "CANCELLED" } });
+    assert.equal((await pay(true)).status, 400, "đơn đã hủy không xác nhận thanh toán");
+  });
+
+  test("nhân viên nhận sự kiện đơn mới ngay; khách chỉ nhận sự kiện đơn của mình", async () => {
+    const listen = async (path, token) => {
+      const ac = new AbortController();
+      const res = await fetch(API + path, { headers: { authorization: `Bearer ${token}` }, signal: ac.signal });
+      assert.equal(res.headers.get("content-type")?.split(";")[0], "text/event-stream");
+      const events = [];
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      (async () => {
+        try {
+          for (;;) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buf += dec.decode(value, { stream: true });
+            for (const m of buf.matchAll(/event: (order\.\w+)\n(?:id: .*\n)?data: (.*)\n/g)) events.push({ type: m[1], ...JSON.parse(m[2]) });
+            buf = buf.slice(buf.lastIndexOf("\n\n") + 2);
+          }
+        } catch {
+          // kết nối bị đóng khi gọi stop() — bình thường
+        }
+      })();
+      return { events, stop: () => ac.abort() };
+    };
+    assert.equal((await fetch(`${API}/orders/stream`, { headers: { authorization: `Bearer ${customer.accessToken}` } })).status, 403);
+
+    const other = await login("other");
+    const staffFeed = await listen("/orders/stream", staff.accessToken);
+    const mineFeed = await listen("/orders/me/stream", customer.accessToken);
+    const otherFeed = await listen("/orders/me/stream", other.accessToken);
+    await new Promise((r) => setTimeout(r, 300));
+
+    const started = Date.now();
+    const o = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, paymentMethod: "CASH" } });
+    while (!staffFeed.events.some((e) => e.orderId === o.body.id) && Date.now() - started < 3000) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    await call("PATCH", `/orders/${o.body.id}/status`, { token: staff.accessToken, body: { status: "CANCELLED" } });
+    await new Promise((r) => setTimeout(r, 300));
+    [staffFeed, mineFeed, otherFeed].forEach((f) => f.stop());
+
+    const forOrder = (f) => f.events.filter((e) => e.orderId === o.body.id).map((e) => `${e.type}:${e.status}`);
+    assert.deepEqual(forOrder(staffFeed), ["order.created:PENDING", "order.updated:CANCELLED"]);
+    assert.ok(Date.now() - started < 3000 + 1000, "sự kiện đến trong vài giây");
+    assert.deepEqual(forOrder(mineFeed), ["order.created:PENDING", "order.updated:CANCELLED"]);
+    assert.deepEqual(forOrder(otherFeed), [], "khách khác không nhận được đơn của người khác");
+  });
+});
+
 describe("Admin quản lý món", () => {
   test("thêm, sửa, xóa món; nhân viên không được; chặn trùng tên", async () => {
     const body = { name: `E2E Trà Test ${RUN}`, price: 45000, category: "MON_NUOC" };
@@ -536,6 +610,11 @@ describe("Hệ thống", () => {
     const r = await call("GET", "/health");
     assert.equal(r.status, 200);
     assert.equal(r.body.database, "up");
+  });
+
+  test("đường dẫn chứa ký tự rỗng bị từ chối 400 (không làm lỗi server)", async () => {
+    assert.equal((await call("GET", "/orders/x%00", { token: staff.accessToken })).status, 400);
+    assert.equal((await call("GET", "/users/by-code/Z1%00", { token: staff.accessToken })).status, 400);
   });
 
   test("có header bảo mật", async () => {

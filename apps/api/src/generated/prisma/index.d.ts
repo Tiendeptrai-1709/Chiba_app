@@ -7207,6 +7207,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType | null
     address: string | null
     paymentMethod: $Enums.PaymentMethod | null
+    paidAt: Date | null
+    paidConfirmedBy: string | null
     subtotal: number | null
     shippingFee: number | null
     pointsUsed: number | null
@@ -7232,6 +7234,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType | null
     address: string | null
     paymentMethod: $Enums.PaymentMethod | null
+    paidAt: Date | null
+    paidConfirmedBy: string | null
     subtotal: number | null
     shippingFee: number | null
     pointsUsed: number | null
@@ -7257,6 +7261,8 @@ export namespace Prisma {
     orderType: number
     address: number
     paymentMethod: number
+    paidAt: number
+    paidConfirmedBy: number
     items: number
     subtotal: number
     shippingFee: number
@@ -7303,6 +7309,8 @@ export namespace Prisma {
     orderType?: true
     address?: true
     paymentMethod?: true
+    paidAt?: true
+    paidConfirmedBy?: true
     subtotal?: true
     shippingFee?: true
     pointsUsed?: true
@@ -7328,6 +7336,8 @@ export namespace Prisma {
     orderType?: true
     address?: true
     paymentMethod?: true
+    paidAt?: true
+    paidConfirmedBy?: true
     subtotal?: true
     shippingFee?: true
     pointsUsed?: true
@@ -7353,6 +7363,8 @@ export namespace Prisma {
     orderType?: true
     address?: true
     paymentMethod?: true
+    paidAt?: true
+    paidConfirmedBy?: true
     items?: true
     subtotal?: true
     shippingFee?: true
@@ -7466,6 +7478,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt: Date | null
+    paidConfirmedBy: string | null
     items: JsonValue
     subtotal: number
     shippingFee: number
@@ -7511,6 +7525,8 @@ export namespace Prisma {
     orderType?: boolean
     address?: boolean
     paymentMethod?: boolean
+    paidAt?: boolean
+    paidConfirmedBy?: boolean
     items?: boolean
     subtotal?: boolean
     shippingFee?: boolean
@@ -7539,6 +7555,8 @@ export namespace Prisma {
     orderType?: boolean
     address?: boolean
     paymentMethod?: boolean
+    paidAt?: boolean
+    paidConfirmedBy?: boolean
     items?: boolean
     subtotal?: boolean
     shippingFee?: boolean
@@ -7567,6 +7585,8 @@ export namespace Prisma {
     orderType?: boolean
     address?: boolean
     paymentMethod?: boolean
+    paidAt?: boolean
+    paidConfirmedBy?: boolean
     items?: boolean
     subtotal?: boolean
     shippingFee?: boolean
@@ -7595,6 +7615,8 @@ export namespace Prisma {
     orderType?: boolean
     address?: boolean
     paymentMethod?: boolean
+    paidAt?: boolean
+    paidConfirmedBy?: boolean
     items?: boolean
     subtotal?: boolean
     shippingFee?: boolean
@@ -7610,7 +7632,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "userId" | "customerName" | "customerPhone" | "storeId" | "storeName" | "orderType" | "address" | "paymentMethod" | "items" | "subtotal" | "shippingFee" | "pointsUsed" | "discountAmount" | "total" | "pointsEarned" | "status" | "completedAt" | "cancelledAt" | "cancelledBy" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "userId" | "customerName" | "customerPhone" | "storeId" | "storeName" | "orderType" | "address" | "paymentMethod" | "paidAt" | "paidConfirmedBy" | "items" | "subtotal" | "shippingFee" | "pointsUsed" | "discountAmount" | "total" | "pointsEarned" | "status" | "completedAt" | "cancelledAt" | "cancelledBy" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Order$userArgs<ExtArgs>
     store?: boolean | Order$storeArgs<ExtArgs>
@@ -7641,6 +7663,8 @@ export namespace Prisma {
       orderType: $Enums.OrderType
       address: string | null
       paymentMethod: $Enums.PaymentMethod
+      paidAt: Date | null
+      paidConfirmedBy: string | null
       items: Prisma.JsonValue
       subtotal: number
       shippingFee: number
@@ -8089,6 +8113,8 @@ export namespace Prisma {
     readonly orderType: FieldRef<"Order", 'OrderType'>
     readonly address: FieldRef<"Order", 'String'>
     readonly paymentMethod: FieldRef<"Order", 'PaymentMethod'>
+    readonly paidAt: FieldRef<"Order", 'DateTime'>
+    readonly paidConfirmedBy: FieldRef<"Order", 'String'>
     readonly items: FieldRef<"Order", 'Json'>
     readonly subtotal: FieldRef<"Order", 'Int'>
     readonly shippingFee: FieldRef<"Order", 'Int'>
@@ -9825,6 +9851,8 @@ export namespace Prisma {
     orderType: 'orderType',
     address: 'address',
     paymentMethod: 'paymentMethod',
+    paidAt: 'paidAt',
+    paidConfirmedBy: 'paidConfirmedBy',
     items: 'items',
     subtotal: 'subtotal',
     shippingFee: 'shippingFee',
@@ -10443,6 +10471,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFilter<"Order"> | $Enums.OrderType
     address?: StringNullableFilter<"Order"> | string | null
     paymentMethod?: EnumPaymentMethodFilter<"Order"> | $Enums.PaymentMethod
+    paidAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paidConfirmedBy?: StringNullableFilter<"Order"> | string | null
     items?: JsonFilter<"Order">
     subtotal?: IntFilter<"Order"> | number
     shippingFee?: IntFilter<"Order"> | number
@@ -10471,6 +10501,8 @@ export namespace Prisma {
     orderType?: SortOrder
     address?: SortOrderInput | SortOrder
     paymentMethod?: SortOrder
+    paidAt?: SortOrderInput | SortOrder
+    paidConfirmedBy?: SortOrderInput | SortOrder
     items?: SortOrder
     subtotal?: SortOrder
     shippingFee?: SortOrder
@@ -10502,6 +10534,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFilter<"Order"> | $Enums.OrderType
     address?: StringNullableFilter<"Order"> | string | null
     paymentMethod?: EnumPaymentMethodFilter<"Order"> | $Enums.PaymentMethod
+    paidAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paidConfirmedBy?: StringNullableFilter<"Order"> | string | null
     items?: JsonFilter<"Order">
     subtotal?: IntFilter<"Order"> | number
     shippingFee?: IntFilter<"Order"> | number
@@ -10530,6 +10564,8 @@ export namespace Prisma {
     orderType?: SortOrder
     address?: SortOrderInput | SortOrder
     paymentMethod?: SortOrder
+    paidAt?: SortOrderInput | SortOrder
+    paidConfirmedBy?: SortOrderInput | SortOrder
     items?: SortOrder
     subtotal?: SortOrder
     shippingFee?: SortOrder
@@ -10564,6 +10600,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeWithAggregatesFilter<"Order"> | $Enums.OrderType
     address?: StringNullableWithAggregatesFilter<"Order"> | string | null
     paymentMethod?: EnumPaymentMethodWithAggregatesFilter<"Order"> | $Enums.PaymentMethod
+    paidAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+    paidConfirmedBy?: StringNullableWithAggregatesFilter<"Order"> | string | null
     items?: JsonWithAggregatesFilter<"Order">
     subtotal?: IntWithAggregatesFilter<"Order"> | number
     shippingFee?: IntWithAggregatesFilter<"Order"> | number
@@ -11077,6 +11115,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -11105,6 +11145,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -11129,6 +11171,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -11157,6 +11201,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -11183,6 +11229,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -11207,6 +11255,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -11233,6 +11283,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -11829,6 +11881,8 @@ export namespace Prisma {
     orderType?: SortOrder
     address?: SortOrder
     paymentMethod?: SortOrder
+    paidAt?: SortOrder
+    paidConfirmedBy?: SortOrder
     items?: SortOrder
     subtotal?: SortOrder
     shippingFee?: SortOrder
@@ -11864,6 +11918,8 @@ export namespace Prisma {
     orderType?: SortOrder
     address?: SortOrder
     paymentMethod?: SortOrder
+    paidAt?: SortOrder
+    paidConfirmedBy?: SortOrder
     subtotal?: SortOrder
     shippingFee?: SortOrder
     pointsUsed?: SortOrder
@@ -11889,6 +11945,8 @@ export namespace Prisma {
     orderType?: SortOrder
     address?: SortOrder
     paymentMethod?: SortOrder
+    paidAt?: SortOrder
+    paidConfirmedBy?: SortOrder
     subtotal?: SortOrder
     shippingFee?: SortOrder
     pointsUsed?: SortOrder
@@ -12624,6 +12682,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -12650,6 +12710,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -12767,6 +12829,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFilter<"Order"> | $Enums.OrderType
     address?: StringNullableFilter<"Order"> | string | null
     paymentMethod?: EnumPaymentMethodFilter<"Order"> | $Enums.PaymentMethod
+    paidAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paidConfirmedBy?: StringNullableFilter<"Order"> | string | null
     items?: JsonFilter<"Order">
     subtotal?: IntFilter<"Order"> | number
     shippingFee?: IntFilter<"Order"> | number
@@ -12944,6 +13008,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -12970,6 +13036,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -13265,6 +13333,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -13310,6 +13380,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -13336,6 +13408,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -13361,6 +13435,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -13449,6 +13525,8 @@ export namespace Prisma {
     orderType: $Enums.OrderType
     address?: string | null
     paymentMethod: $Enums.PaymentMethod
+    paidAt?: Date | string | null
+    paidConfirmedBy?: string | null
     items: JsonNullValueInput | InputJsonValue
     subtotal: number
     shippingFee: number
@@ -13473,6 +13551,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -13499,6 +13579,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number
@@ -13524,6 +13606,8 @@ export namespace Prisma {
     orderType?: EnumOrderTypeFieldUpdateOperationsInput | $Enums.OrderType
     address?: NullableStringFieldUpdateOperationsInput | string | null
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paidConfirmedBy?: NullableStringFieldUpdateOperationsInput | string | null
     items?: JsonNullValueInput | InputJsonValue
     subtotal?: IntFieldUpdateOperationsInput | number
     shippingFee?: IntFieldUpdateOperationsInput | number

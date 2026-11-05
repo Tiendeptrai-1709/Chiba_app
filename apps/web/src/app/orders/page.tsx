@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { ArrowLeft, ChevronRight, RefreshCw, Receipt } from 'lucide-react';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { apiRequest } from '@/lib/api/client';
+import { ORDER_FALLBACK_POLL_MS, useOrderEvents } from '@/lib/api/events';
 import CustomerNav from '@/components/layout/CustomerNav';
 import PageLoader from '@/components/ui/PageLoader';
 import { isActiveOrder, Order, ORDER_STATUS_LABELS, ORDER_STATUS_TONE } from '@/types';
 
-const POLL_MS = 15_000;
+const POLL_MS = ORDER_FALLBACK_POLL_MS; // dự phòng — trạng thái đến tức thì qua useOrderEvents
 
 export default function MyOrdersPage() {
   const { ready } = useRequireAuth();
@@ -35,6 +36,9 @@ export default function MyOrdersPage() {
     const timer = setInterval(load, POLL_MS); // cập nhật trạng thái đơn đang xử lý
     return () => clearInterval(timer);
   }, [ready, load]);
+
+  // Cửa hàng đổi trạng thái đơn → cập nhật ngay
+  useOrderEvents('/orders/me/stream', ready, load);
 
   if (!ready) return <PageLoader />;
 

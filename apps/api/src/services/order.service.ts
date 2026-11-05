@@ -5,10 +5,11 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { randomInt } from "crypto";
-import { OrderStatus, OrderType, Prisma, ProductCategory } from "../generated/prisma";
+import { Order, OrderStatus, OrderType, Prisma, ProductCategory } from "../generated/prisma";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { PrismaService } from "../prisma/prisma.service";
 import { isStaffMember } from "../utils/roles";
+import { OrderEventsService } from "./order-events.service";
 import {
   MAX_DISCOUNT_RATIO,
   PointsService,
@@ -71,9 +72,41 @@ export class OrderService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly points: PointsService,
+    private readonly events: OrderEventsService,
   ) {}
 
+  // Phát sự kiện sau khi dữ liệu đã lưu xong (transaction đã commit)
+  private publish(type: "order.created" | "order.updated", order: Order) {
+    this.events.emit({
+      type,
+      orderId: order.id,
+      code: order.code,
+      status: order.status,
+      userId: order.userId,
+      paid: !!order.paidAt,
+    });
+  }
+
   async create(userId: string, dto: CreateOrderDto) {
+    const order = await this.createInternal(userId, dto);
+    this.publish("order.created", order);
+    return order;
+  }
+
+  // Nhân viên xác nhận đã nhận tiền (hoặc bỏ xác nhận nếu bấm nhầm)
+  async setPaid(orderId: string, paid: boolean, staffId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, select: { status: true } });
+    if (!order) throw new NotFoundException("Không tìm thấy đơn hàng");
+    if (order.status === OrderStatus.CANCELLED) throw new BadRequestException("Đơn đã hủy");
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: paid ? { paidAt: new Date(), paidConfirmedBy: staffId } : { paidAt: null, paidConfirmedBy: null },
+    });
+    this.publish("order.updated", updated);
+    return updated;
+  }
+
+  private async createInternal(userId: string, dto: CreateOrderDto) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: { id: true, fullName: true, phone: true, zenPoints: true },
@@ -249,6 +282,12 @@ export class OrderService {
   }
 
   async updateStatus(orderId: string, status: OrderStatus, actorId: string, opts: { byCustomer?: boolean } = {}) {
+    const updated = await this.updateStatusInTx(orderId, status, actorId, opts);
+    this.publish("order.updated", updated);
+    return updated;
+  }
+
+  private updateStatusInTx(orderId: string, status: OrderStatus, actorId: string, opts: { byCustomer?: boolean }) {
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId } });
       if (!order) throw new NotFoundException("Không tìm thấy đơn hàng");
@@ -265,6 +304,10 @@ export class OrderService {
         data: {
           status,
           ...(status === OrderStatus.COMPLETED ? { completedAt: now } : {}),
+          // Tiền mặt: hoàn thành nghĩa là đã thu tiền
+          ...(status === OrderStatus.COMPLETED && order.paymentMethod === "CASH" && !order.paidAt
+            ? { paidAt: now, paidConfirmedBy: opts.byCustomer ? null : actorId }
+            : {}),
           ...(status === OrderStatus.CANCELLED
             ? { cancelledAt: now, cancelledBy: opts.byCustomer ? "CUSTOMER" : actorId }
             : {}),

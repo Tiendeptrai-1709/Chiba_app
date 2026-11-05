@@ -176,6 +176,7 @@ export interface Order {
   createdAt: string;
   completedAt?: string | null;
   cancelledAt?: string | null;
+  paidAt?: string | null; // cửa hàng xác nhận đã nhận tiền
   cancelledBy?: string | null; // "CUSTOMER" nếu khách tự hủy
   user?: { customerCode: string; email: string } | null;
 }

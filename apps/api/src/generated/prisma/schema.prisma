@@ -134,36 +134,39 @@ enum PaymentMethod {
 }
 
 model Order {
-  id             String        @id @default(cuid())
-  code           String        @unique
+  id              String        @id @default(cuid())
+  code            String        @unique
   // Giữ đơn khi tài khoản bị xóa (để đối soát doanh thu)
-  userId         String?
-  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  customerName   String
-  customerPhone  String        @default("")
-  storeId        String?
-  store          Store?        @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName    String
+  customerPhone   String        @default("")
+  storeId         String?
+  store           Store?        @relation(fields: [storeId], references: [id], onDelete: SetNull)
   // Tên chi nhánh tại thời điểm đặt (giữ lại nếu chi nhánh đổi tên/bị xóa)
-  storeName      String?
-  orderType      OrderType
-  address        String?
-  paymentMethod  PaymentMethod
+  storeName       String?
+  orderType       OrderType
+  address         String?
+  paymentMethod   PaymentMethod
+  // Thời điểm cửa hàng xác nhận đã nhận tiền (null = chưa nhận). Đơn tiền mặt tự đánh dấu khi hoàn thành.
+  paidAt          DateTime?
+  paidConfirmedBy String?
   // Ảnh chụp các món tại thời điểm đặt: tên, giá, topping, độ ngọt, đá…
-  items          Json
-  subtotal       Int
-  shippingFee    Int
-  pointsUsed     Int           @default(0)
-  discountAmount Int           @default(0)
-  total          Int
+  items           Json
+  subtotal        Int
+  shippingFee     Int
+  pointsUsed      Int           @default(0)
+  discountAmount  Int           @default(0)
+  total           Int
   // Điểm sẽ được cộng khi nhân viên đánh dấu Hoàn thành
-  pointsEarned   Int           @default(0)
-  status         OrderStatus   @default(PENDING)
-  completedAt    DateTime?
-  cancelledAt    DateTime?
+  pointsEarned    Int           @default(0)
+  status          OrderStatus   @default(PENDING)
+  completedAt     DateTime?
+  cancelledAt     DateTime?
   // "CUSTOMER" nếu khách tự hủy, ngược lại là nhân viên/admin
-  cancelledBy    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  cancelledBy     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([status, createdAt])
   @@index([userId, createdAt])

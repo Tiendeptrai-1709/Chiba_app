@@ -41,7 +41,30 @@ function OrderFulfillment({ orders, loading, onRefresh, onUpdated }: OrderFulfil
     filter === 'ALL' ? true : filter === 'ACTIVE' ? isActiveOrder(o.status) : o.status === filter,
   );
 
+  const setPaid = async (order: Order, paid: boolean) => {
+    if (!paid && !window.confirm(`Bỏ xác nhận đã nhận tiền cho đơn ${order.code}?`)) return;
+    setBusyId(order.id);
+    try {
+      const updated = await apiRequest<Order>(`/orders/${order.id}/payment`, { method: 'PATCH', body: { paid } });
+      onUpdated({ ...order, ...updated });
+      showSuccess(paid ? `Đơn ${order.code}: đã nhận tiền` : `Đơn ${order.code}: đã bỏ xác nhận thanh toán`);
+    } catch (e: any) {
+      showError(e?.message ?? 'Không cập nhật được thanh toán');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const updateStatus = async (order: Order, status: OrderStatus) => {
+    // Đơn chuyển khoản chưa nhận tiền: hỏi lại trước khi nhận đơn để tránh pha chế trước khi khách trả
+    if (
+      status === 'PREPARING' &&
+      order.paymentMethod === 'BANK_TRANSFER' &&
+      !order.paidAt &&
+      !window.confirm(`Đơn ${order.code} chuyển khoản nhưng CHƯA xác nhận nhận tiền. Vẫn nhận đơn?`)
+    ) {
+      return;
+    }
     if (status === 'CANCELLED' && !window.confirm(`Hủy đơn ${order.code}?`)) return;
     setBusyId(order.id);
     try {
@@ -121,12 +144,45 @@ function OrderFulfillment({ orders, loading, onRefresh, onUpdated }: OrderFulfil
                     </>
                   )}
                 </p>
-                <p className="font-semibold">
-                  💳 {PAYMENT_LABELS[order.paymentMethod]}
-                  {order.paymentMethod === 'BANK_TRANSFER' && (
-                    <span className="text-accent-strong"> — kiểm tra đã nhận tiền với nội dung “{order.code}”</span>
-                  )}
-                </p>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <p className="font-semibold">
+                    💳 {PAYMENT_LABELS[order.paymentMethod]}{' '}
+                    {order.paidAt ? (
+                      <span className="text-green-700 bg-green-100 px-1.5 py-0.5 rounded text-[10px] font-bold">Đã nhận tiền</span>
+                    ) : (
+                      order.status !== 'CANCELLED' && (
+                        <span className="text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded text-[10px] font-bold">Chưa nhận tiền</span>
+                      )
+                    )}
+                  </p>
+                  {order.status !== 'CANCELLED' &&
+                    (order.paidAt ? (
+                      order.paymentMethod === 'BANK_TRANSFER' && (
+                        <button
+                          onClick={() => setPaid(order, false)}
+                          disabled={busyId === order.id}
+                          className="text-[10px] text-muted-foreground underline underline-offset-2"
+                        >
+                          Bỏ xác nhận
+                        </button>
+                      )
+                    ) : (
+                      order.paymentMethod === 'BANK_TRANSFER' && (
+                        <button
+                          onClick={() => setPaid(order, true)}
+                          disabled={busyId === order.id}
+                          className="text-[11px] font-bold text-white bg-green-600 hover:bg-green-700 px-2.5 py-1 rounded-lg disabled:opacity-50"
+                        >
+                          ✓ Đã nhận tiền
+                        </button>
+                      )
+                    ))}
+                </div>
+                {order.paymentMethod === 'BANK_TRANSFER' && !order.paidAt && order.status !== 'CANCELLED' && (
+                  <p className="text-[11px] text-accent-strong">
+                    Kiểm tra tài khoản ngân hàng có khoản {order.total.toLocaleString('vi-VN')}₫ với nội dung “{order.code}”.
+                  </p>
+                )}
 
                 <ul className="bg-white p-2.5 rounded-lg border border-border/50 space-y-1.5 mt-1">
                   {order.items.map((item, idx) => {

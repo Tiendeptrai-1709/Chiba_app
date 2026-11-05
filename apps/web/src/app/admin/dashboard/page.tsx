@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { isManager, isStaffMember, Order, ROLE_LABELS, User } from '@/types';
 import { apiRequest } from '@/lib/api/client';
+import { ORDER_FALLBACK_POLL_MS, useOrderEvents } from '@/lib/api/events';
+import { playChime } from '@/lib/chime';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
 import { useProductStore } from '@/lib/stores/useProductStore';
@@ -21,7 +23,7 @@ import HeaderTabRole, { DashboardTab, defaultTab } from '@/components/dashboard/
 import Validation from '@/components/Validation';
 import PageLoader from '@/components/ui/PageLoader';
 
-const ORDER_POLL_MS = 15_000;
+const ORDER_POLL_MS = ORDER_FALLBACK_POLL_MS; // dự phòng — đơn mới đến tức thì qua useOrderEvents
 
 export default function AdminDashboard() {
   const { user, isAuthenticated, loading, fetchAllUsers, allUsers } = useAuthStore();
@@ -73,10 +75,21 @@ export default function AdminDashboard() {
     refreshCustomers();
     refreshOrders();
     fetchProducts(true);
-    // Tự tải lại đơn mới định kỳ để nhân viên không bỏ sót đơn
+    // Dự phòng khi kết nối tức thì bị chặn (mạng/proxy): vẫn tải lại định kỳ
     const timer = setInterval(refreshOrders, ORDER_POLL_MS);
     return () => clearInterval(timer);
   }, [isAuthenticated, isStaffOrAdmin, refreshCustomers, refreshOrders, fetchProducts]);
+
+  // Báo đơn mới tức thì: kêu "ting", hiện thông báo, tải lại danh sách đơn và tồn kho
+  useOrderEvents('/orders/stream', isAuthenticated && isStaffOrAdmin, (e) => {
+    refreshOrders();
+    if (e.type === 'order.created') {
+      fetchProducts(true);
+      playChime();
+      navigator.vibrate?.([120, 60, 120]);
+      showSuccess(`🔔 Có đơn mới ${e.code}`);
+    }
+  });
 
   // SystemOverview dùng callback kiểu cũ → chuyển sang thông báo chung
   const handleNotification = (type: 'success' | 'error', msg: string) =>

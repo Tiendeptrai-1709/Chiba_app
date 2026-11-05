@@ -148,6 +148,9 @@ model Order {
   orderType      OrderType
   address        String?
   paymentMethod  PaymentMethod
+  // Thời điểm cửa hàng xác nhận đã nhận tiền (null = chưa nhận). Đơn tiền mặt tự đánh dấu khi hoàn thành.
+  paidAt         DateTime?
+  paidConfirmedBy String?
   // Ảnh chụp các món tại thời điểm đặt: tên, giá, topping, độ ngọt, đá…
   items          Json
   subtotal       Int

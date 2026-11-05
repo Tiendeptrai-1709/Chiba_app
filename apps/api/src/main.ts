@@ -1,4 +1,5 @@
-import "dotenv/config";
+// Sentry phải được khởi tạo trước mọi import khác (đã gồm nạp .env)
+import "./instrument";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
@@ -12,6 +13,14 @@ async function bootstrap() {
   // Request đi qua proxy trên cùng máy (Next.js rewrite /api, Cloudflare Tunnel):
   // lấy IP thật của khách từ X-Forwarded-For để giới hạn tần suất đúng người.
   app.set("trust proxy", process.env.TRUST_PROXY ?? "loopback");
+
+  // Đường dẫn chứa ký tự rỗng (%00) không bao giờ hợp lệ, và làm PostgreSQL báo lỗi → trả 400 ngay
+  app.use((req: { originalUrl: string }, res: { status: (c: number) => { json: (b: object) => void } }, next: () => void) => {
+    if (req.originalUrl.toLowerCase().includes("%00")) {
+      return res.status(400).json({ statusCode: 400, message: "Đường dẫn không hợp lệ" });
+    }
+    next();
+  });
 
   // Header bảo mật. Ảnh sản phẩm cho phép nhúng từ domain khác (CDN / web tách domain).
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));

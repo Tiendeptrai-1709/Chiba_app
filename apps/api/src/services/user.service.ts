@@ -93,11 +93,11 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { id }, select: publicUserSelect });
   }
 
-  findPublicByCode(customerCode: string): Promise<PublicUser | null> {
-    return this.prisma.user.findUnique({
-      where: { customerCode: customerCode.trim().toUpperCase() },
-      select: publicUserSelect,
-    });
+  async findPublicByCode(customerCode: string): Promise<PublicUser | null> {
+    const code = customerCode.trim().toUpperCase();
+    // Mã khách hàng luôn có dạng Z + 8 chữ số; mã khác (kể cả ký tự lạ) → không tìm thấy, không chạm DB
+    if (!/^Z\d{8}$/.test(code)) return null;
+    return this.prisma.user.findUnique({ where: { customerCode: code }, select: publicUserSelect });
   }
 
   // OWNER đổi vai trò khách / nhân viên / admin. Không đổi được OWNER và không tự đổi mình.
