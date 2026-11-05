@@ -27,7 +27,7 @@ export default function StoresPage() {
       localStorage.setItem('zen_selected_store', store.name);
       localStorage.setItem('zen_selected_store_address', store.address);
     }
-    router.push('/home');
+    router.push('/order');
   };
 
   const filteredStores = MOCK_STORES.filter(
@@ -41,7 +41,7 @@ export default function StoresPage() {
       {/* Premium Forest Green Header matching screenshot */}
       <div className="sticky top-0 z-40 bg-[#1E4620] text-white shadow-md">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/home" className="p-2 hover:bg-white/10 active:scale-95 rounded-full transition-all">
+          <Link href="/order" className="p-2 hover:bg-white/10 active:scale-95 rounded-full transition-all">
             <ArrowLeft className="w-5 h-5 text-white" />
           </Link>
           <h1 className="text-xl font-bold tracking-tight">Chọn cửa hàng</h1>

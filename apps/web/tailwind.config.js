@@ -1,3 +1,7 @@
+// Màu lấy từ biến CSS dạng kênh "R G B" trong src/app/globals.css,
+// nhờ vậy các class có độ mờ như bg-primary/10 hoạt động đúng.
+const color = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -8,31 +12,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: color("background"),
+        foreground: color("foreground"),
         primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
-          hover: "var(--primary-hover)",
+          DEFAULT: color("primary"),
+          foreground: color("primary-foreground"),
+          hover: color("primary-hover"),
         },
         card: {
-          DEFAULT: "var(--card)",
-          foreground: "var(--card-foreground)",
+          DEFAULT: color("card"),
+          foreground: color("card-foreground"),
         },
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
+        border: color("border"),
+        input: color("input"),
+        ring: color("ring"),
         muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "var(--muted-foreground)",
+          DEFAULT: color("muted"),
+          foreground: color("muted-foreground"),
         },
         accent: {
-          DEFAULT: "var(--accent)",
-          foreground: "var(--accent-foreground)",
+          DEFAULT: color("accent"),
+          foreground: color("accent-foreground"),
+          strong: color("accent-strong"),
         },
+        caramel: {
+          DEFAULT: color("caramel"),
+          foreground: color("caramel-foreground"),
+        },
+        cream: color("cream"),
         destructive: {
-          DEFAULT: "var(--destructive)",
-          foreground: "var(--destructive-foreground)",
+          DEFAULT: color("destructive"),
+          foreground: color("destructive-foreground"),
         },
       },
       fontFamily: {

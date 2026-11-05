@@ -121,7 +121,7 @@ function LoyaltyPoints({
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-1.5 p-2 bg-[#FAF7F2] rounded-lg border border-border/80 text-[10px] text-accent-foreground font-semibold">
+                        <div className="flex items-center gap-1.5 p-2 bg-[#FAF7F2] rounded-lg border border-border/80 text-[10px] text-accent-strong font-semibold">
                             <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
                             <span>
                                 Giảm giá áp dụng: <strong>{(pointsToUse * 500).toLocaleString('vi-VN')}₫</strong> (Khấu trừ {pointsToUse} điểm)

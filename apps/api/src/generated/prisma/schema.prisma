@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -19,19 +17,124 @@ enum Role {
 }
 
 model User {
-  id                 String   @id @default(uuid())
-  email              String   @unique
+  id                 String             @id @default(uuid())
+  email              String             @unique
   password           String
   fullName           String
   phone              String
   address            String
-  customerCode       String   @unique
-  zenPoints          Int      @default(0)
-  role               Role     @default(CUSTOMER)
-  isSuspended        Boolean  @default(false)
+  customerCode       String             @unique
+  zenPoints          Int                @default(0)
+  role               Role               @default(CUSTOMER)
+  isSuspended        Boolean            @default(false)
   hashedRefreshToken String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  orders             Order[]
+  pointTransactions  PointTransaction[]
 
   @@map("users")
+}
+
+// ----- Sản phẩm -----
+
+enum ProductCategory {
+  MON_NUOC
+  TOPPING
+  BANH
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  price       Int
+  category    ProductCategory
+  // Đường dẫn ảnh do server lưu, ví dụ "/uploads/products/p1-1730000000.webp"
+  imageUrl    String?
+  // false = "Tạm hết": khách không đặt được
+  isAvailable Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([category, sortOrder])
+  @@map("products")
+}
+
+// ----- Đơn hàng -----
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderType {
+  DELIVERY
+  STORE
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+}
+
+model Order {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  // Giữ đơn khi tài khoản bị xóa (để đối soát doanh thu)
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName   String
+  customerPhone  String        @default("")
+  orderType      OrderType
+  address        String?
+  paymentMethod  PaymentMethod
+  // Ảnh chụp các món tại thời điểm đặt: tên, giá, topping, độ ngọt, đá…
+  items          Json
+  subtotal       Int
+  shippingFee    Int
+  pointsUsed     Int           @default(0)
+  discountAmount Int           @default(0)
+  total          Int
+  // Điểm sẽ được cộng khi nhân viên đánh dấu Hoàn thành
+  pointsEarned   Int           @default(0)
+  status         OrderStatus   @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+// ----- Điểm thưởng -----
+
+enum PointTransactionType {
+  EARNED_ORDER // Tích điểm từ đơn online
+  EARNED_STORE // Tích điểm khi order tại quầy (quét QR)
+  REDEEMED_APP // Dùng điểm giảm giá đơn online
+  REDEEMED_STORE // Đổi quà/trừ điểm tại quầy
+  REFUND // Hoàn điểm khi hủy đơn
+  ADMIN_ADJUST // Admin điều chỉnh
+}
+
+model PointTransaction {
+  id           String               @id @default(cuid())
+  userId       String
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points       Int
+  pointsBefore Int
+  pointsAfter  Int
+  type         PointTransactionType
+  description  String
+  orderId      String?
+  // Nhân viên/admin thực hiện (null nếu hệ thống tự động)
+  createdById  String?
+  createdAt    DateTime             @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("point_transactions")
 }

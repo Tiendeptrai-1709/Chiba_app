@@ -3,12 +3,12 @@ import { Coins, Search } from 'lucide-react';
 import React, { useState } from 'react'
 
 interface CustomerManagerProps {
-    mockOrders: any[];
+    orders: any[];
     allCustomers: User[];
     isAdmin: boolean;
     onTriggerAction: (customer: User, type: 'REDEEM' | 'ADJUST') => void;
 }
-function CustomerManager({ mockOrders, allCustomers, isAdmin, onTriggerAction }: CustomerManagerProps) {
+function CustomerManager({ orders, allCustomers, isAdmin, onTriggerAction }: CustomerManagerProps) {
     const [customerSearchQuery, setCustomerSearchQuery] = useState('');
 
     const filteredCustomers = allCustomers.filter(c => {
@@ -23,7 +23,7 @@ function CustomerManager({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
     });
 
     const getCompletedOrdersCount = (cust: User) => {
-        return mockOrders.filter(o => (o.userId === cust.id || o.customerName === cust.fullName) && o.status === 'COMPLETED').length;
+        return orders.filter(o => (o.userId === cust.id || o.customerName === cust.fullName) && o.status === 'COMPLETED').length;
     };
     return (
         <>
@@ -57,7 +57,7 @@ function CustomerManager({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
                     {filteredCustomers.map(cust => (
                         <div key={cust.id} className="p-4 bg-card border border-border rounded-2xl shadow-sm hover:border-primary/20 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-accent/10 text-accent-foreground font-black flex items-center justify-center rounded-full text-xs">
+                                <div className="w-10 h-10 bg-accent/10 text-accent-strong font-black flex items-center justify-center rounded-full text-xs">
                                     {cust.fullName[0].toUpperCase()}
                                 </div>
                                 <div className="space-y-0.5">
@@ -70,7 +70,7 @@ function CustomerManager({ mockOrders, allCustomers, isAdmin, onTriggerAction }:
                                     <p className="text-[10px] text-muted-foreground font-medium">{cust.email} | SĐT: {cust.phone || 'Chưa cập nhật'}</p>
 
                                     <div className="flex gap-4 pt-1">
-                                        <span className="text-[10px] font-bold text-accent-foreground bg-orange-50 border border-orange-100/50 px-2 py-0.5 rounded flex items-center gap-1">
+                                        <span className="text-[10px] font-bold text-accent-strong bg-orange-50 border border-orange-100/50 px-2 py-0.5 rounded flex items-center gap-1">
                                             <Coins className="w-3.5 h-3.5 text-accent" /> Điểm: <strong className="font-black text-sm">{cust.zenPoints || 0}</strong>
                                         </span>
                                         <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">

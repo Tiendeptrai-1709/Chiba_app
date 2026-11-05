@@ -1,18 +1,19 @@
 
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import { useProductStore } from '@/lib/stores/useProductStore';
 import { User } from '@/types';
 import { Mail, Trash2, UserPlus, Users } from 'lucide-react'
 import React, { useState } from 'react'
 
 interface SystemOverviewProps {
-    mockOrders: any[];
+    orders: any[];
     allCustomers: User[];
     onSetNotification: (type: 'success' | 'error', msg: string) => void;
 }
 
 function SystemOverview({
-    mockOrders,
+    orders,
     allCustomers,
     onSetNotification
 }: SystemOverviewProps) {
@@ -23,6 +24,7 @@ function SystemOverview({
         revokeInvitation
     } = useAuthStore();
     const { showError, showSuccess} = useNotificationStore()
+    const productCount = useProductStore((s) => s.products.length)
 
     const [emailInput, setEmailInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -71,19 +73,19 @@ function SystemOverview({
                         <div className="bg-gradient-to-br from-blue-50 to-blue-100/70 border border-blue-200 p-4 rounded-xl shadow-sm">
                             <div className="text-2xl mb-1">📋</div>
                             <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Đơn hàng</p>
-                            <p className="text-2xl font-black text-blue-900">{mockOrders.length}</p>
+                            <p className="text-2xl font-black text-blue-900">{orders.length}</p>
                         </div>
                         <div className="bg-gradient-to-br from-green-50 to-green-100/70 border border-green-200 p-4 rounded-xl shadow-sm">
                             <div className="text-2xl mb-1">💰</div>
-                            <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Doanh thu</p>
+                            <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Doanh thu (đơn hoàn thành)</p>
                             <p className="text-2xl font-black text-green-900">
-                                {(mockOrders.reduce((sum, o) => sum + o.total, 0) / 1000).toFixed(1)}k₫
+                                {(orders.filter((o) => o.status === 'COMPLETED').reduce((sum, o) => sum + o.total, 0) / 1000).toFixed(1)}k₫
                             </p>
                         </div>
                         <div className="bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 p-4 rounded-xl shadow-sm">
                             <div className="text-2xl mb-1">📦</div>
                             <p className="text-[10px] text-purple-600 font-bold uppercase tracking-wider">Sản phẩm</p>
-                            <p className="text-2xl font-black text-purple-900">19</p>
+                            <p className="text-2xl font-black text-purple-900">{productCount}</p>
                         </div>
                         <div className="bg-gradient-to-br from-orange-50 to-orange-100/70 border border-orange-200 p-4 rounded-xl shadow-sm">
                             <div className="text-2xl mb-1">👥</div>
@@ -160,7 +162,7 @@ function SystemOverview({
                         <div className="space-y-3">
                             {activeStaffList.map((staff) => (
                                 <div key={staff.id} className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-border/60">
-                                    <div className="w-9 h-9 bg-accent/15 text-accent-foreground font-bold flex items-center justify-center rounded-full text-xs">
+                                    <div className="w-9 h-9 bg-accent/15 text-accent-strong font-bold flex items-center justify-center rounded-full text-xs">
                                         {staff.fullName[0].toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">

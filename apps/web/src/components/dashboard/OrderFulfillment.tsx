@@ -1,105 +1,199 @@
-import { MockOrder } from '@/app/admin/dashboard/page';
-import { User } from '@/types';
-import { CheckCircle2, Clock } from 'lucide-react';
-import React, { useState } from 'react'
+'use client';
+
+import React, { useState } from 'react';
+import { Bike, Clock, RefreshCw, Store } from 'lucide-react';
+import { apiRequest } from '@/lib/api/client';
+import { useNotificationStore } from '@/lib/stores/useNotificationStore';
+import { ICE_LABELS, Order, ORDER_STATUS_LABELS, OrderStatus, PAYMENT_LABELS, sugarLabel } from '@/types';
+
+type Filter = 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'ALL';
+
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'ACTIVE', label: 'Đang xử lý' },
+  { key: 'COMPLETED', label: 'Hoàn thành' },
+  { key: 'CANCELLED', label: 'Đã hủy' },
+  { key: 'ALL', label: 'Tất cả' },
+];
+
+const STATUS_TONE: Record<OrderStatus, string> = {
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  CONFIRMED: 'bg-blue-100 text-blue-800',
+  COMPLETED: 'bg-green-100 text-green-800',
+  CANCELLED: 'bg-neutral-200 text-neutral-600',
+};
 
 interface OrderFulfillmentProps {
-    mockOrders: any[];
-    setMockOrders: React.Dispatch<React.SetStateAction<MockOrder[]>>;
-    
+  orders: Order[];
+  loading: boolean;
+  onRefresh: () => void;
+  onUpdated: (order: Order) => void;
 }
 
-function OrderFulfillment({ mockOrders, setMockOrders }: OrderFulfillmentProps) {
+function OrderFulfillment({ orders, loading, onRefresh, onUpdated }: OrderFulfillmentProps) {
+  const { showError, showSuccess } = useNotificationStore();
+  const [filter, setFilter] = useState<Filter>('ACTIVE');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-    const handleUpdateOrderStatus = (orderId: string, nextStatus: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED') => {
-        setMockOrders(prev => {
-            const updated = prev.map(ord => ord.id === orderId ? { ...ord, status: nextStatus } : ord);
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('zen_fb_orders', JSON.stringify(updated));
-            }
-            return updated;
-        });
-    };
+  const visible = orders.filter((o) =>
+    filter === 'ALL' ? true : filter === 'ACTIVE' ? o.status === 'PENDING' || o.status === 'CONFIRMED' : o.status === filter,
+  );
 
-    return (
-        <>
-            {/* ========================================================
-            TAB: ORDERS FULFILLMENT (STAFF ONLY)
-            ======================================================== */}
-            <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 animate-fade-in">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                    <h3 className="font-bold text-sm uppercase tracking-wider text-foreground">
-                        📦 Hỗ trợ đơn hàng hoạt động
-                    </h3>
-                    <span className="bg-accent text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                        Fulfillment
-                    </span>
+  const updateStatus = async (order: Order, status: OrderStatus) => {
+    if (status === 'CANCELLED' && !window.confirm(`Hủy đơn ${order.code}?`)) return;
+    setBusyId(order.id);
+    try {
+      const updated = await apiRequest<Order>(`/orders/${order.id}/status`, { method: 'PATCH', body: { status } });
+      onUpdated({ ...order, ...updated });
+      showSuccess(
+        status === 'COMPLETED' && order.pointsEarned > 0
+          ? `Đơn ${order.code} hoàn thành · đã cộng ${order.pointsEarned} điểm cho khách`
+          : `Đơn ${order.code}: ${ORDER_STATUS_LABELS[status]}`,
+      );
+    } catch (e: any) {
+      showError(e?.message ?? 'Không cập nhật được đơn');
+      onRefresh();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+      <div className="flex items-center justify-between border-b border-border pb-3">
+        <h3 className="font-bold text-sm uppercase tracking-wider text-foreground">📦 Đơn hàng</h3>
+        <button
+          onClick={onRefresh}
+          className="flex items-center gap-1.5 text-xs font-bold text-primary px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Tải lại
+        </button>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto scrollbar-none">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            aria-pressed={filter === f.key}
+            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border transition ${
+              filter === f.key ? 'bg-primary text-white border-primary' : 'bg-card text-muted-foreground border-border'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {visible.length > 0 ? (
+        <div className="space-y-3">
+          {visible.map((order) => (
+            <div key={order.id} className="p-4 bg-neutral-50 rounded-xl border border-border space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-sm font-black text-primary tracking-wider">{order.code}</span>
+                  <span className="text-[10px] text-muted-foreground ml-2">
+                    {new Date(order.createdAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                  </span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${STATUS_TONE[order.status]}`}>
+                  {order.status === 'PENDING' && <Clock className="w-3 h-3" />}
+                  {ORDER_STATUS_LABELS[order.status]}
+                </span>
+              </div>
+
+              <div className="space-y-1.5 border-y border-border/40 py-2.5 text-xs">
+                <p className="font-bold text-foreground">
+                  {order.customerName}
+                  {order.customerPhone && <span className="font-medium text-muted-foreground"> · {order.customerPhone}</span>}
+                </p>
+                <p className="text-muted-foreground font-semibold flex items-start gap-1.5">
+                  {order.orderType === 'DELIVERY' ? (
+                    <>
+                      <Bike className="w-3.5 h-3.5 shrink-0 mt-0.5" /> Giao tới: {order.address}
+                    </>
+                  ) : (
+                    <>
+                      <Store className="w-3.5 h-3.5 shrink-0 mt-0.5" /> Khách đến nhận tại quán
+                    </>
+                  )}
+                </p>
+                <p className="font-semibold">
+                  💳 {PAYMENT_LABELS[order.paymentMethod]}
+                  {order.paymentMethod === 'BANK_TRANSFER' && (
+                    <span className="text-accent-strong"> — kiểm tra đã nhận tiền với nội dung “{order.code}”</span>
+                  )}
+                </p>
+
+                <ul className="bg-white p-2.5 rounded-lg border border-border/50 space-y-1.5 mt-1">
+                  {order.items.map((item, idx) => {
+                    const opts = [
+                      item.sugar !== null ? sugarLabel(item.sugar) : null,
+                      item.ice ? ICE_LABELS[item.ice] : null,
+                      item.toppings.length ? '+ ' + item.toppings.map((t) => t.name).join(', ') : null,
+                    ].filter(Boolean);
+                    return (
+                      <li key={idx} className="flex justify-between gap-3">
+                        <span>
+                          <b>{item.quantity}x</b> {item.name}
+                          {opts.length > 0 && <span className="block text-[11px] text-muted-foreground">{opts.join(' · ')}</span>}
+                        </span>
+                        <span className="font-semibold whitespace-nowrap">{item.lineTotal.toLocaleString('vi-VN')}₫</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="text-xs">
+                  <p className="font-black text-primary">Tổng: {order.total.toLocaleString('vi-VN')}₫</p>
+                  {(order.discountAmount > 0 || order.shippingFee > 0) && (
+                    <p className="text-[10px] text-muted-foreground">
+                      {order.shippingFee > 0 && `Ship ${order.shippingFee.toLocaleString('vi-VN')}₫ `}
+                      {order.discountAmount > 0 && `· Giảm điểm -${order.discountAmount.toLocaleString('vi-VN')}₫`}
+                    </p>
+                  )}
                 </div>
 
-                {mockOrders.length > 0 ? (
-                    <div className="space-y-3">
-                        {mockOrders.map((order) => (
-                            <div key={order.id} className="p-4 bg-neutral-50 rounded-xl border border-border space-y-3 shadow-sm hover:border-primary/20 transition">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-black text-primary">{order.id}</span>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                        order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                                        }`}>
-                                        {order.status === 'PENDING' ? <Clock className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
-                                        {order.status}
-                                    </span>
-                                </div>
-
-                                <div className="space-y-1.5 border-y border-border/40 py-2">
-                                    <p className="text-xs font-black text-foreground">Khách: {order.customerName}</p>
-
-                                    {/* Delivery Address display */}
-                                    <p className="text-[10.5px] text-muted-foreground font-bold flex items-start gap-1">
-                                        <span className="shrink-0 text-xs">📍</span>
-                                        <span>Giao tới: {order.address}</span>
-                                    </p>
-
-                                    <p className="text-xs text-neutral-600 font-semibold bg-white p-2 rounded-lg border border-border/50 shadow-inner">
-                                        {order.items}
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center justify-between pt-1">
-                                    <p className="text-xs font-black text-primary">Giá: {order.total.toLocaleString('vi-VN')}₫</p>
-
-                                    {/* Fulfill actions */}
-                                    {order.status !== 'COMPLETED' && (
-                                        <div className="flex gap-2">
-                                            {order.status === 'PENDING' && (
-                                                <button
-                                                    onClick={() => handleUpdateOrderStatus(order.id, 'CONFIRMED')}
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 shadow-sm"
-                                                >
-                                                    Xác nhận đơn
-                                                </button>
-                                            )}
-                                            {order.status === 'CONFIRMED' && (
-                                                <button
-                                                    onClick={() => handleUpdateOrderStatus(order.id, 'COMPLETED')}
-                                                    className="bg-primary hover:bg-primary-hover text-white text-[10px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 shadow-sm"
-                                                >
-                                                    Hoàn thành pha chế ✓
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-xs text-muted-foreground text-center py-8 bg-neutral-50 rounded-xl border border-dashed border-border">
-                        Chưa có đơn hàng nào cần xử lý.
-                    </p>
+                {(order.status === 'PENDING' || order.status === 'CONFIRMED') && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateStatus(order, 'CANCELLED')}
+                      disabled={busyId === order.id}
+                      className="text-destructive border border-destructive/30 hover:bg-destructive/5 text-[11px] font-bold py-1.5 px-3 rounded-lg transition disabled:opacity-50"
+                    >
+                      Hủy
+                    </button>
+                    {order.status === 'PENDING' ? (
+                      <button
+                        onClick={() => updateStatus(order, 'CONFIRMED')}
+                        disabled={busyId === order.id}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 disabled:opacity-50"
+                      >
+                        Xác nhận đơn
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => updateStatus(order, 'COMPLETED')}
+                        disabled={busyId === order.id}
+                        className="bg-primary hover:bg-primary-hover text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 disabled:opacity-50"
+                      >
+                        Hoàn thành ✓
+                      </button>
+                    )}
+                  </div>
                 )}
+              </div>
             </div>
-        </>
-    )
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-8 bg-neutral-50 rounded-xl border border-dashed border-border">
+          {loading ? 'Đang tải đơn hàng...' : 'Không có đơn hàng nào.'}
+        </p>
+      )}
+    </div>
+  );
 }
 
-export default OrderFulfillment
+export default OrderFulfillment;

@@ -3,29 +3,36 @@
 @tailwind utilities;
 
 :root {
-  /* Premium Chiba Theme Color Variables */
-  --background: #FAF7F5;
-  --foreground: #1F1914;
+  /* Chiba Theme — tông xanh Zen & cam cà phê.
+     Màu khai báo dạng kênh "R G B" (không phải mã hex) để Tailwind áp được độ mờ,
+     ví dụ bg-primary/10, bg-accent/15 (xem tailwind.config.js). */
+  --background: 250 247 245; /* #FAF7F5 */
+  --foreground: 31 25 20; /* #1F1914 */
 
-  --primary: #1E4620; /* Deep Zen Green */
-  --primary-foreground: #FFFFFF;
-  --primary-hover: #153216;
+  --primary: 30 70 32; /* #1E4620 Deep Zen Green */
+  --primary-foreground: 255 255 255;
+  --primary-hover: 21 50 22; /* #153216 */
 
-  --card: #FFFFFF;
-  --card-foreground: #1F1914;
+  --card: 255 255 255;
+  --card-foreground: 31 25 20;
 
-  --border: #EDE6DF;
-  --input: #F3EAE1;
-  --ring: #1E4620;
+  --border: 237 230 223; /* #EDE6DF */
+  --input: 243 234 225; /* #F3EAE1 */
+  --ring: 30 70 32;
 
-  --muted: #F3EAE1;
-  --muted-foreground: #6B5E53;
+  --muted: 243 234 225; /* #F3EAE1 */
+  --muted-foreground: 107 94 83; /* #6B5E53 */
 
-  --accent: #D87D4A; /* Cafe Warm Orange */
-  --accent-foreground: #FFFFFF;
+  --accent: 216 125 74; /* #D87D4A Cafe Warm Orange */
+  --accent-foreground: 255 255 255; /* chỉ dùng trên nền accent đậm */
+  --accent-strong: 154 74 31; /* #9A4A1F cam đậm — chữ trên nền cam nhạt */
 
-  --destructive: #C82333;
-  --destructive-foreground: #FFFFFF;
+  --caramel: 230 239 226; /* #E6EFE2 xanh nhạt — chip đang chọn, nút mềm, thanh điều hướng */
+  --caramel-foreground: 30 70 32;
+  --cream: 255 252 248; /* #FFFCF8 nền ô sản phẩm */
+
+  --destructive: 200 35 51; /* #C82333 */
+  --destructive-foreground: 255 255 255;
 
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -97,6 +104,30 @@ body {
   }
 }
 
+/* Không dùng `forwards`: nếu giữ lại `transform` sau khi chạy xong, phần tử sẽ
+   trở thành khung chứa cho các con `position: fixed` (popup, toast) và làm chúng
+   bị neo vào nội dung thay vì màn hình. */
 .animate-fade-in {
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ẩn thanh cuộn ngang cho hàng chip danh mục */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }

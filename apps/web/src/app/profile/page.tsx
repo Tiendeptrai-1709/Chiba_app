@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, User, Phone, BadgeCheck, Star, Trash2, ShieldCheck, Check } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import CustomerNav from '@/components/layout/CustomerNav';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, logout, updateProfileName, loading, getPointHistory } = useAuthStore();
+  const { user, isAuthenticated, logout, updateProfileName, loading, fetchPointHistory, refreshUser } = useAuthStore();
   const router = useRouter();
 
   const [showModal, setShowModal] = useState(false);
@@ -18,10 +19,14 @@ export default function ProfilePage() {
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
-    if (user && getPointHistory) {
-      setHistory(getPointHistory(user.id));
-    }
-  }, [user, getPointHistory]);
+    if (!user?.id) return;
+    fetchPointHistory('me').then(setHistory).catch(() => setHistory([]));
+  }, [user?.id, user?.zenPoints, fetchPointHistory]);
+
+  // Lấy điểm mới nhất khi mở trang hồ sơ
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -48,8 +53,8 @@ export default function ProfilePage() {
     );
   }
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
 
@@ -72,7 +77,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 relative">
+    <div className={`min-h-screen bg-background relative ${user.role === 'CUSTOMER' ? 'pb-32' : 'pb-20'}`}>
       {/* Stick Header standard layout */}
       <div className="sticky top-0 z-40 bg-card border-b border-border shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
@@ -284,6 +289,8 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {user.role === 'CUSTOMER' && <CustomerNav />}
     </div>
   );
 }

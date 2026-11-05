@@ -1,23 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/context/AuthContext';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { ArrowLeft, AlertTriangle, ShieldCheck, Check } from 'lucide-react';
 
 export default function DeleteAccountPage() {
-  const { deleteAccount, isAuthenticated } = useAuth();
+  const { deleteAccount, isAuthenticated, loading: authLoading } = useAuthStore();
   const router = useRouter();
 
   const [selectedOption, setSelectedOption] = useState<'SUSPEND' | 'DELETE'>('SUSPEND');
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  if (!isAuthenticated) {
-    router.push('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.push('/');
+  }, [authLoading, isAuthenticated, router]);
+
+  if (!isAuthenticated) return null;
 
   const handleProcessAction = async () => {
     setLoading(true);
@@ -68,7 +69,7 @@ export default function DeleteAccountPage() {
 
           <div className="space-y-3">
             <h3 className={`font-bold text-base transition-colors ${
-              selectedOption === 'SUSPEND' ? 'text-accent-foreground' : 'text-foreground'
+              selectedOption === 'SUSPEND' ? 'text-accent-strong' : 'text-foreground'
             }`}>
               Tạm ngưng hoạt động tài khoản
             </h3>

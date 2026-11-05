@@ -136,9 +136,59 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ProductScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  price: 'price',
+  category: 'category',
+  imageUrl: 'imageUrl',
+  isAvailable: 'isAvailable',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  userId: 'userId',
+  customerName: 'customerName',
+  customerPhone: 'customerPhone',
+  orderType: 'orderType',
+  address: 'address',
+  paymentMethod: 'paymentMethod',
+  items: 'items',
+  subtotal: 'subtotal',
+  shippingFee: 'shippingFee',
+  pointsUsed: 'pointsUsed',
+  discountAmount: 'discountAmount',
+  total: 'total',
+  pointsEarned: 'pointsEarned',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PointTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  points: 'points',
+  pointsBefore: 'pointsBefore',
+  pointsAfter: 'pointsAfter',
+  type: 'type',
+  description: 'description',
+  orderId: 'orderId',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -150,14 +200,55 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
 exports.Role = exports.$Enums.Role = {
   ADMIN: 'ADMIN',
   STAFF: 'STAFF',
   CUSTOMER: 'CUSTOMER'
 };
 
+exports.ProductCategory = exports.$Enums.ProductCategory = {
+  MON_NUOC: 'MON_NUOC',
+  TOPPING: 'TOPPING',
+  BANH: 'BANH'
+};
+
+exports.OrderType = exports.$Enums.OrderType = {
+  DELIVERY: 'DELIVERY',
+  STORE: 'STORE'
+};
+
+exports.PaymentMethod = exports.$Enums.PaymentMethod = {
+  CASH: 'CASH',
+  BANK_TRANSFER: 'BANK_TRANSFER'
+};
+
+exports.OrderStatus = exports.$Enums.OrderStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.PointTransactionType = exports.$Enums.PointTransactionType = {
+  EARNED_ORDER: 'EARNED_ORDER',
+  EARNED_STORE: 'EARNED_STORE',
+  REDEEMED_APP: 'REDEEMED_APP',
+  REDEEMED_STORE: 'REDEEMED_STORE',
+  REFUND: 'REFUND',
+  ADMIN_ADJUST: 'ADMIN_ADJUST'
+};
+
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Product: 'Product',
+  Order: 'Order',
+  PointTransaction: 'PointTransaction'
 };
 
 /**
