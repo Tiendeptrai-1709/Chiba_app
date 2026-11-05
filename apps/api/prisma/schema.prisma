@@ -93,11 +93,27 @@ enum ProductCategory {
   BANH
 }
 
+// Danh mục do Admin tự đặt (Cà phê, Trà sữa, Bánh...) — dùng để lọc menu và thống kê.
+// Khác với ProductCategory (loại món) vốn quyết định món có độ ngọt / đá / topping hay không.
+model MenuGroup {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@map("menu_groups")
+}
+
 model Product {
   id          String          @id @default(cuid())
   name        String
   price       Int
   category    ProductCategory
+  // Xóa danh mục thì món chuyển về "Chưa phân danh mục", không bị xóa theo
+  groupId     String?
+  group       MenuGroup?      @relation(fields: [groupId], references: [id], onDelete: SetNull)
   // Đường dẫn ảnh do server lưu, ví dụ "/uploads/products/p1-1730000000.webp"
   imageUrl    String?
   // Số lượng còn bán được. Mỗi phần khách đặt trừ 1, hủy đơn cộng lại; về 0 = "Tạm hết".
@@ -107,6 +123,7 @@ model Product {
   updatedAt   DateTime        @updatedAt
 
   @@index([category, sortOrder])
+  @@index([groupId])
   @@map("products")
 }
 

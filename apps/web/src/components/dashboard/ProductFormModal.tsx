@@ -3,14 +3,10 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import Portal from '@/components/ui/Portal';
-import { Product, ProductCategory } from '@/types';
-import type { ProductInput } from '@/lib/stores/useProductStore';
+import { CATEGORY_LABELS, Product, ProductCategory, UNGROUPED_LABEL } from '@/types';
+import { useProductStore, type ProductInput } from '@/lib/stores/useProductStore';
 
-const CATEGORIES: { key: ProductCategory; label: string }[] = [
-  { key: 'MON_NUOC', label: 'Đồ uống' },
-  { key: 'BANH', label: 'Bánh & đồ ăn' },
-  { key: 'TOPPING', label: 'Topping' },
-];
+const CATEGORIES: ProductCategory[] = ['MON_NUOC', 'BANH', 'TOPPING'];
 
 interface ProductFormModalProps {
   product?: Product; // có = sửa, không = thêm mới
@@ -23,6 +19,8 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Product
   const [name, setName] = useState(product?.name ?? '');
   const [price, setPrice] = useState(product ? String(product.price) : '');
   const [category, setCategory] = useState<ProductCategory>(product?.category ?? 'MON_NUOC');
+  const groups = useProductStore((s) => s.groups);
+  const [groupId, setGroupId] = useState<string>(product?.groupId ?? '');
   const [stock, setStock] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -38,9 +36,8 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Product
     setSaving(true);
     setError(null);
     try {
-      await onSubmit(
-        product ? { name: name.trim(), price: priceValue, category } : { name: name.trim(), price: priceValue, category, stock: stockValue },
-      );
+      const data: ProductInput = { name: name.trim(), price: priceValue, category, groupId: groupId || null };
+      await onSubmit(product ? data : { ...data, stock: stockValue });
       onClose();
     } catch (err: any) {
       setError(err?.message ?? 'Không lưu được món');
@@ -103,20 +100,38 @@ export default function ProductFormModal({ product, onClose, onSubmit }: Product
             </div>
           )}
 
+          <div className="space-y-1">
+            <label htmlFor="product-group" className="text-[11px] font-bold text-muted-foreground uppercase">Danh mục</label>
+            <select
+              id="product-group"
+              value={groupId}
+              onChange={(e) => setGroupId(e.target.value)}
+              className="w-full border border-border p-3 rounded-xl text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">— {UNGROUPED_LABEL} —</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground">Dùng để lọc menu và thống kê (Cà phê, Trà sữa, Bánh…).</p>
+          </div>
+
           <div className="space-y-1.5">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase">Danh mục</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase">Loại món</span>
             <div className="grid grid-cols-3 gap-2">
               {CATEGORIES.map((c) => (
                 <button
-                  key={c.key}
+                  key={c}
                   type="button"
-                  onClick={() => setCategory(c.key)}
-                  aria-pressed={category === c.key}
+                  onClick={() => setCategory(c)}
+                  aria-pressed={category === c}
                   className={`py-2.5 rounded-xl text-xs font-bold border transition ${
-                    category === c.key ? 'bg-primary text-white border-primary' : 'bg-card text-foreground border-border'
+                    category === c ? 'bg-primary text-white border-primary' : 'bg-card text-foreground border-border'
                   }`}
                 >
-                  {c.label}
+                  {CATEGORY_LABELS[c]}
                 </button>
               ))}
             </div>

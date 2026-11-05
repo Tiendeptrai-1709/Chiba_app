@@ -5,15 +5,9 @@ import { ImagePlus, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useProductStore } from '@/lib/stores/useProductStore';
 import ProductFormModal from './ProductFormModal';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
-import { LOW_STOCK, Product, ProductCategory } from '@/types';
+import { LOW_STOCK, Product, UNGROUPED_LABEL } from '@/types';
 import ProductImage from '@/components/products/ProductImage';
-
-const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  MON_NUOC: 'Đồ uống',
-  BANH: 'Bánh & đồ ăn',
-  TOPPING: 'Topping',
-};
-const CATEGORY_ORDER: ProductCategory[] = ['MON_NUOC', 'BANH', 'TOPPING'];
+import MenuGroupManager from './MenuGroupManager';
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -90,6 +84,7 @@ interface MenuManagerProps {
 function MenuManager({ canEditImages }: MenuManagerProps) {
   const {
     products,
+    groups,
     loading,
     fetchProducts,
     setStock,
@@ -121,6 +116,13 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
       setBusyId(null);
     }
   };
+
+  // Xếp món theo danh mục (đúng thứ tự Admin đặt), món chưa có danh mục để cuối
+  const groupIds = new Set(groups.map((g) => g.id));
+  const sections = [
+    ...groups.map((g) => ({ key: g.id, title: g.name, list: products.filter((p) => p.groupId === g.id) })),
+    { key: 'none', title: UNGROUPED_LABEL, list: products.filter((p) => !p.groupId || !groupIds.has(p.groupId)) },
+  ];
 
   const pickImage = (product: Product) => {
     uploadTarget.current = product;
@@ -187,13 +189,14 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
 
       <input ref={fileInput} type="file" accept={ACCEPTED.join(',')} className="hidden" onChange={onFileChosen} />
 
-      {CATEGORY_ORDER.map((category) => {
-        const list = products.filter((p) => p.category === category);
+      {canEditImages && <MenuGroupManager />}
+
+      {sections.map(({ key, title, list }) => {
         if (list.length === 0) return null;
         return (
-          <section key={category} className="space-y-2.5">
+          <section key={key} className="space-y-2.5">
             <h4 className="text-xs font-black text-muted-foreground uppercase tracking-wider">
-              {CATEGORY_LABELS[category]} · {list.filter((p) => p.stock === 0).length} hết ·{' '}
+              {title} · {list.length} món · {list.filter((p) => p.stock === 0).length} hết ·{' '}
               {list.filter((p) => p.stock > 0 && p.stock <= LOW_STOCK).length} sắp hết
             </h4>
             {list.map((product) => {

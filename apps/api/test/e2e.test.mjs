@@ -76,6 +76,7 @@ after(async () => {
   await db.query(`DELETE FROM users WHERE email LIKE 'e2e\\_%@test.local'`);
   await db.query(`DELETE FROM staff_invites WHERE email LIKE 'e2e\\_%@test.local'`);
   await db.query(`DELETE FROM products WHERE name LIKE 'E2E %'`);
+  await db.query(`DELETE FROM menu_groups WHERE name LIKE 'E2E %'`);
   for (const { id, stock } of originalStock) {
     await db.query("UPDATE products SET stock = $1 WHERE id = $2", [stock, id]);
   }
@@ -502,6 +503,95 @@ describe("Admin quản lý món", () => {
     assert.equal((await call("DELETE", `/products/${created.body.id}`, { token: staff.accessToken })).status, 403);
     assert.equal((await call("DELETE", `/products/${created.body.id}`, { token: admin.accessToken })).status, 204);
     assert.equal((await call("PATCH", `/products/${created.body.id}`, { token: admin.accessToken, body: { price: 1 } })).status, 404);
+  });
+});
+
+describe("Danh mục món & thống kê", () => {
+  // Ngày hôm nay theo giờ Việt Nam
+  const today = new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10);
+  const stats = (query = "", token = admin.accessToken) =>
+    call("GET", `/stats/menu?from=${today}&to=${today}${query}`, { token });
+
+  test("admin thêm, đổi tên, sắp xếp, xóa danh mục; xóa danh mục thì món chuyển về chưa phân danh mục", async () => {
+    const name = `E2E Nhóm ${RUN}`;
+    assert.equal((await call("POST", "/menu-groups", { token: staff.accessToken, body: { name } })).status, 403);
+    const g = await call("POST", "/menu-groups", { token: admin.accessToken, body: { name } });
+    assert.equal(g.status, 201, JSON.stringify(g.body));
+    assert.equal(g.body.productCount, 0);
+    assert.equal((await call("POST", "/menu-groups", { token: admin.accessToken, body: { name: name.toUpperCase() } })).status, 409);
+    assert.equal((await call("POST", "/menu-groups", { token: admin.accessToken, body: { name: "  " } })).status, 400);
+
+    const renamed = await call("PATCH", `/menu-groups/${g.body.id}`, { token: admin.accessToken, body: { name: `${name} mới` } });
+    assert.equal(renamed.body.name, `${name} mới`);
+
+    // Gắn món vào danh mục khi tạo; danh mục không tồn tại bị từ chối
+    const productBody = { name: `E2E Món nhóm ${RUN}`, price: 30000, category: "MON_NUOC" };
+    assert.equal((await call("POST", "/products", { token: admin.accessToken, body: { ...productBody, groupId: "khong-co" } })).status, 400);
+    const product = await call("POST", "/products", { token: admin.accessToken, body: { ...productBody, groupId: g.body.id } });
+    assert.equal(product.body.groupId, g.body.id);
+    const list = await call("GET", "/menu-groups");
+    assert.equal(list.body.find((x) => x.id === g.body.id).productCount, 1);
+
+    // Sắp xếp: phải gửi đủ danh mục
+    const ids = list.body.map((x) => x.id);
+    assert.equal((await call("PATCH", "/menu-groups/reorder", { token: admin.accessToken, body: { ids: ids.slice(1) } })).status, 400);
+    const reordered = await call("PATCH", "/menu-groups/reorder", {
+      token: admin.accessToken,
+      body: { ids: [g.body.id, ...ids.filter((id) => id !== g.body.id)] },
+    });
+    assert.equal(reordered.status, 200);
+    assert.equal(reordered.body[0].id, g.body.id);
+
+    assert.equal((await call("DELETE", `/menu-groups/${g.body.id}`, { token: admin.accessToken })).status, 204);
+    const menu = await call("GET", "/products");
+    assert.equal(menu.body.find((p) => p.id === product.body.id).groupId, null);
+    // Bỏ danh mục của món bằng null
+    assert.equal((await call("PATCH", `/products/${product.body.id}`, { token: admin.accessToken, body: { groupId: null } })).status, 200);
+    // Trả lại thứ tự ban đầu
+    await call("PATCH", "/menu-groups/reorder", { token: admin.accessToken, body: { ids: ids.filter((id) => id !== g.body.id) } });
+  });
+
+  test("thống kê theo danh mục: chỉ tính đơn hoàn thành, topping tính riêng, lọc theo chi nhánh", async () => {
+    assert.equal((await stats("", staff.accessToken)).status, 403);
+    assert.equal((await call("GET", "/stats/menu?from=abc&to=2026-01-01", { token: admin.accessToken })).status, 400);
+    assert.equal((await call("GET", `/stats/menu?from=${today}&to=2020-01-01`, { token: admin.accessToken })).status, 400);
+
+    const before = (await stats()).body;
+    const beforeStore = (await stats("&storeId=s2")).body;
+    const beforeOther = (await stats("&storeId=s3")).body;
+    const group = (s, id) => s.groups.find((g) => g.groupId === id) ?? { quantity: 0, revenue: 0 };
+
+    // 2 ly Phin Sữa Đá (Cà phê, 35k) + topping Thạch Đào (10k) mỗi ly, nhận tại chi nhánh s2
+    const r = await call("POST", "/orders", {
+      token: customer.accessToken,
+      body: {
+        items: [{ productId: "p4", quantity: 2, toppingIds: ["t1"] }],
+        orderType: "STORE",
+        paymentMethod: "CASH",
+        storeId: "s2",
+      },
+    });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    // Chưa hoàn thành → chưa tính
+    assert.equal(group((await stats()).body, "g_cafe").quantity, group(before, "g_cafe").quantity);
+
+    for (const status of ["PREPARING", "READY", "COMPLETED"]) {
+      assert.equal((await call("PATCH", `/orders/${r.body.id}/status`, { token: staff.accessToken, body: { status } })).status, 200);
+    }
+
+    const after = (await stats()).body;
+    assert.equal(after.orderCount, before.orderCount + 1);
+    assert.equal(after.revenue, before.revenue + r.body.total);
+    assert.equal(group(after, "g_cafe").quantity, group(before, "g_cafe").quantity + 2);
+    assert.equal(group(after, "g_cafe").revenue, group(before, "g_cafe").revenue + 70000);
+    assert.equal(group(after, "g_topping").quantity, group(before, "g_topping").quantity + 2);
+    assert.equal(group(after, "g_topping").revenue, group(before, "g_topping").revenue + 20000);
+    const p4 = after.products.find((p) => p.productId === "p4");
+    assert.equal(p4.groupName, "Cà phê");
+
+    const afterStore = (await stats("&storeId=s2")).body;
+    assert.equal(afterStore.orderCount, beforeStore.orderCount + 1);
+    assert.equal((await stats("&storeId=s3")).body.orderCount, beforeOther.orderCount, "chi nhánh khác không đổi");
   });
 });
 

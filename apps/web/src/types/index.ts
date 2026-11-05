@@ -35,17 +35,46 @@ export interface Store {
 
 // ----- Sản phẩm -----
 
+// Loại món: quyết định có chọn độ ngọt / đá / topping hay không
 export type ProductCategory = 'MON_NUOC' | 'TOPPING' | 'BANH';
+
+export const CATEGORY_LABELS: Record<ProductCategory, string> = {
+  MON_NUOC: 'Đồ uống',
+  BANH: 'Bánh & đồ ăn',
+  TOPPING: 'Topping',
+};
+
+// Danh mục do Admin tự đặt (Cà phê, Trà sữa, Bánh...) — để lọc menu và thống kê
+export interface MenuGroup {
+  id: string;
+  name: string;
+  sortOrder: number;
+}
+
+export const UNGROUPED_LABEL = 'Chưa phân danh mục';
 
 export interface Product {
   id: string;
   name: string;
   price: number;
   category: ProductCategory;
+  groupId?: string | null;
   imageUrl?: string | null;
   stock: number; // số phần còn bán được
   isAvailable: boolean; // = stock > 0 (server tính sẵn)
   sortOrder?: number;
+}
+
+// ----- Thống kê món (GET /stats/menu) -----
+
+export interface MenuStats {
+  from: string;
+  to: string;
+  orderCount: number;
+  revenue: number; // tiền khách thực trả
+  itemRevenue: number; // tổng tiền món, trước giảm giá điểm, chưa gồm ship
+  groups: { groupId: string | null; name: string; quantity: number; revenue: number }[];
+  products: { productId: string; name: string; groupId: string | null; groupName: string; quantity: number; revenue: number }[];
 }
 
 // Từ ngưỡng này trở xuống thì báo "Sắp hết"

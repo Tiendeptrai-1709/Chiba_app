@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserRole } from '@/types';
 
-export type DashboardTab = 'SYSTEM' | 'MENU' | 'CUSTOMERS' | 'HISTORY' | 'ORDERS' | 'SCAN' | 'TEAM';
+export type DashboardTab = 'SYSTEM' | 'STATS' | 'MENU' | 'CUSTOMERS' | 'HISTORY' | 'ORDERS' | 'SCAN' | 'TEAM';
 
 type TabDef = { key: DashboardTab; label: string };
 
@@ -15,6 +15,7 @@ const STAFF_TABS: TabDef[] = [
 // Admin làm được mọi việc của nhân viên (kể cả quét QR) + quản trị
 const ADMIN_TABS: TabDef[] = [
   { key: 'SYSTEM', label: '📊 Hệ thống' },
+  { key: 'STATS', label: '📈 Thống kê' },
   { key: 'ORDERS', label: '📦 Đơn hàng' },
   { key: 'SCAN', label: '📷 Quét QR' },
   { key: 'MENU', label: '🍹 Món & kho' },

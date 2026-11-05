@@ -164,11 +164,20 @@ exports.Prisma.StoreScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.MenuGroupScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ProductScalarFieldEnum = {
   id: 'id',
   name: 'name',
   price: 'price',
   category: 'category',
+  groupId: 'groupId',
   imageUrl: 'imageUrl',
   stock: 'stock',
   sortOrder: 'sortOrder',
@@ -287,6 +296,7 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   StaffInvite: 'StaffInvite',
   Store: 'Store',
+  MenuGroup: 'MenuGroup',
   Product: 'Product',
   Order: 'Order',
   PointTransaction: 'PointTransaction'

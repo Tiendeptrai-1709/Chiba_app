@@ -2,23 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Search } from 'lucide-react';
-import { ProductCategory } from '@/types';
 import { useProductStore } from '@/lib/stores/useProductStore';
 import ProductCard from './ProductCard';
 import { useProductPicker } from './useProductPicker';
 
-type CategoryFilter = 'ALL' | ProductCategory;
-
-const CATEGORIES: { key: CategoryFilter; label: string }[] = [
-  { key: 'ALL', label: 'Tất cả' },
-  { key: 'MON_NUOC', label: 'Đồ uống' },
-  { key: 'BANH', label: 'Bánh & đồ ăn' },
-  { key: 'TOPPING', label: 'Topping' },
-];
+// 'ALL' = tất cả, 'NONE' = món chưa có danh mục, còn lại là id danh mục
+const ALL = 'ALL';
+const NONE = 'NONE';
 
 export default function ProductList() {
-  const { products, loaded, loading, error, fetchProducts } = useProductStore();
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('ALL');
+  const { products, groups, loaded, loading, error, fetchProducts } = useProductStore();
+  const [activeCategory, setActiveCategory] = useState<string>(ALL);
   const [searchQuery, setSearchQuery] = useState('');
   const { pick, overlay } = useProductPicker();
 
@@ -27,12 +21,28 @@ export default function ProductList() {
     fetchProducts(true);
   }, [fetchProducts]);
 
+  // Chip danh mục: chỉ hiện danh mục đang có món, theo thứ tự Admin đặt
+  const categories = useMemo(() => {
+    const ids = new Set(groups.map((g) => g.id));
+    const chips = [{ key: ALL, label: 'Tất cả' }];
+    for (const g of groups) if (products.some((p) => p.groupId === g.id)) chips.push({ key: g.id, label: g.name });
+    if (chips.length > 1 && products.some((p) => !p.groupId || !ids.has(p.groupId))) chips.push({ key: NONE, label: 'Khác' });
+    return chips;
+  }, [groups, products]);
+
   const filteredProducts = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    return products.filter(
-      (p) => (activeCategory === 'ALL' || p.category === activeCategory) && p.name.toLowerCase().includes(query),
-    );
-  }, [products, activeCategory, searchQuery]);
+    const ids = new Set(groups.map((g) => g.id));
+    const inCategory = (groupId?: string | null) =>
+      activeCategory === ALL ||
+      (activeCategory === NONE ? !groupId || !ids.has(groupId) : groupId === activeCategory);
+    return products.filter((p) => inCategory(p.groupId) && p.name.toLowerCase().includes(query));
+  }, [products, groups, activeCategory, searchQuery]);
+
+  // Danh mục đang chọn bị xóa / hết món → quay về "Tất cả"
+  useEffect(() => {
+    if (!categories.some((c) => c.key === activeCategory)) setActiveCategory(ALL);
+  }, [categories, activeCategory]);
 
   return (
     <div className="space-y-5">
@@ -50,7 +60,7 @@ export default function ProductList() {
 
       {/* Chip danh mục */}
       <div className="flex gap-2.5 overflow-x-auto scrollbar-none -mx-5 px-5 pb-1">
-        {CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const active = activeCategory === cat.key;
           return (
             <button

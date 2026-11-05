@@ -18,6 +18,7 @@ import RoleManager from '@/components/dashboard/RoleManager';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import CustomerManager from '@/components/dashboard/CustomerManager';
 import SystemOverview from '@/components/dashboard/SystemOverview';
+import MenuStats from '@/components/dashboard/MenuStats';
 import PointActionModal from '@/components/PointActionModal';
 import HeaderTabRole, { DashboardTab, defaultTab } from '@/components/dashboard/HeaderTabRole';
 import Validation from '@/components/Validation';
@@ -149,6 +150,8 @@ export default function AdminDashboard() {
             }}
           />
         )}
+
+        {isAdmin && activeTab === 'STATS' && <MenuStats />}
 
         {activeTab === 'MENU' && <MenuManager canEditImages={isAdmin} />}
 

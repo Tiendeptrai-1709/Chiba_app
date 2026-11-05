@@ -36,6 +36,7 @@ export class ProductService {
 
   async create(dto: CreateProductDto) {
     await this.ensureNameFree(dto.name);
+    if (dto.groupId) await this.ensureGroupExists(dto.groupId);
     // Món mới xếp cuối danh mục
     const last = await this.prisma.product.findFirst({
       where: { category: dto.category },
@@ -48,6 +49,7 @@ export class ProductService {
         price: dto.price,
         category: dto.category,
         stock: dto.stock ?? 0,
+        groupId: dto.groupId ?? null,
         sortOrder: (last?.sortOrder ?? 0) + 1,
       },
     });
@@ -57,6 +59,7 @@ export class ProductService {
   async update(id: string, dto: UpdateProductDto) {
     await this.ensureExists(id);
     if (dto.name) await this.ensureNameFree(dto.name, id);
+    if (dto.groupId) await this.ensureGroupExists(dto.groupId);
     return toProductView(await this.prisma.product.update({ where: { id }, data: dto }));
   }
 
@@ -104,6 +107,11 @@ export class ProductService {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) throw new NotFoundException("Không tìm thấy món");
     return product;
+  }
+
+  private async ensureGroupExists(groupId: string) {
+    const group = await this.prisma.menuGroup.findUnique({ where: { id: groupId }, select: { id: true } });
+    if (!group) throw new BadRequestException("Danh mục không tồn tại, vui lòng tải lại trang");
   }
 
   private async ensureNameFree(name: string, exceptId?: string) {

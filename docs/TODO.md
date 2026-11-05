@@ -26,11 +26,13 @@ Danh sách phần đã làm và phần còn thiếu, để khi làm tới thì b
 | Tồn kho theo số lượng | `products.stock`, `PATCH /products/:id/stock`; đặt món trừ kho (topping trừ theo số ly), hủy đơn cộng lại; về 0 = hết hàng | Tab "Kho món": `MenuManager.tsx` (ô số lượng + Lưu), `lib/stock.ts` |
 | Admin quét QR tích điểm | Như nhân viên | Tab "📷 Quét QR" có cả ở Admin/Chủ quán |
 | Đã nhận tiền (đơn chuyển khoản) | `orders.paidAt`, `PATCH /orders/:id/payment`; tiền mặt tự đánh dấu khi hoàn thành | Nút "✓ Đã nhận tiền" trong thẻ đơn; khách thấy "Đã thanh toán" |
+| Danh mục món | Bảng `menu_groups`, `GET/POST/PATCH/DELETE /menu-groups`, `PATCH /menu-groups/reorder`; `products.groupId` (xóa danh mục → món về "Chưa phân danh mục") | Tab "Món & kho": `MenuGroupManager.tsx`, chọn danh mục trong `ProductFormModal.tsx`; khách lọc menu theo danh mục (`ProductList.tsx`) |
+| Thống kê món bán | `GET /stats/menu?from&to&storeId` (ADMIN) — `services/stats.service.ts`: chỉ đơn hoàn thành, theo giờ Việt Nam, topping tính riêng | Tab "📈 Thống kê": `MenuStats.tsx` (hôm nay / 7 ngày / 30 ngày / tháng này / tùy chọn, lọc chi nhánh) |
 | Báo đơn tức thì | SSE: `GET /orders/stream` (nhân viên), `GET /orders/me/stream` (khách) — `services/order-events.service.ts` | `lib/api/events.ts`; dashboard kêu "ting" khi có đơn mới. Vẫn tự tải lại mỗi 20 giây để dự phòng |
 | Theo dõi lỗi (Sentry) | `src/instrument.ts` + `SentryGlobalFilter` — bật khi có `SENTRY_DSN`; không gửi token/mật khẩu | `instrumentation-client.ts`, `app/global-error.tsx` — bật khi có `NEXT_PUBLIC_SENTRY_DSN` |
 | Sẵn sàng deploy Railway | `apps/api/railway.json` (build, migrate, health check) | `apps/web/railway.json`, `API_INTERNAL_URL` — hướng dẫn: [DEPLOY.md](DEPLOY.md) |
 | Health check | `GET /health` (kiểm tra cả database) | — |
-| Test tự động | `apps/api/test/e2e.test.mjs` — 38 bài test | — |
+| Test tự động | `apps/api/test/e2e.test.mjs` — 40 bài test | — |
 | CI | Lint + build + migrate + e2e test với PostgreSQL (`.github/workflows/backend-ci.yml`) | Lint + build (`frontend-ci.yml`) |
 
 ### Chạy test backend
@@ -79,7 +81,9 @@ Chưa chuyển (vẫn nằm ở nhánh `developer` trên GitHub):
 - Báo đơn tức thì đang chạy trong bộ nhớ của 1 máy chủ API. Nếu sau này chạy nhiều máy chủ API cùng lúc → chuyển sang
   Redis pub/sub (`services/order-events.service.ts`).
 - Sentry làm web tải nặng thêm ~85KB lần đầu. Muốn nhẹ hơn có thể chỉ nạp Sentry khi có DSN.
-- **Báo cáo doanh thu theo ngày, món bán chạy** (theo giờ Việt Nam) tính ở backend; phân trang danh sách đơn.
+- **Biểu đồ doanh thu theo từng ngày / giờ cao điểm** (đã có thống kê theo danh mục & món bán chạy); phân trang danh sách đơn.
+- Thống kê xếp món theo danh mục **hiện tại**: đổi danh mục của món thì số liệu cũ cũng đổi theo. Muốn giữ đúng danh mục
+  lúc bán thì lưu thêm tên danh mục vào `orders.items` khi đặt.
 - **"Tạm hết" theo từng chi nhánh** (hiện báo hết là hết ở mọi chi nhánh).
 - **Theo dõi lỗi** (Sentry) và log tập trung.
 - Gom quy tắc dùng chung (điểm, phí ship) vào một chỗ cho cả web và API.
