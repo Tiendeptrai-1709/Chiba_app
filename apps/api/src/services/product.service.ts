@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { CreateProductDto, UpdateProductDto } from "../dto/product.dto";
 import { randomBytes } from "crypto";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { join } from "path";
@@ -27,6 +28,38 @@ export class ProductService {
 
   findAll() {
     return this.prisma.product.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
+  }
+
+  async create(dto: CreateProductDto) {
+    await this.ensureNameFree(dto.name);
+    // Món mới xếp cuối danh mục
+    const last = await this.prisma.product.findFirst({
+      where: { category: dto.category },
+      orderBy: { sortOrder: "desc" },
+      select: { sortOrder: true },
+    });
+    return this.prisma.product.create({
+      data: {
+        name: dto.name,
+        price: dto.price,
+        category: dto.category,
+        isAvailable: dto.isAvailable ?? true,
+        sortOrder: (last?.sortOrder ?? 0) + 1,
+      },
+    });
+  }
+
+  async update(id: string, dto: UpdateProductDto) {
+    await this.ensureExists(id);
+    if (dto.name) await this.ensureNameFree(dto.name, id);
+    return this.prisma.product.update({ where: { id }, data: dto });
+  }
+
+  // Đơn cũ lưu sẵn tên + giá món nên xóa món không làm hỏng lịch sử đơn.
+  async remove(id: string) {
+    const product = await this.ensureExists(id);
+    await this.prisma.product.delete({ where: { id } });
+    await this.removeFile(product.imageUrl);
   }
 
   async setAvailability(id: string, isAvailable: boolean) {
@@ -65,6 +98,14 @@ export class ProductService {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) throw new NotFoundException("Không tìm thấy món");
     return product;
+  }
+
+  private async ensureNameFree(name: string, exceptId?: string) {
+    const clash = await this.prisma.product.findFirst({
+      where: { name: { equals: name, mode: "insensitive" }, ...(exceptId ? { id: { not: exceptId } } : {}) },
+      select: { id: true },
+    });
+    if (clash) throw new ConflictException("Đã có món trùng tên trong menu");
   }
 
   private async removeFile(imageUrl: string | null) {

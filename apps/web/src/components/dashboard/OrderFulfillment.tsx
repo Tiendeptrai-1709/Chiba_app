@@ -4,7 +4,17 @@ import React, { useState } from 'react';
 import { Bike, Clock, RefreshCw, Store } from 'lucide-react';
 import { apiRequest } from '@/lib/api/client';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
-import { ICE_LABELS, Order, ORDER_STATUS_LABELS, OrderStatus, PAYMENT_LABELS, sugarLabel } from '@/types';
+import {
+  ICE_LABELS,
+  isActiveOrder,
+  nextStaffStep,
+  Order,
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_TONE as STATUS_TONE,
+  OrderStatus,
+  PAYMENT_LABELS,
+  sugarLabel,
+} from '@/types';
 
 type Filter = 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'ALL';
 
@@ -14,13 +24,6 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'CANCELLED', label: 'Đã hủy' },
   { key: 'ALL', label: 'Tất cả' },
 ];
-
-const STATUS_TONE: Record<OrderStatus, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  COMPLETED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-neutral-200 text-neutral-600',
-};
 
 interface OrderFulfillmentProps {
   orders: Order[];
@@ -35,7 +38,7 @@ function OrderFulfillment({ orders, loading, onRefresh, onUpdated }: OrderFulfil
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const visible = orders.filter((o) =>
-    filter === 'ALL' ? true : filter === 'ACTIVE' ? o.status === 'PENDING' || o.status === 'CONFIRMED' : o.status === filter,
+    filter === 'ALL' ? true : filter === 'ACTIVE' ? isActiveOrder(o.status) : o.status === filter,
   );
 
   const updateStatus = async (order: Order, status: OrderStatus) => {
@@ -156,34 +159,34 @@ function OrderFulfillment({ orders, loading, onRefresh, onUpdated }: OrderFulfil
                   )}
                 </div>
 
-                {(order.status === 'PENDING' || order.status === 'CONFIRMED') && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => updateStatus(order, 'CANCELLED')}
-                      disabled={busyId === order.id}
-                      className="text-destructive border border-destructive/30 hover:bg-destructive/5 text-[11px] font-bold py-1.5 px-3 rounded-lg transition disabled:opacity-50"
-                    >
-                      Hủy
-                    </button>
-                    {order.status === 'PENDING' ? (
+                {(() => {
+                  const next = nextStaffStep(order);
+                  if (!next) {
+                    return order.status === 'CANCELLED' && order.cancelledBy === 'CUSTOMER' ? (
+                      <span className="text-[11px] text-muted-foreground">Khách tự hủy</span>
+                    ) : null;
+                  }
+                  return (
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => updateStatus(order, 'CONFIRMED')}
+                        onClick={() => updateStatus(order, 'CANCELLED')}
                         disabled={busyId === order.id}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 disabled:opacity-50"
+                        className="text-destructive border border-destructive/30 hover:bg-destructive/5 text-[11px] font-bold py-1.5 px-3 rounded-lg transition disabled:opacity-50"
                       >
-                        Xác nhận đơn
+                        Hủy
                       </button>
-                    ) : (
                       <button
-                        onClick={() => updateStatus(order, 'COMPLETED')}
+                        onClick={() => updateStatus(order, next.status)}
                         disabled={busyId === order.id}
-                        className="bg-primary hover:bg-primary-hover text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 disabled:opacity-50"
+                        className={`text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition active:scale-95 disabled:opacity-50 ${
+                          next.status === 'COMPLETED' ? 'bg-primary hover:bg-primary-hover' : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
                       >
-                        Hoàn thành ✓
+                        {next.label}
                       </button>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ))}

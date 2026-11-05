@@ -18,12 +18,29 @@ import {
 const FREE_SHIP_THRESHOLD = 100_000;
 const SHIPPING_FEE = 20_000;
 
-// Chuyển trạng thái hợp lệ
-const NEXT_STATUS: Record<OrderStatus, OrderStatus[]> = {
-  PENDING: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-  CONFIRMED: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
-  COMPLETED: [],
-  CANCELLED: [],
+// Chuyển trạng thái hợp lệ (nhân viên). Sau khi pha chế xong:
+// đơn nhận tại quán → READY (chờ khách lấy); đơn giao → DELIVERING.
+export function allowedNextStatuses(status: OrderStatus, orderType: OrderType): OrderStatus[] {
+  switch (status) {
+    case OrderStatus.PENDING:
+      return [OrderStatus.PREPARING, OrderStatus.CANCELLED];
+    case OrderStatus.PREPARING:
+      return [orderType === OrderType.STORE ? OrderStatus.READY : OrderStatus.DELIVERING, OrderStatus.CANCELLED];
+    case OrderStatus.READY:
+    case OrderStatus.DELIVERING:
+      return [OrderStatus.COMPLETED, OrderStatus.CANCELLED];
+    default:
+      return [];
+  }
+}
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: "Chờ xác nhận",
+  PREPARING: "Đang pha chế",
+  READY: "Sẵn sàng",
+  DELIVERING: "Đang giao",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
 };
 
 export interface OrderItemSnapshot {
@@ -176,20 +193,53 @@ export class OrderService {
     });
   }
 
-  async updateStatus(orderId: string, status: OrderStatus, staffId: string) {
+  // Chi tiết đơn: khách chỉ xem đơn của mình; nhân viên/admin xem mọi đơn.
+  async findOne(orderId: string, viewer: { id: string; role: string }) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { user: { select: { customerCode: true, email: true } } },
+    });
+    const isStaff = viewer.role === "ADMIN" || viewer.role === "STAFF";
+    if (!order || (!isStaff && order.userId !== viewer.id)) {
+      throw new NotFoundException("Không tìm thấy đơn hàng");
+    }
+    return order;
+  }
+
+  // Khách tự hủy: chỉ khi cửa hàng chưa nhận đơn (PENDING).
+  async cancelByCustomer(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, select: { userId: true, status: true } });
+    if (!order || order.userId !== userId) throw new NotFoundException("Không tìm thấy đơn hàng");
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException("Cửa hàng đã nhận đơn nên không thể tự hủy. Vui lòng gọi cửa hàng để được hỗ trợ.");
+    }
+    return this.updateStatus(orderId, OrderStatus.CANCELLED, userId, { byCustomer: true });
+  }
+
+  async updateStatus(orderId: string, status: OrderStatus, actorId: string, opts: { byCustomer?: boolean } = {}) {
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId } });
       if (!order) throw new NotFoundException("Không tìm thấy đơn hàng");
-      if (!NEXT_STATUS[order.status].includes(status)) {
-        throw new BadRequestException(`Không thể chuyển đơn từ ${order.status} sang ${status}`);
+      if (!allowedNextStatuses(order.status, order.orderType).includes(status)) {
+        throw new BadRequestException(
+          `Không thể chuyển đơn từ "${STATUS_LABELS[order.status]}" sang "${STATUS_LABELS[status]}"`,
+        );
       }
 
-      // Đổi trạng thái có điều kiện để hai nhân viên bấm cùng lúc không bị cộng điểm 2 lần.
+      // Đổi trạng thái có điều kiện để hai người bấm cùng lúc không bị cộng/hoàn điểm 2 lần.
+      const now = new Date();
       const { count } = await tx.order.updateMany({
         where: { id: orderId, status: order.status },
-        data: { status },
+        data: {
+          status,
+          ...(status === OrderStatus.COMPLETED ? { completedAt: now } : {}),
+          ...(status === OrderStatus.CANCELLED
+            ? { cancelledAt: now, cancelledBy: opts.byCustomer ? "CUSTOMER" : actorId }
+            : {}),
+        },
       });
-      if (count === 0) throw new ConflictException("Đơn vừa được người khác cập nhật, vui lòng tải lại");
+      if (count === 0) throw new ConflictException("Đơn vừa được cập nhật, vui lòng tải lại");
+      const staffId = opts.byCustomer ? undefined : actorId;
 
       if (order.userId && status === OrderStatus.COMPLETED && order.pointsEarned > 0) {
         await this.points.applyInTx(tx, {
@@ -206,7 +256,7 @@ export class OrderService {
           userId: order.userId,
           points: order.pointsUsed,
           type: "REFUND",
-          description: `Hoàn điểm do hủy đơn ${order.code}`,
+          description: `Hoàn điểm do ${opts.byCustomer ? "khách hủy" : "hủy"} đơn ${order.code}`,
           orderId: order.id,
           createdById: staffId,
         });

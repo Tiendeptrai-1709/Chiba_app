@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 import Portal from '@/components/ui/Portal';
 import { bankConfig, vietQrImageUrl } from '@/lib/payment';
@@ -74,9 +75,14 @@ export default function OrderSuccessModal({ order, onClose }: OrderSuccessModalP
             </div>
           )}
 
-          <button onClick={onClose} className="primary-btn shadow-premium">
-            Đồng ý & Tiếp tục
-          </button>
+          <div className="space-y-2">
+            <Link href={`/orders/${order.id}`} className="primary-btn shadow-premium">
+              Theo dõi đơn hàng
+            </Link>
+            <button onClick={onClose} className="secondary-btn">
+              Về trang chủ
+            </button>
+          </div>
         </div>
       </div>
     </Portal>

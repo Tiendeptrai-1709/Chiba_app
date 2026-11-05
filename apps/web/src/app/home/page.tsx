@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Bike, QrCode, ShoppingBag, Sparkles, UserRound, LucideIcon } from 'lucide-react';
+import { ArrowRight, Bike, QrCode, Receipt, ShoppingBag, UserRound, LucideIcon } from 'lucide-react';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
@@ -49,7 +49,7 @@ export default function HomePage() {
     { href: '/order', title: 'Đặt hàng', subtitle: 'Giao tận nơi', icon: Bike, tone: 'bg-caramel text-caramel-foreground' },
     { href: '/qr', title: 'QR tích điểm', subtitle: 'Khi order tại quán', icon: QrCode, tone: 'bg-primary text-white' },
     { href: '/profile', title: 'Hồ sơ', subtitle: 'Thông tin & điểm', icon: UserRound, tone: 'bg-card text-primary' },
-    { title: 'Sắp ra mắt', subtitle: 'Tính năng mới', icon: Sparkles, tone: 'bg-muted text-muted-foreground' },
+    { href: '/orders', title: 'Đơn của tôi', subtitle: 'Theo dõi & lịch sử', icon: Receipt, tone: 'bg-accent text-white' },
   ];
 
   const initial = user.fullName?.trim()?.[0]?.toUpperCase() ?? '☕';

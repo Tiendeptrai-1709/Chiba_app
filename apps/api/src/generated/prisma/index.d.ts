@@ -73,7 +73,9 @@ export type ProductCategory = (typeof ProductCategory)[keyof typeof ProductCateg
 
 export const OrderStatus: {
   PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  DELIVERING: 'DELIVERING',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED'
 };
@@ -1607,6 +1609,8 @@ export namespace Prisma {
     zenPoints: number | null
     role: $Enums.Role | null
     isSuspended: boolean | null
+    resetPasswordTokenHash: string | null
+    resetPasswordExpires: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1622,6 +1626,8 @@ export namespace Prisma {
     zenPoints: number | null
     role: $Enums.Role | null
     isSuspended: boolean | null
+    resetPasswordTokenHash: string | null
+    resetPasswordExpires: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1637,6 +1643,8 @@ export namespace Prisma {
     zenPoints: number
     role: number
     isSuspended: number
+    resetPasswordTokenHash: number
+    resetPasswordExpires: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -1662,6 +1670,8 @@ export namespace Prisma {
     zenPoints?: true
     role?: true
     isSuspended?: true
+    resetPasswordTokenHash?: true
+    resetPasswordExpires?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1677,6 +1687,8 @@ export namespace Prisma {
     zenPoints?: true
     role?: true
     isSuspended?: true
+    resetPasswordTokenHash?: true
+    resetPasswordExpires?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1692,6 +1704,8 @@ export namespace Prisma {
     zenPoints?: true
     role?: true
     isSuspended?: true
+    resetPasswordTokenHash?: true
+    resetPasswordExpires?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1794,6 +1808,8 @@ export namespace Prisma {
     zenPoints: number
     role: $Enums.Role
     isSuspended: boolean
+    resetPasswordTokenHash: string | null
+    resetPasswordExpires: Date | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -1828,6 +1844,8 @@ export namespace Prisma {
     zenPoints?: boolean
     role?: boolean
     isSuspended?: boolean
+    resetPasswordTokenHash?: boolean
+    resetPasswordExpires?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     orders?: boolean | User$ordersArgs<ExtArgs>
@@ -1847,6 +1865,8 @@ export namespace Prisma {
     zenPoints?: boolean
     role?: boolean
     isSuspended?: boolean
+    resetPasswordTokenHash?: boolean
+    resetPasswordExpires?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -1862,6 +1882,8 @@ export namespace Prisma {
     zenPoints?: boolean
     role?: boolean
     isSuspended?: boolean
+    resetPasswordTokenHash?: boolean
+    resetPasswordExpires?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -1877,11 +1899,13 @@ export namespace Prisma {
     zenPoints?: boolean
     role?: boolean
     isSuspended?: boolean
+    resetPasswordTokenHash?: boolean
+    resetPasswordExpires?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "fullName" | "phone" | "address" | "customerCode" | "zenPoints" | "role" | "isSuspended" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "fullName" | "phone" | "address" | "customerCode" | "zenPoints" | "role" | "isSuspended" | "resetPasswordTokenHash" | "resetPasswordExpires" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     orders?: boolean | User$ordersArgs<ExtArgs>
     pointTransactions?: boolean | User$pointTransactionsArgs<ExtArgs>
@@ -1909,6 +1933,8 @@ export namespace Prisma {
       zenPoints: number
       role: $Enums.Role
       isSuspended: boolean
+      resetPasswordTokenHash: string | null
+      resetPasswordExpires: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -2347,6 +2373,8 @@ export namespace Prisma {
     readonly zenPoints: FieldRef<"User", 'Int'>
     readonly role: FieldRef<"User", 'Role'>
     readonly isSuspended: FieldRef<"User", 'Boolean'>
+    readonly resetPasswordTokenHash: FieldRef<"User", 'String'>
+    readonly resetPasswordExpires: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -7181,6 +7209,9 @@ export namespace Prisma {
     total: number | null
     pointsEarned: number | null
     status: $Enums.OrderStatus | null
+    completedAt: Date | null
+    cancelledAt: Date | null
+    cancelledBy: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7203,6 +7234,9 @@ export namespace Prisma {
     total: number | null
     pointsEarned: number | null
     status: $Enums.OrderStatus | null
+    completedAt: Date | null
+    cancelledAt: Date | null
+    cancelledBy: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7226,6 +7260,9 @@ export namespace Prisma {
     total: number
     pointsEarned: number
     status: number
+    completedAt: number
+    cancelledAt: number
+    cancelledBy: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -7268,6 +7305,9 @@ export namespace Prisma {
     total?: true
     pointsEarned?: true
     status?: true
+    completedAt?: true
+    cancelledAt?: true
+    cancelledBy?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7290,6 +7330,9 @@ export namespace Prisma {
     total?: true
     pointsEarned?: true
     status?: true
+    completedAt?: true
+    cancelledAt?: true
+    cancelledBy?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7313,6 +7356,9 @@ export namespace Prisma {
     total?: true
     pointsEarned?: true
     status?: true
+    completedAt?: true
+    cancelledAt?: true
+    cancelledBy?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -7423,6 +7469,9 @@ export namespace Prisma {
     total: number
     pointsEarned: number
     status: $Enums.OrderStatus
+    completedAt: Date | null
+    cancelledAt: Date | null
+    cancelledBy: string | null
     createdAt: Date
     updatedAt: Date
     _count: OrderCountAggregateOutputType | null
@@ -7465,6 +7514,9 @@ export namespace Prisma {
     total?: boolean
     pointsEarned?: boolean
     status?: boolean
+    completedAt?: boolean
+    cancelledAt?: boolean
+    cancelledBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | Order$userArgs<ExtArgs>
@@ -7490,6 +7542,9 @@ export namespace Prisma {
     total?: boolean
     pointsEarned?: boolean
     status?: boolean
+    completedAt?: boolean
+    cancelledAt?: boolean
+    cancelledBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | Order$userArgs<ExtArgs>
@@ -7515,6 +7570,9 @@ export namespace Prisma {
     total?: boolean
     pointsEarned?: boolean
     status?: boolean
+    completedAt?: boolean
+    cancelledAt?: boolean
+    cancelledBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | Order$userArgs<ExtArgs>
@@ -7540,11 +7598,14 @@ export namespace Prisma {
     total?: boolean
     pointsEarned?: boolean
     status?: boolean
+    completedAt?: boolean
+    cancelledAt?: boolean
+    cancelledBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "userId" | "customerName" | "customerPhone" | "storeId" | "storeName" | "orderType" | "address" | "paymentMethod" | "items" | "subtotal" | "shippingFee" | "pointsUsed" | "discountAmount" | "total" | "pointsEarned" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "userId" | "customerName" | "customerPhone" | "storeId" | "storeName" | "orderType" | "address" | "paymentMethod" | "items" | "subtotal" | "shippingFee" | "pointsUsed" | "discountAmount" | "total" | "pointsEarned" | "status" | "completedAt" | "cancelledAt" | "cancelledBy" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Order$userArgs<ExtArgs>
     store?: boolean | Order$storeArgs<ExtArgs>
@@ -7583,6 +7644,9 @@ export namespace Prisma {
       total: number
       pointsEarned: number
       status: $Enums.OrderStatus
+      completedAt: Date | null
+      cancelledAt: Date | null
+      cancelledBy: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["order"]>
@@ -8028,6 +8092,9 @@ export namespace Prisma {
     readonly total: FieldRef<"Order", 'Int'>
     readonly pointsEarned: FieldRef<"Order", 'Int'>
     readonly status: FieldRef<"Order", 'OrderStatus'>
+    readonly completedAt: FieldRef<"Order", 'DateTime'>
+    readonly cancelledAt: FieldRef<"Order", 'DateTime'>
+    readonly cancelledBy: FieldRef<"Order", 'String'>
     readonly createdAt: FieldRef<"Order", 'DateTime'>
     readonly updatedAt: FieldRef<"Order", 'DateTime'>
   }
@@ -9682,6 +9749,8 @@ export namespace Prisma {
     zenPoints: 'zenPoints',
     role: 'role',
     isSuspended: 'isSuspended',
+    resetPasswordTokenHash: 'resetPasswordTokenHash',
+    resetPasswordExpires: 'resetPasswordExpires',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -9759,6 +9828,9 @@ export namespace Prisma {
     total: 'total',
     pointsEarned: 'pointsEarned',
     status: 'status',
+    completedAt: 'completedAt',
+    cancelledAt: 'cancelledAt',
+    cancelledBy: 'cancelledBy',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -10005,6 +10077,8 @@ export namespace Prisma {
     zenPoints?: IntFilter<"User"> | number
     role?: EnumRoleFilter<"User"> | $Enums.Role
     isSuspended?: BoolFilter<"User"> | boolean
+    resetPasswordTokenHash?: StringNullableFilter<"User"> | string | null
+    resetPasswordExpires?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     orders?: OrderListRelationFilter
@@ -10023,6 +10097,8 @@ export namespace Prisma {
     zenPoints?: SortOrder
     role?: SortOrder
     isSuspended?: SortOrder
+    resetPasswordTokenHash?: SortOrderInput | SortOrder
+    resetPasswordExpires?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     orders?: OrderOrderByRelationAggregateInput
@@ -10034,6 +10110,7 @@ export namespace Prisma {
     id?: string
     email?: string
     customerCode?: string
+    resetPasswordTokenHash?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
@@ -10044,12 +10121,13 @@ export namespace Prisma {
     zenPoints?: IntFilter<"User"> | number
     role?: EnumRoleFilter<"User"> | $Enums.Role
     isSuspended?: BoolFilter<"User"> | boolean
+    resetPasswordExpires?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     orders?: OrderListRelationFilter
     pointTransactions?: PointTransactionListRelationFilter
     sessions?: SessionListRelationFilter
-  }, "id" | "email" | "customerCode">
+  }, "id" | "email" | "customerCode" | "resetPasswordTokenHash">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
@@ -10062,6 +10140,8 @@ export namespace Prisma {
     zenPoints?: SortOrder
     role?: SortOrder
     isSuspended?: SortOrder
+    resetPasswordTokenHash?: SortOrderInput | SortOrder
+    resetPasswordExpires?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -10085,6 +10165,8 @@ export namespace Prisma {
     zenPoints?: IntWithAggregatesFilter<"User"> | number
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     isSuspended?: BoolWithAggregatesFilter<"User"> | boolean
+    resetPasswordTokenHash?: StringNullableWithAggregatesFilter<"User"> | string | null
+    resetPasswordExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -10364,6 +10446,9 @@ export namespace Prisma {
     total?: IntFilter<"Order"> | number
     pointsEarned?: IntFilter<"Order"> | number
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+    completedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    cancelledAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    cancelledBy?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -10389,6 +10474,9 @@ export namespace Prisma {
     total?: SortOrder
     pointsEarned?: SortOrder
     status?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    cancelledAt?: SortOrderInput | SortOrder
+    cancelledBy?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -10417,6 +10505,9 @@ export namespace Prisma {
     total?: IntFilter<"Order"> | number
     pointsEarned?: IntFilter<"Order"> | number
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+    completedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    cancelledAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    cancelledBy?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -10442,6 +10533,9 @@ export namespace Prisma {
     total?: SortOrder
     pointsEarned?: SortOrder
     status?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    cancelledAt?: SortOrderInput | SortOrder
+    cancelledBy?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: OrderCountOrderByAggregateInput
@@ -10473,6 +10567,9 @@ export namespace Prisma {
     total?: IntWithAggregatesFilter<"Order"> | number
     pointsEarned?: IntWithAggregatesFilter<"Order"> | number
     status?: EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
+    completedAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+    cancelledAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+    cancelledBy?: StringNullableWithAggregatesFilter<"Order"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
   }
@@ -10570,6 +10667,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -10588,6 +10687,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -10606,6 +10707,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -10624,6 +10727,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -10642,6 +10747,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -10657,6 +10764,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10672,6 +10781,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10969,6 +11080,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user?: UserCreateNestedOneWithoutOrdersInput
@@ -10994,6 +11108,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11015,6 +11132,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutOrdersNestedInput
@@ -11040,6 +11160,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11063,6 +11186,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11084,6 +11210,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11107,6 +11236,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11239,6 +11371,32 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -11268,6 +11426,11 @@ export namespace Prisma {
     none?: SessionWhereInput
   }
 
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
   export type OrderOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -11291,6 +11454,8 @@ export namespace Prisma {
     zenPoints?: SortOrder
     role?: SortOrder
     isSuspended?: SortOrder
+    resetPasswordTokenHash?: SortOrder
+    resetPasswordExpires?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11310,6 +11475,8 @@ export namespace Prisma {
     zenPoints?: SortOrder
     role?: SortOrder
     isSuspended?: SortOrder
+    resetPasswordTokenHash?: SortOrder
+    resetPasswordExpires?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11325,6 +11492,8 @@ export namespace Prisma {
     zenPoints?: SortOrder
     role?: SortOrder
     isSuspended?: SortOrder
+    resetPasswordTokenHash?: SortOrder
+    resetPasswordExpires?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11385,6 +11554,38 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -11434,26 +11635,6 @@ export namespace Prisma {
     lastUsedAt?: SortOrder
   }
 
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
-  }
-
   export type StaffInviteCountOrderByAggregateInput = {
     email?: SortOrder
     invitedById?: SortOrder
@@ -11470,24 +11651,6 @@ export namespace Prisma {
     email?: SortOrder
     invitedById?: SortOrder
     createdAt?: SortOrder
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type StoreCountOrderByAggregateInput = {
@@ -11667,6 +11830,9 @@ export namespace Prisma {
     total?: SortOrder
     pointsEarned?: SortOrder
     status?: SortOrder
+    completedAt?: SortOrder
+    cancelledAt?: SortOrder
+    cancelledBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11698,6 +11864,9 @@ export namespace Prisma {
     total?: SortOrder
     pointsEarned?: SortOrder
     status?: SortOrder
+    completedAt?: SortOrder
+    cancelledAt?: SortOrder
+    cancelledBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11720,6 +11889,9 @@ export namespace Prisma {
     total?: SortOrder
     pointsEarned?: SortOrder
     status?: SortOrder
+    completedAt?: SortOrder
+    cancelledAt?: SortOrder
+    cancelledBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11919,6 +12091,14 @@ export namespace Prisma {
     set?: boolean
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -12019,10 +12199,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSessionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSessionsInput, UserUpdateWithoutSessionsInput>, UserUncheckedUpdateWithoutSessionsInput>
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type OrderCreateNestedManyWithoutStoreInput = {
@@ -12170,6 +12346,31 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -12243,34 +12444,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -12297,6 +12470,34 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
   export type NestedEnumProductCategoryFilter<$PrismaModel = never> = {
@@ -12424,6 +12625,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     store?: StoreCreateNestedOneWithoutOrdersInput
@@ -12447,6 +12651,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12561,6 +12768,9 @@ export namespace Prisma {
     total?: IntFilter<"Order"> | number
     pointsEarned?: IntFilter<"Order"> | number
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+    completedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    cancelledAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    cancelledBy?: StringNullableFilter<"Order"> | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
   }
@@ -12637,6 +12847,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -12654,6 +12866,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -12687,6 +12901,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -12704,6 +12920,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -12727,6 +12945,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user?: UserCreateNestedOneWithoutOrdersInput
@@ -12750,6 +12971,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12791,6 +13015,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     pointTransactions?: PointTransactionCreateNestedManyWithoutUserInput
@@ -12808,6 +13034,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     pointTransactions?: PointTransactionUncheckedCreateNestedManyWithoutUserInput
@@ -12868,6 +13096,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pointTransactions?: PointTransactionUpdateManyWithoutUserNestedInput
@@ -12885,6 +13115,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pointTransactions?: PointTransactionUncheckedUpdateManyWithoutUserNestedInput
@@ -12935,6 +13167,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -12952,6 +13186,8 @@ export namespace Prisma {
     zenPoints?: number
     role?: $Enums.Role
     isSuspended?: boolean
+    resetPasswordTokenHash?: string | null
+    resetPasswordExpires?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -12985,6 +13221,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -13002,6 +13240,8 @@ export namespace Prisma {
     zenPoints?: IntFieldUpdateOperationsInput | number
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     isSuspended?: BoolFieldUpdateOperationsInput | boolean
+    resetPasswordTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resetPasswordExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -13026,6 +13266,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -13068,6 +13311,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     store?: StoreUpdateOneWithoutOrdersNestedInput
@@ -13091,6 +13337,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13113,6 +13362,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13198,6 +13450,9 @@ export namespace Prisma {
     total: number
     pointsEarned?: number
     status?: $Enums.OrderStatus
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    cancelledBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -13219,6 +13474,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutOrdersNestedInput
@@ -13242,6 +13500,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -13264,6 +13525,9 @@ export namespace Prisma {
     total?: IntFieldUpdateOperationsInput | number
     pointsEarned?: IntFieldUpdateOperationsInput | number
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

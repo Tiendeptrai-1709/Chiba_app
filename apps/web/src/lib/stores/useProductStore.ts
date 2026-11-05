@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product } from '@/types';
+import { Product, ProductCategory } from '@/types';
 import { apiRequest } from '@/lib/api/client';
 
 interface ProductState {
@@ -12,6 +12,16 @@ interface ProductState {
   setAvailability: (id: string, isAvailable: boolean) => Promise<void>;
   uploadImage: (id: string, file: File) => Promise<void>;
   removeImage: (id: string) => Promise<void>;
+  // Admin
+  createProduct: (data: ProductInput) => Promise<Product>;
+  updateProduct: (id: string, data: Partial<ProductInput>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+}
+
+export interface ProductInput {
+  name: string;
+  price: number;
+  category: ProductCategory;
 }
 
 // Menu dùng chung cho trang khách, giỏ hàng và dashboard.
@@ -52,6 +62,21 @@ export const useProductStore = create<ProductState>((set, get) => {
 
     removeImage: async (id) => {
       replace(await apiRequest<Product>(`/products/${id}/image`, { method: 'DELETE' }));
+    },
+
+    createProduct: async (data) => {
+      const created = await apiRequest<Product>('/products', { method: 'POST', body: data });
+      set({ products: [...get().products, created] });
+      return created;
+    },
+
+    updateProduct: async (id, data) => {
+      replace(await apiRequest<Product>(`/products/${id}`, { method: 'PATCH', body: data }));
+    },
+
+    deleteProduct: async (id) => {
+      await apiRequest(`/products/${id}`, { method: 'DELETE' });
+      set({ products: get().products.filter((p) => p.id !== id) });
     },
   };
 });

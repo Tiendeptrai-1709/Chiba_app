@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcryptjs";
-import { createHash, randomUUID, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "crypto";
+import { MailService } from "./mail.service";
 import { Role } from "../generated/prisma";
 import { RegisterDto } from "../dto/register.dto";
 import { LoginDto } from "../dto/login.dto";
@@ -23,6 +24,7 @@ export interface AuthResponse extends AuthTokens {
 const INVALID_CREDENTIALS = "Sai tài khoản hoặc mật khẩu";
 const SESSION_EXPIRED = "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại";
 const MAX_SESSIONS_PER_USER = 10; // giữ tối đa 10 thiết bị, phiên cũ nhất bị đăng xuất
+const RESET_TOKEN_TTL_MS = 15 * 60_000; // link đặt lại mật khẩu hết hạn sau 15 phút
 
 @Injectable()
 export class AuthService {
@@ -33,10 +35,14 @@ export class AuthService {
   // Hash giả để so sánh khi email không tồn tại → thời gian phản hồi như nhau.
   private dummyHashPromise?: Promise<string>;
 
+  // Địa chỉ web dùng trong link email (không lấy từ request để tránh bị giả mạo tên miền)
+  private readonly frontendUrl = (process.env.FRONTEND_URL ?? "http://localhost:3000").replace(/\/$/, "");
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly userService: UserService,
+    private readonly mail: MailService,
   ) {}
 
   async register(dto: RegisterDto, userAgent = ""): Promise<AuthResponse> {
@@ -88,6 +94,47 @@ export class AuthService {
     });
     if (count === 0) throw new UnauthorizedException(SESSION_EXPIRED);
     return { user, ...tokens };
+  }
+
+  // Luôn trả cùng một thông báo dù email có tồn tại hay không (không để lộ email nào đã đăng ký).
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const message = "Nếu email này đã đăng ký, chúng tôi đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư.";
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, fullName: true, isSuspended: true },
+    });
+    if (!user || user.isSuspended) return { message };
+
+    const rawToken = randomBytes(32).toString("hex"); // 64 ký tự hex
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordTokenHash: this.sha256(rawToken),
+        resetPasswordExpires: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+      },
+    });
+    const link = `${this.frontendUrl}/reset-password?token=${rawToken}`;
+    await this.mail.sendPasswordReset(user.email, user.fullName, link);
+    return { message };
+  }
+
+  async resetPassword(rawToken: string, newPassword: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findFirst({
+      where: { resetPasswordTokenHash: this.sha256(rawToken), resetPasswordExpires: { gt: new Date() } },
+      select: { id: true },
+    });
+    if (!user) throw new BadRequestException("Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn");
+
+    const password = await hash(newPassword, 10);
+    // Đổi mật khẩu, xóa mã (chỉ dùng 1 lần) và đăng xuất mọi thiết bị.
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { password, resetPasswordTokenHash: null, resetPasswordExpires: null },
+      }),
+      this.prisma.session.deleteMany({ where: { userId: user.id } }),
+    ]);
+    return { message: "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới." };
   }
 
   async logout(sessionId: string): Promise<void> {

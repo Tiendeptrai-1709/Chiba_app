@@ -71,6 +71,7 @@ after(async () => {
   await db.query(`DELETE FROM users WHERE email LIKE 'e2e\\_%@test.local'`);
   await db.query(`DELETE FROM staff_invites WHERE email LIKE 'e2e\\_%@test.local'`);
   await db.query(`UPDATE products SET "isAvailable" = true WHERE id IN ('p7')`);
+  await db.query(`DELETE FROM products WHERE name LIKE 'E2E %'`);
   await db.end();
 });
 
@@ -242,14 +243,61 @@ describe("Đơn hàng, tạm hết món & điểm", () => {
     await call("PATCH", "/products/p7/availability", { token: staff.accessToken, body: { isAvailable: true } });
   });
 
-  test("cộng điểm khi hoàn thành, chỉ một lần", async () => {
+  test("đơn giao: Chờ → Pha chế → Đang giao → Hoàn thành, cộng điểm một lần", async () => {
     const path = `/orders/${created.id}/status`;
-    assert.equal((await call("PATCH", path, { token: staff.accessToken, body: { status: "COMPLETED" } })).status, 400);
-    assert.equal((await call("PATCH", path, { token: staff.accessToken, body: { status: "CONFIRMED" } })).status, 200);
-    assert.equal((await call("PATCH", path, { token: staff.accessToken, body: { status: "COMPLETED" } })).status, 200);
-    assert.equal((await call("PATCH", path, { token: staff.accessToken, body: { status: "COMPLETED" } })).status, 400);
+    const step = (status) => call("PATCH", path, { token: staff.accessToken, body: { status } });
+    assert.equal((await step("COMPLETED")).status, 400, "không nhảy cóc");
+    assert.equal((await step("PREPARING")).status, 200);
+    assert.equal((await step("READY")).status, 400, "đơn giao không có bước Sẵn sàng");
+    assert.equal((await step("DELIVERING")).status, 200);
+    const done = await step("COMPLETED");
+    assert.equal(done.status, 200);
+    assert.ok(done.body.completedAt);
+    assert.equal((await step("COMPLETED")).status, 400);
     const me = await call("GET", "/auth/me", { token: customer.accessToken });
     assert.equal(me.body.zenPoints, 15);
+  });
+
+  test("đơn nhận tại quán: Pha chế → Sẵn sàng → Hoàn thành", async () => {
+    const r = await call("POST", "/orders", {
+      token: customer.accessToken,
+      body: { items: [{ productId: "b2", quantity: 1 }], orderType: "STORE", paymentMethod: "CASH" },
+    });
+    const step = (status) => call("PATCH", `/orders/${r.body.id}/status`, { token: staff.accessToken, body: { status } });
+    assert.equal((await step("PREPARING")).status, 200);
+    assert.equal((await step("DELIVERING")).status, 400, "đơn tại quán không có bước Đang giao");
+    assert.equal((await step("READY")).status, 200);
+    assert.equal((await step("COMPLETED")).status, 200);
+    // +2 điểm (29.000đ)
+    assert.equal((await call("GET", "/auth/me", { token: customer.accessToken })).body.zenPoints, 17);
+    await db.query("UPDATE users SET \"zenPoints\" = 15 WHERE id = $1", [customer.user.id]);
+  });
+
+  test("chi tiết đơn: khách chỉ xem đơn của mình, nhân viên xem mọi đơn", async () => {
+    assert.equal((await call("GET", `/orders/${created.id}`, { token: customer.accessToken })).status, 200);
+    assert.equal((await call("GET", `/orders/${created.id}`, { token: staff.accessToken })).status, 200);
+    const other = await createUser("other");
+    assert.equal((await call("GET", `/orders/${created.id}`, { token: other.accessToken })).status, 404);
+    const mine = await call("GET", "/orders/me", { token: customer.accessToken });
+    assert.ok(mine.body.some((o) => o.id === created.id));
+  });
+
+  test("khách tự hủy khi còn chờ xác nhận (hoàn điểm), không hủy được khi đã pha chế", async () => {
+    const base = { items: [{ productId: "p2", quantity: 1 }], orderType: "STORE", paymentMethod: "CASH" };
+    const a = await call("POST", "/orders", { token: customer.accessToken, body: { ...base, pointsToUse: 3 } });
+    assert.equal((await call("GET", "/auth/me", { token: customer.accessToken })).body.zenPoints, 12);
+    const other = await login("other");
+    assert.equal((await call("POST", `/orders/${a.body.id}/cancel`, { token: other.accessToken })).status, 404);
+    const c = await call("POST", `/orders/${a.body.id}/cancel`, { token: customer.accessToken });
+    assert.equal(c.status, 200);
+    assert.equal(c.body.status, "CANCELLED");
+    assert.equal(c.body.cancelledBy, "CUSTOMER");
+    assert.equal((await call("GET", "/auth/me", { token: customer.accessToken })).body.zenPoints, 15);
+
+    const b = await call("POST", "/orders", { token: customer.accessToken, body: base });
+    await call("PATCH", `/orders/${b.body.id}/status`, { token: staff.accessToken, body: { status: "PREPARING" } });
+    assert.equal((await call("POST", `/orders/${b.body.id}/cancel`, { token: customer.accessToken })).status, 400);
+    await call("PATCH", `/orders/${b.body.id}/status`, { token: staff.accessToken, body: { status: "CANCELLED" } });
   });
 
   test("dùng điểm giảm giá (tối đa 20%), hủy đơn được hoàn điểm", async () => {
@@ -282,7 +330,11 @@ describe("Đơn hàng, tạm hết món & điểm", () => {
     assert.equal((await redeem(3, "ADMIN_ADJUST", admin.accessToken)).body.pointsAfter, 25);
 
     const history = await call("GET", "/points/me", { token: customer.accessToken });
-    assert.equal(history.body.length, 6);
+    const types = new Set(history.body.map((t) => t.type));
+    for (const t of ["EARNED_ORDER", "REDEEMED_APP", "REFUND", "EARNED_STORE", "REDEEMED_STORE", "ADMIN_ADJUST"]) {
+      assert.ok(types.has(t), `lịch sử có giao dịch ${t}`);
+    }
+    assert.equal(history.body[0].pointsAfter, 25, "giao dịch mới nhất đứng đầu");
   });
 });
 
@@ -306,6 +358,67 @@ describe("Ảnh sản phẩm", () => {
     assert.equal((await fetch(API + up.body.imageUrl)).status, 200);
     const del = await call("DELETE", "/products/p1/image", { token: admin.accessToken });
     assert.equal(del.body.imageUrl, null);
+  });
+});
+
+describe("Admin quản lý món", () => {
+  test("thêm, sửa, xóa món; nhân viên không được; chặn trùng tên", async () => {
+    const body = { name: `E2E Trà Test ${RUN}`, price: 45000, category: "MON_NUOC" };
+    assert.equal((await call("POST", "/products", { token: staff.accessToken, body })).status, 403);
+    const created = await call("POST", "/products", { token: admin.accessToken, body });
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    assert.equal(created.body.isAvailable, true);
+    assert.equal((await call("POST", "/products", { token: admin.accessToken, body: { ...body, name: body.name.toUpperCase() } })).status, 409);
+    assert.equal((await call("POST", "/products", { token: admin.accessToken, body: { ...body, name: "X", price: -1 } })).status, 400);
+
+    const upd = await call("PATCH", `/products/${created.body.id}`, { token: admin.accessToken, body: { price: 47000 } });
+    assert.equal(upd.body.price, 47000);
+    const menu = await call("GET", "/products");
+    assert.ok(menu.body.some((p) => p.id === created.body.id && p.price === 47000));
+
+    assert.equal((await call("DELETE", `/products/${created.body.id}`, { token: staff.accessToken })).status, 403);
+    assert.equal((await call("DELETE", `/products/${created.body.id}`, { token: admin.accessToken })).status, 204);
+    assert.equal((await call("PATCH", `/products/${created.body.id}`, { token: admin.accessToken, body: { price: 1 } })).status, 404);
+  });
+});
+
+describe("Quên mật khẩu", () => {
+  const sha256 = async (s) => {
+    const { createHash } = await import("node:crypto");
+    return createHash("sha256").update(s).digest("hex");
+  };
+
+  test("trả cùng một thông báo dù email có tồn tại hay không", async () => {
+    const a = await call("POST", "/auth/forgot-password", { body: { email: email("customer") } });
+    const b = await call("POST", "/auth/forgot-password", { body: { email: email("khong-ton-tai") } });
+    assert.equal(a.status, 200);
+    assert.equal(b.status, 200);
+    assert.equal(a.body.message, b.body.message);
+    const row = await db.query('SELECT "resetPasswordTokenHash" FROM users WHERE email = $1', [email("customer")]);
+    assert.ok(row.rows[0].resetPasswordTokenHash, "đã tạo mã đặt lại");
+  });
+
+  test("đặt lại mật khẩu: đăng xuất mọi thiết bị, mã chỉ dùng một lần, mã hết hạn bị từ chối", async () => {
+    await createUser("reset");
+    const session = await login("reset", "phone");
+    const raw = "a".repeat(64);
+    await db.query(
+      `UPDATE users SET "resetPasswordTokenHash" = $1, "resetPasswordExpires" = (now() at time zone 'UTC') + interval '10 minutes' WHERE email = $2`,
+      [await sha256(raw), email("reset")],
+    );
+    const ok = await call("POST", "/auth/reset-password", { body: { token: raw, newPassword: "mat-khau-moi-123" } });
+    assert.equal(ok.status, 200);
+    assert.equal((await call("GET", "/auth/me", { token: session.accessToken })).status, 401, "phiên cũ bị đăng xuất");
+    assert.equal((await call("POST", "/auth/login", { body: { email: email("reset"), password: PASSWORD } })).status, 401);
+    assert.equal((await call("POST", "/auth/login", { body: { email: email("reset"), password: "mat-khau-moi-123" } })).status, 200);
+    assert.equal((await call("POST", "/auth/reset-password", { body: { token: raw, newPassword: "abcdef" } })).status, 400, "mã đã dùng");
+
+    const expired = "b".repeat(64);
+    await db.query(
+      `UPDATE users SET "resetPasswordTokenHash" = $1, "resetPasswordExpires" = (now() at time zone 'UTC') - interval '1 minute' WHERE email = $2`,
+      [await sha256(expired), email("reset")],
+    );
+    assert.equal((await call("POST", "/auth/reset-password", { body: { token: expired, newPassword: "abcdef" } })).status, 400);
   });
 });
 

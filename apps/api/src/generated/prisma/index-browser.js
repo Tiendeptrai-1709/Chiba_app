@@ -131,6 +131,8 @@ exports.Prisma.UserScalarFieldEnum = {
   zenPoints: 'zenPoints',
   role: 'role',
   isSuspended: 'isSuspended',
+  resetPasswordTokenHash: 'resetPasswordTokenHash',
+  resetPasswordExpires: 'resetPasswordExpires',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -193,6 +195,9 @@ exports.Prisma.OrderScalarFieldEnum = {
   total: 'total',
   pointsEarned: 'pointsEarned',
   status: 'status',
+  completedAt: 'completedAt',
+  cancelledAt: 'cancelledAt',
+  cancelledBy: 'cancelledBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -258,7 +263,9 @@ exports.PaymentMethod = exports.$Enums.PaymentMethod = {
 
 exports.OrderStatus = exports.$Enums.OrderStatus = {
   PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  DELIVERING: 'DELIVERING',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED'
 };

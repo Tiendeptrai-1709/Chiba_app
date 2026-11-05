@@ -27,6 +27,9 @@ model User {
   zenPoints          Int                @default(0)
   role               Role               @default(CUSTOMER)
   isSuspended        Boolean            @default(false)
+  // Quên mật khẩu: lưu SHA-256 của mã đặt lại (mã gốc chỉ nằm trong email), hết hạn sau 15 phút
+  resetPasswordTokenHash String?   @unique
+  resetPasswordExpires   DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   orders             Order[]
@@ -106,11 +109,15 @@ model Product {
 
 // ----- Đơn hàng -----
 
+// Luồng: PENDING → PREPARING → (READY nếu nhận tại quán | DELIVERING nếu giao) → COMPLETED
+// Hủy được ở mọi bước trước COMPLETED (khách chỉ tự hủy khi còn PENDING).
 enum OrderStatus {
-  PENDING
-  CONFIRMED
-  COMPLETED
-  CANCELLED
+  PENDING // Chờ xác nhận
+  PREPARING // Đang pha chế
+  READY // Sẵn sàng — chờ khách đến lấy
+  DELIVERING // Đang giao
+  COMPLETED // Hoàn thành
+  CANCELLED // Đã hủy
 }
 
 enum OrderType {
@@ -148,6 +155,10 @@ model Order {
   // Điểm sẽ được cộng khi nhân viên đánh dấu Hoàn thành
   pointsEarned   Int           @default(0)
   status         OrderStatus   @default(PENDING)
+  completedAt    DateTime?
+  cancelledAt    DateTime?
+  // "CUSTOMER" nếu khách tự hủy, ngược lại là nhân viên/admin
+  cancelledBy    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 

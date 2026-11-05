@@ -12,5 +12,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     initAuth();
   }, [initAuth]);
 
+  // Đăng ký service worker cho PWA (chỉ chạy trên HTTPS hoặc localhost).
+  useEffect(() => {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }, []);
+
   return <CartProvider>{children}</CartProvider>;
 }

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ImagePlus, RefreshCw, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, RefreshCw, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { useProductStore } from '@/lib/stores/useProductStore';
+import ProductFormModal from './ProductFormModal';
 import { useNotificationStore } from '@/lib/stores/useNotificationStore';
 import { Product, ProductCategory } from '@/types';
 import ProductImage from '@/components/products/ProductImage';
@@ -17,14 +18,26 @@ const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface MenuManagerProps {
-  // Admin: thêm/đổi/xóa ảnh. Nhân viên: chỉ bật/tắt còn hàng.
+  // Admin: thêm/sửa/xóa món và ảnh. Nhân viên: chỉ bật/tắt còn hàng.
   canEditImages: boolean;
 }
 
 function MenuManager({ canEditImages }: MenuManagerProps) {
-  const { products, loading, fetchProducts, setAvailability, uploadImage, removeImage } = useProductStore();
+  const {
+    products,
+    loading,
+    fetchProducts,
+    setAvailability,
+    uploadImage,
+    removeImage,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+  } = useProductStore();
   const { showError, showSuccess } = useNotificationStore();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Product | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const uploadTarget = useRef<Product | null>(null);
 
@@ -71,10 +84,40 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
             {canEditImages && ' Ảnh nên vuông (khoảng 600×600), tối đa 3MB.'}
           </p>
         </div>
-        <button onClick={() => fetchProducts(true)} aria-label="Tải lại" className="p-2 rounded-lg border border-border hover:bg-muted shrink-0">
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex gap-2 shrink-0">
+          {canEditImages && (
+            <button
+              onClick={() => setCreating(true)}
+              className="flex items-center gap-1 text-xs font-bold text-white bg-primary px-3 py-2 rounded-lg"
+            >
+              <Plus className="w-4 h-4" /> Thêm món
+            </button>
+          )}
+          <button onClick={() => fetchProducts(true)} aria-label="Tải lại" className="p-2 rounded-lg border border-border hover:bg-muted">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
+
+      {creating && (
+        <ProductFormModal
+          onClose={() => setCreating(false)}
+          onSubmit={async (data) => {
+            const created = await createProduct(data);
+            showSuccess(`Đã thêm "${created.name}" — bấm "Thêm ảnh" để gắn ảnh cho món`);
+          }}
+        />
+      )}
+      {editing && (
+        <ProductFormModal
+          product={editing}
+          onClose={() => setEditing(null)}
+          onSubmit={async (data) => {
+            await updateProduct(editing.id, data);
+            showSuccess(`Đã lưu "${data.name}"`);
+          }}
+        />
+      )}
 
       <input ref={fileInput} type="file" accept={ACCEPTED.join(',')} className="hidden" onChange={onFileChosen} />
 
@@ -104,7 +147,14 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
                     <p className="text-xs font-bold text-foreground leading-snug">{product.name}</p>
                     <p className="text-[11px] text-muted-foreground">{product.price.toLocaleString('vi-VN')}₫</p>
                     {canEditImages && (
-                      <div className="flex gap-2 mt-1.5">
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        <button
+                          onClick={() => setEditing(product)}
+                          disabled={busy}
+                          className="flex items-center gap-1 whitespace-nowrap text-[10px] font-bold text-foreground bg-muted px-2 py-1 rounded-md"
+                        >
+                          <Pencil className="w-3.5 h-3.5" /> Sửa
+                        </button>
                         <button
                           onClick={() => pickImage(product)}
                           disabled={busy}
@@ -124,6 +174,16 @@ function MenuManager({ canEditImages }: MenuManagerProps) {
                             <Trash2 className="w-3.5 h-3.5" /> Xóa ảnh
                           </button>
                         )}
+                        <button
+                          onClick={() =>
+                            window.confirm(`Xóa hẳn món "${product.name}" khỏi menu? Đơn cũ vẫn giữ tên và giá món.`) &&
+                            run(product.id, () => deleteProduct(product.id), `Đã xóa món "${product.name}"`)
+                          }
+                          disabled={busy}
+                          className="flex items-center gap-1 whitespace-nowrap text-[10px] font-bold text-destructive border border-destructive/30 px-2 py-1 rounded-md"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Xóa món
+                        </button>
                       </div>
                     )}
                   </div>

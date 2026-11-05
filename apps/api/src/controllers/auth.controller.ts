@@ -3,6 +3,7 @@ import { Throttle } from "@nestjs/throttler";
 import { CurrentUser } from "../decorators/current-user.decorator";
 import { LoginDto } from "../dto/login.dto";
 import { RegisterDto } from "../dto/register.dto";
+import { ForgotPasswordDto, ResetPasswordDto } from "../dto/password-reset.dto";
 import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { JwtRefreshGuard } from "../guards/jwt-refresh.guard";
 import { AuthService } from "../services/auth.service";
@@ -25,6 +26,20 @@ export class AuthController {
   @Throttle({ default: AUTH_RATE_LIMIT })
   login(@Body() dto: LoginDto, @Headers("user-agent") userAgent?: string) {
     return this.authService.login(dto, userAgent);
+  }
+
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: AUTH_RATE_LIMIT })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Post("reset-password")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: AUTH_RATE_LIMIT })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 
   // Gửi refresh token qua header: Authorization: Bearer <refreshToken>

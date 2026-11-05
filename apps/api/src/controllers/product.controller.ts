@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -14,6 +16,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { memoryStorage } from "multer";
 import { IsBoolean } from "class-validator";
 import { Role } from "../generated/prisma";
+import { CreateProductDto, UpdateProductDto } from "../dto/product.dto";
 import { Roles } from "../decorators/roles.decorator";
 import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { RolesGuard } from "../guards/roles.guard";
@@ -32,6 +35,29 @@ export class ProductController {
   @Get()
   findAll() {
     return this.products.findAll();
+  }
+
+  // ----- Admin quản lý menu -----
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  create(@Body() dto: CreateProductDto) {
+    return this.products.create(dto);
+  }
+
+  @Patch(":id")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  update(@Param("id") id: string, @Body() dto: UpdateProductDto) {
+    return this.products.update(id, dto);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async remove(@Param("id") id: string) {
+    await this.products.remove(id);
   }
 
   // Nhân viên báo hết / còn món

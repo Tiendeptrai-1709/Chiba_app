@@ -82,6 +82,9 @@ export class CreateOrderDto {
 }
 
 export class UpdateOrderStatusDto {
-  @IsIn([OrderStatus.CONFIRMED, OrderStatus.COMPLETED, OrderStatus.CANCELLED])
+  @IsIn(
+    [OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING, OrderStatus.COMPLETED, OrderStatus.CANCELLED],
+    { message: "Trạng thái không hợp lệ" },
+  )
   status: OrderStatus;
 }

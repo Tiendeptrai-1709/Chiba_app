@@ -72,16 +72,54 @@ export interface CartItem {
 
 // ----- Đơn hàng -----
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+// Luồng: PENDING → PREPARING → (READY nếu nhận tại quán | DELIVERING nếu giao) → COMPLETED
+export type OrderStatus = 'PENDING' | 'PREPARING' | 'READY' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
 export type OrderType = 'DELIVERY' | 'STORE';
 export type PaymentMethod = 'CASH' | 'BANK_TRANSFER';
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Chờ xác nhận',
-  CONFIRMED: 'Đang pha chế',
+  PREPARING: 'Đang pha chế',
+  READY: 'Sẵn sàng — mời đến lấy',
+  DELIVERING: 'Đang giao',
   COMPLETED: 'Hoàn thành',
   CANCELLED: 'Đã hủy',
 };
+
+export const ORDER_STATUS_TONE: Record<OrderStatus, string> = {
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  PREPARING: 'bg-blue-100 text-blue-800',
+  READY: 'bg-emerald-100 text-emerald-800',
+  DELIVERING: 'bg-indigo-100 text-indigo-800',
+  COMPLETED: 'bg-green-100 text-green-800',
+  CANCELLED: 'bg-neutral-200 text-neutral-600',
+};
+
+export const isActiveOrder = (s: OrderStatus) => s !== 'COMPLETED' && s !== 'CANCELLED';
+
+// Các bước hiển thị cho khách theo hình thức nhận hàng
+export const orderSteps = (orderType: OrderType): OrderStatus[] =>
+  orderType === 'STORE'
+    ? ['PENDING', 'PREPARING', 'READY', 'COMPLETED']
+    : ['PENDING', 'PREPARING', 'DELIVERING', 'COMPLETED'];
+
+// Bước tiếp theo nhân viên bấm (khớp backend: allowedNextStatuses)
+export function nextStaffStep(order: Pick<Order, 'status' | 'orderType'>): { status: OrderStatus; label: string } | null {
+  switch (order.status) {
+    case 'PENDING':
+      return { status: 'PREPARING', label: 'Nhận đơn & pha chế' };
+    case 'PREPARING':
+      return order.orderType === 'STORE'
+        ? { status: 'READY', label: 'Đã xong — báo khách đến lấy' }
+        : { status: 'DELIVERING', label: 'Bắt đầu giao hàng' };
+    case 'READY':
+      return { status: 'COMPLETED', label: 'Khách đã nhận ✓' };
+    case 'DELIVERING':
+      return { status: 'COMPLETED', label: 'Đã giao xong ✓' };
+    default:
+      return null;
+  }
+}
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   CASH: 'Tiền mặt',
@@ -119,6 +157,9 @@ export interface Order {
   pointsEarned: number;
   status: OrderStatus;
   createdAt: string;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  cancelledBy?: string | null; // "CUSTOMER" nếu khách tự hủy
   user?: { customerCode: string; email: string } | null;
 }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { OrderStatus, Role } from "../generated/prisma";
 import { CurrentUser } from "../decorators/current-user.decorator";
 import { Roles } from "../decorators/roles.decorator";
@@ -18,6 +18,7 @@ export class OrderController {
     return this.orders.create(user.id, dto);
   }
 
+  // Lịch sử đơn của khách (khai báo trước ":id")
   @Get("me")
   mine(@CurrentUser() user: AuthUser) {
     return this.orders.listMine(user.id);
@@ -28,6 +29,19 @@ export class OrderController {
   all(@Query("status") status?: string) {
     const valid = Object.values(OrderStatus).includes(status as OrderStatus);
     return this.orders.listAll(valid ? (status as OrderStatus) : undefined);
+  }
+
+  // Chi tiết đơn: khách xem đơn của mình, nhân viên/admin xem mọi đơn
+  @Get(":id")
+  findOne(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.orders.findOne(id, user);
+  }
+
+  // Khách tự hủy khi đơn còn chờ xác nhận
+  @Post(":id/cancel")
+  @HttpCode(HttpStatus.OK)
+  cancel(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    return this.orders.cancelByCustomer(id, user.id);
   }
 
   @Patch(":id/status")
