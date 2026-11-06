@@ -17,6 +17,9 @@ const apiInternalUrl = (process.env.API_INTERNAL_URL ?? "http://localhost:3001")
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: [...lanAddresses, "*.trycloudflare.com"],
+  // Luôn đặt metadata trong <head>, không stream xuống <body>: Chrome chỉ tìm <link rel="manifest">
+  // trong <head>, nếu không sẽ báo "Không thể cài đặt ứng dụng này" (PWA).
+  htmlLimitedBots: /.*/,
   // Không nén phản hồi ở tầng web: nén sẽ giữ lại luồng sự kiện đơn hàng (SSE) thay vì gửi ngay
   compress: false,
   async rewrites() {
