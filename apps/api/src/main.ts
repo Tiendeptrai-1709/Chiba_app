@@ -33,8 +33,10 @@ async function bootstrap() {
     }),
   );
 
+  // Mặc định (máy dev): web Next.js (3000) + bản web của app Expo (8081). App trên điện thoại không cần CORS.
+  // Khi deploy luôn đặt CORS_ORIGIN = địa chỉ web thật (xem docs/DEPLOY.md).
   app.enableCors({
-    origin: (process.env.CORS_ORIGIN ?? "http://localhost:3000").split(","),
+    origin: (process.env.CORS_ORIGIN ?? "http://localhost:3000,http://localhost:8081").split(","),
   });
 
   // Ảnh sản phẩm đã upload: GET /uploads/products/<file>
